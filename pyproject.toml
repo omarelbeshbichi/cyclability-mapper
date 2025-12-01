@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cmm"
+version = "0.1.0"
+description = "City Metrics Mapper (placeholder project)"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+  { name = "Omar El Beshbichi" }
+]
+
+# For now, keep dependencies minimal – will add them later
+dependencies = [
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest",
+]
+
+# Tell setuptools to look for packages under src/
+[tool.setuptools.packages.find]
+where = ["src"]
