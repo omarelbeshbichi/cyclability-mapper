@@ -12,8 +12,9 @@ authors = [
   { name = "Omar El Beshbichi" }
 ]
 
-# For now, keep dependencies minimal – will add them later
+# For now, keep dependencies minimal – will add them in due time
 dependencies = [
+  "numpy>=2.0.0"
 ]
 
 [project.optional-dependencies]
