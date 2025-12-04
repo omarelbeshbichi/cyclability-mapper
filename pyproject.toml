@@ -15,7 +15,8 @@ authors = [
 # For now, keep dependencies minimal – will add them in due time
 dependencies = [
   "numpy>=2.0.0",
-  "shapely>=2.1"
+  "shapely>=2.1",
+  "pandas>=1.4"
 ]
 
 [project.optional-dependencies]
