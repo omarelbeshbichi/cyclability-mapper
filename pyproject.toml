@@ -16,7 +16,8 @@ authors = [
 dependencies = [
   "numpy>=2.0.0",
   "shapely>=2.1",
-  "pandas>=1.4"
+  "pandas>=1.4",
+  "psycopg2-binary>=2.9"
 ]
 
 [project.optional-dependencies]
