@@ -23,6 +23,3 @@ dist/
 
 #Notebooks
 notebooks/
-
-#Docker test files
-docker/

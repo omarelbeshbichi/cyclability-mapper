@@ -1,0 +1,16 @@
+
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    container_name: cmm_postgres
+    ports:
+      - "5432:5432"     
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: cmm_db
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/init:/docker-entrypoint-initdb.d
+volumes:
+  pgdata:

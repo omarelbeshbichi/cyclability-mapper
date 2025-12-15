@@ -31,13 +31,8 @@ def raw_to_postgres(path: str):
     try:
         cur = conn.cursor()
 
-        # Drop table if exists
-        query_drop = "DROP TABLE IF EXISTS test_geoms;"
-        cur.execute(query_drop)
-
-        # Create table
-        query_create = "CREATE TABLE IF NOT EXISTS test_geoms (id SERIAL PRIMARY KEY, street_name TEXT, geom GEOMETRY(LineString, 4326));"
-        cur.execute(query_create)
+        # Truncate table (dev)
+        cur.execute("TRUNCATE TABLE test_geoms RESTART IDENTITY;")
 
         # Insert data in table
         for feature in features:
@@ -46,7 +41,10 @@ def raw_to_postgres(path: str):
             geometries_str = json.dumps(geometry)
             names = properties.get('name')
 
-            query = "INSERT INTO test_geoms (street_name, geom) VALUES (%s, ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326))"
+            query = """
+            INSERT INTO test_geoms (street_name, geom) 
+            VALUES (%s, ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326))
+            """
             cur.execute(query, (names, geometries_str))
         conn.commit()
 
