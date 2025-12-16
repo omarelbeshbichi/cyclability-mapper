@@ -11,6 +11,6 @@ services:
       POSTGRES_DB: cmm_db
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - ./docker/init:/docker-entrypoint-initdb.d
+      - ./docker/postgres:/docker-entrypoint-initdb.d
 volumes:
   pgdata:

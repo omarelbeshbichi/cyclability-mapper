@@ -52,7 +52,8 @@ def raw_to_postgres(path: str,
             if geometry.get('type') != "LineString":
                 logging.debug(f"Skipping geometry type {geometry.get('type')} for feature {ids}")
                 continue
-
+            
+            # Serialize geometry
             geometries_str = json.dumps(geometry)
             
             query = f"""
