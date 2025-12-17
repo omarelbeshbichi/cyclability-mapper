@@ -1,18 +1,18 @@
 """
-Module for loading raw OSM GeoJSON data into a Postgres dataframe.
+Module for exporting processed data.
 """
 
-from .geojson import load_json_from_path
+from ..ingest.geojson_loader import load_json_from_path
 import psycopg2
 import json
 import logging
-from ..validation.geometry import find_invalid_geometries
-from ..validation.geometry import clean_linestrings
+from ...validation.geometry import find_invalid_geometries
+from ...validation.geometry import clean_linestrings
 
-def raw_to_postgres(path: str, 
-                    table_name: str):
+def geojson_to_postgres(path: str, 
+                        table_name: str):
     """
-    Loads raw GeoJSON data to Postgres database.
+    Load GeoJSON data to Postgres database.
 
     Parameters
     ----------
@@ -43,8 +43,8 @@ def raw_to_postgres(path: str,
         # Insert data in table
         for feature in features:
             properties = feature.get('properties')
+            ids = feature.get('id')            
             names = properties.get('name')
-            ids = properties.get('@id')
             geometry = feature.get('geometry')
 
             if geometry is None:
@@ -52,7 +52,7 @@ def raw_to_postgres(path: str,
             if geometry.get('type') != "LineString":
                 logging.debug(f"Skipping geometry type {geometry.get('type')} for feature {ids}")
                 continue
-            
+
             # Serialize geometry
             geometries_str = json.dumps(geometry)
             

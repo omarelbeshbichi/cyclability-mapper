@@ -6,28 +6,17 @@ Initial placeholder implementation used to further test/validate the package env
 """
 
 import numpy as np
+from ..utils.config_reader import read_config
 
-def compute_cyclability_score(bike_infrastructure: float, 
-                              slope_factor: float, 
-                              speed_factor: float, 
-                              surface_quality: float, 
-                              lighting: float ) -> float:
+def compute_cyclability_score(feature):
     """
     Compute cyclability score of road segment as weighted sum of five normalized 
     parameters describing cycling quality.
 
     Parameters
     ----------
-    bike_infrastructure: float
-        Normalized parameter for bike infrastructure quality
-    slope_factor: float
-        Normalized parameter for slope
-    speed_factor: float
-        Normalized parameter for maximum speed
-    surface_quality: float
-        Normalized parameter for surface quality
-    lighting: float
-        Normalized lighting parameter
+    feature
+
 
     Returns
     -------
@@ -35,16 +24,23 @@ def compute_cyclability_score(bike_infrastructure: float,
         Cyclability score computed as dot product of input paramters and associated weights
     """
 
-    weights = np.array([0.3, 0.2, 0.2, 0.2, 0.1])
+    # Gather config parameters
+    weights_config = read_config('weights')
+    weights = weights_config['cyclability']
 
-    factors = np.array([
-        bike_infrastructure, 
-        slope_factor, 
-        speed_factor, 
-        surface_quality, 
-        lighting
-    ])
+    cyclability_config = read_config('cyclability')
+
+    # Gather quality factors
+    feature_properties = feature['properties']
+
+    #factors = np.array([
+    #    bike_infrastructure, 
+    #    slope_factor, 
+    #    speed_factor, 
+    #    surface_quality, 
+    #    lighting
+    #])
     
-    cyclability_score = np.dot(weights, factors)
+    #cyclability_score = np.dot(weights, factors)
 
-    return cyclability_score
+    return feature_properties

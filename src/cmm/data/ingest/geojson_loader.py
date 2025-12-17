@@ -1,5 +1,5 @@
 """
-Module providing functions processing OSM GeoJSON files.
+Module providing functions to ingest OSM data.
 """
 
 import pandas as pd
