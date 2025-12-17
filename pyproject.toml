@@ -14,10 +14,11 @@ authors = [
 
 # For now, keep dependencies minimal – will add them in due time
 dependencies = [
-  "numpy>=2.0.0",
-  "shapely>=2.1",
-  "pandas>=1.4",
-  "psycopg2-binary>=2.9"
+  "numpy>=1.26",
+  "shapely>=2.0.0",
+  "pandas>=2.0.0",
+  "psycopg2-binary>=2.9",
+  "pyyaml>=6.0.1"
 ]
 
 [project.optional-dependencies]

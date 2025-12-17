@@ -1,0 +1,8 @@
+
+
+cyclability:
+  bike_infrastructure: 0.2
+  slope: 0.2
+  maxspeed: 0.2
+  surface: 0.2
+  lighting: 0.2
