@@ -1,9 +1,5 @@
-
-
-
 from .cyclability import compute_cyclability_metrics
 import geopandas as gpd
-
 
 def compute_metrics(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     """

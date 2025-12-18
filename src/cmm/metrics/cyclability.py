@@ -8,16 +8,17 @@ Initial placeholder implementation used to further test/validate the package env
 import numpy as np
 from ..utils.config_reader import read_config
 import geopandas as gpd
+import pandas as pd
 
-def compute_cyclability_metrics(feature) -> float:
+def compute_cyclability_metrics(gdf_row: pd.Series) -> float:
     """
     Compute cyclability metrics of road segment as weighted sum of five normalized 
     parameters describing cycling quality.
 
     Parameters
     ----------
-    feature:
-
+    gdf_row: pd.Series
+        A single row of the GeoDataFrame representing a road segment.
 
     Returns
     -------
@@ -28,7 +29,6 @@ def compute_cyclability_metrics(feature) -> float:
     # Gather config parameters
     weights_config = read_config('weights')
     weights = weights_config['cyclability']
-
     cyclability_config = read_config('cyclability')
 
     # Gather quality factors
