@@ -12,26 +12,26 @@ slope:
   type: continuous
   bins:
     - max: 3
-      score: 1.0
+      metrics: 1.0
     - max: 6
-      score: 0.7
+      metrics: 0.7
     - max: 10
-      score: 0.4
+      metrics: 0.4
     - max: 100
-      score: 0.1
+      metrics: 0.1
   description: 'Slope percentage'
 
 maxspeed:
   type: continuous
   bins:
     - max: 30
-      score: 1.0
+      metrics: 1.0
     - max: 50
-      score: 0.7
+      metrics: 0.7
     - max: 70
-      score: 0.4
+      metrics: 0.4
     - max: 200
-      score: 0.1
+      metrics: 0.1
   description: 'Maximum traffic speed'
 
 surface:

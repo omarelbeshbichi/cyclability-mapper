@@ -3,7 +3,7 @@ Top-level package for City Metrics Mapper (cmm).
 """
 
 from .test_package import example_function
-from .metrics import compute_cyclability_score
+from .metrics.cyclability import compute_cyclability_metrics
 
 __all__ = ["example_function", 
-           "compute_cyclability_score"]
+           "compute_cyclability_metrics"]

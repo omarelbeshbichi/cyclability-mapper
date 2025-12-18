@@ -1,4 +1,0 @@
-"""
-Geometry validation module.
-"""
-
