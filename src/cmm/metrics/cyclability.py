@@ -9,7 +9,7 @@ import numpy as np
 from ..utils.config_reader import read_config
 import geopandas as gpd
 
-def compute_cyclability_metrics(feature):
+def compute_cyclability_metrics(feature) -> float:
     """
     Compute cyclability metrics of road segment as weighted sum of five normalized 
     parameters describing cycling quality.
@@ -44,4 +44,4 @@ def compute_cyclability_metrics(feature):
     
     #cyclability_metrics = np.dot(weights, factors)
 
-    return 1
+    return 1.0
