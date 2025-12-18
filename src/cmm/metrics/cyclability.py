@@ -7,6 +7,7 @@ Initial placeholder implementation used to further test/validate the package env
 
 import numpy as np
 from ..utils.config_reader import read_config
+import geopandas as gpd
 
 def compute_cyclability_score(feature):
     """
@@ -15,7 +16,7 @@ def compute_cyclability_score(feature):
 
     Parameters
     ----------
-    feature
+    feature:
 
 
     Returns
@@ -43,4 +44,4 @@ def compute_cyclability_score(feature):
     
     #cyclability_score = np.dot(weights, factors)
 
-    return feature_properties
+    return 1

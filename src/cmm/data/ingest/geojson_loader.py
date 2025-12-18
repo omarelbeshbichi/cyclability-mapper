@@ -88,7 +88,7 @@ def feature_collection_to_dataframe(data: dict) -> pd.DataFrame:
 
     return df
 
-def geojson_to_geodataframe_from_path(path: str) -> gpd.GeoDataFrame:
+def geojson_to_gdf_from_path(path: str) -> gpd.GeoDataFrame:
     """
     Load GeoJSON file from path and return it as a GeoDataFrame.
     

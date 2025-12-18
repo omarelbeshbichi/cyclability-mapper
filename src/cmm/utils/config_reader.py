@@ -21,7 +21,7 @@ def read_config(index_name: str) -> dict:
 
     # Retrieve paths
     root_path = get_project_root()
-    config_path = root_path  / 'src' / 'cmm' / 'scoring' / 'config' / f"{index_name}.yaml"
+    config_path = root_path  / 'src' / 'cmm' / 'metrics' / 'config' / f"{index_name}.yaml"
 
     # Path check
     if not config_path.exists():

@@ -4,7 +4,7 @@ Module providing functions to normalize OSM data.
 
 import geopandas as gpd
 
-def restrict_feature_collection(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+def restrict_gdf(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     """
     Restrict raw OSM GeoDataFrame FeatureCollection by removing unnecessary and
     filtering irrelevant types.
@@ -39,6 +39,13 @@ def restrict_feature_collection(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
              (gdf_filtered['highway'] == 'proposed') |
              (gdf_filtered['highway'] == 'construction'))
     gdf_filtered = gdf_filtered[mask]
+
+    # Filter out redundant and unnecessary features
+    # (placeholder filter)
+    gdf_filtered.drop(columns='@id', inplace=True)
+    gdf_filtered.drop(columns='wikidata', inplace=True)
+    gdf_filtered.drop(columns='smoothness', inplace=True)
+    gdf_filtered.drop(columns='crossing', inplace=True)
 
     return gdf_filtered
 
