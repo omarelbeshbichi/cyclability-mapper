@@ -6,6 +6,7 @@ import pandas as pd
 import json
 from pathlib import Path
 import logging
+import geopandas as gpd
 
 def load_json_from_path(path: str) -> dict:
     """
@@ -86,3 +87,39 @@ def feature_collection_to_dataframe(data: dict) -> pd.DataFrame:
     df = pd.concat([df['geometry'], properties_normalized], axis = 1)
 
     return df
+
+def geojson_to_geodataframe_from_path(path: str) -> gpd.GeoDataFrame:
+    """
+    Load GeoJSON file from path and return it as a GeoDataFrame.
+    
+    Parameters
+    ----------
+    path: str
+        Path to the JSON file to load
+
+    Returns
+    -------
+    gpd.GeoDataFrame
+        A GeoDataFrame storing GeoJSON data
+    """
+
+    # Define path
+    p = Path(path)
+    
+    # Path checks
+    if not p.exists():
+        raise FileNotFoundError(f'The specified path does not refer to any existing file: {path}')
+
+    if p.is_dir():
+        raise IsADirectoryError(f'Path refers to a directory, please specify path of a valid file: {path}')
+
+    # Check file type
+    if p.suffix.lower() not in ['.geojson', '.json']:
+        raise ValueError(f'Unsupported file format: {p.suffix}. Expected .json (.geojson) type')
+
+    logging.info(f'Path validated, proceeding with loading file: {p}')
+
+    # Read JSON into GeoDataFrame
+    gdf = gpd.read_file(p)
+
+    return gdf

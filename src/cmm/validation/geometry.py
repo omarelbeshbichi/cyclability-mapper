@@ -1,68 +1,35 @@
 """
 Module for validating geometries in PostGIS database.
 """
-from typing import List, Tuple
+import geopandas as gpd
 
-def find_invalid_geometries(cur, table_name: str) -> Tuple[bool, List]:
+def validate_gdf_linestrings(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     """
-    Find invalid geometries in PostGIS database and returns associated ids and reasons
-    and boolean for invalid geometry detection.
-
+    Perform preliminary checks on GeoDataFrame LineStrings and filter out
+    invalid features. 
+    
     Parameters
     ----------
-    cur
-        psycopg2 cursor object
-    table_name: str
-        Table name in PostGIS database
-
+    gdf: gpd.GeoDataFrame
+        GeoPandas GeoDataFrame.
     Returns
     -------
-    is_invalid: bool
-        Returns true if invalid geometries have been detected
-    invalid_id_reason: list
-        List storing for each invalid geometry its id and invalid description
+    gdf: gpd.GeoDataFrame
+        Cleaned GeoPandas GeoDataFrame.
     """
 
-    # Query to collect data from database
-    query = f"""
-    SELECT id, ST_IsValidReason(geom) AS invalid_reason
-    FROM {table_name}
-    WHERE NOT ST_IsValid(geom);
-    """
-    cur.execute(query)
-    invalid_id_reason = cur.fetchall()
+    # Retain only LineStrings
+    gdf = gdf[gdf.geometry.type == "LineString"]
+    # Retain only valid features with geometry
+    gdf = gdf[gdf.geometry.notnull()]
+    # Retain only valid geometries
+    gdf = gdf[gdf.geometry.is_valid]
 
-    # Invalid geometries detection boolean
-    is_invalid = False if len(invalid_id_reason) == 0 else True
-      
-    return is_invalid, invalid_id_reason
+    # Retain only LineStrings with valid length
+    if gdf.crs and gdf.crs.is_geographic:
+        temp_gdf = gdf.to_crs(gdf.estimate_utm_crs())
+        gdf = gdf[temp_gdf.geometry.length > 0]
+    else:
+        gdf = gdf[gdf.geometry.length > 0]
 
-def clean_linestrings(cur, table_name: str) -> int:
-    """
-    Delete degenerate LineStrings from a PostGIS table.
-
-    Parameters
-    ----------
-    cur : psycopg2 cursor
-        Active cursor
-    table_name : str
-        PostGIS table containing LineString geometries
-
-    Returns
-    -------
-    n_deleted : int
-        Number of deleted degenerate LineStrings
-    """
-    query_delete_degenerate = f"""
-    DELETE FROM {table_name}
-    WHERE ST_NPoints(geom) < 2
-        OR ST_Length(geom) = 0
-    RETURNING id;
-    """
-    cur.execute(query_delete_degenerate)
-    n_deleted = len(cur.fetchall())
-
-    return n_deleted
-
-
-
+    return gdf
