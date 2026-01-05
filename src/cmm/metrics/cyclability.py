@@ -84,7 +84,7 @@ def compute_cyclability_metrics(gdf_row: pd.Series) -> float:
         Cyclability metrics computed as dot product of input paramters and associated weights
     """
 
-    # Gather config parameters
+    # Gather config parameters from YAML files
     weights_config = read_config('weights')
     weights = weights_config['cyclability']
     cyclability_config = read_config('cyclability')
