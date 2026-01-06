@@ -1,7 +1,22 @@
 
-
 cyclability:
-  bike_infrastructure: 0.25
-  maxspeed: 0.25
-  surface: 0.25
-  lighting: 0.25
+  infrastructure:
+    weight: 0.4
+    features:
+      bike_infrastructure: 1.0 
+
+  physical:
+    weight: 0.25
+    features:
+      surface: 0.6
+      lighting: 0.4
+
+  traffic:
+    weight: 0.25
+    features:
+      maxspeed: 1.0
+
+  regulation:
+    weight: 0.1
+    features:
+      oneway: 1.0
