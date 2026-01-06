@@ -24,7 +24,7 @@ def gdf_to_postgres(gdf: gpd.GeoDataFrame,
         host = "localhost",
         user = "user",
         password = "pass",
-        database = "cmm_db"
+        database = "db"
     )
 
     try:

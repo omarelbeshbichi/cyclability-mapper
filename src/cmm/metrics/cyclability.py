@@ -34,10 +34,13 @@ def compute_metrics_from_segment(segment: dict,
 
     #%% INGEST
 
-    # Gather config parameters from YAML files
+    # Gather config parameters from YAML files (remove version info from resulting dict)
     weights_config = read_config('weights', weights_config_path)
+    weights_config.pop('version')
+
     weights = weights_config['cyclability']
     cyclability_config = read_config('cyclability', cyclability_config_path)
+    cyclability_config.pop('version')
 
     #%% COMPUTE METRICS
 

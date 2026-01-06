@@ -2,13 +2,13 @@
 services:
   postgres:
     image: postgis/postgis:16-3.4
-    container_name: cmm_postgres
+    container_name: postgres
     ports:
       - "5432:5432"     
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: pass
-      POSTGRES_DB: cmm_db
+      POSTGRES_DB: db
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./docker/postgres:/docker-entrypoint-initdb.d

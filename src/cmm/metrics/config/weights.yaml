@@ -1,4 +1,6 @@
 
+version: '1.0.0'
+
 cyclability:
   infrastructure:
     weight: 0.4
