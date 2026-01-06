@@ -1,28 +1,26 @@
 import yaml
-from .misc import get_project_root
+from pathlib import Path
 
-def read_config(index_name: str) -> dict:
+
+def read_config(index_name: str,
+                config_path: str) -> dict:
     """
-    Text
+    Read a YAML configuration file and return its contents as a dictionary
 
     Parameters
     ----------
     index_name: str
-        Name of index to be processed
-            - 'cyclability'
-            - 'etc'
-    
+        Name of the configuration (used for error messages)
+    config_path: str
+        Path to the YAML configuration file
+
     Returns
     -------
-    config_dict: dict
-        Dictionary containing configuration parameters
-
+    dict
+        Parsed configuration from the YAML file
     """
 
-    # Retrieve paths
-    root_path = get_project_root()
-    config_path = root_path  / 'src' / 'cmm' / 'metrics' / 'config' / f"{index_name}.yaml"
-
+    config_path = Path(config_path) 
     # Path check
     if not config_path.exists():
         raise FileNotFoundError(f'Could not find {index_name} config file at {config_path}')

@@ -5,6 +5,6 @@ For now, only a simple implementation for computing the cyclability metrics is i
 initial testing.
 """
 
-from .cyclability import compute_cyclability_metrics
+from .cyclability import compute_metrics_from_segment
 
-__all__ = [compute_cyclability_metrics]
+__all__ = [compute_metrics_from_segment]
