@@ -1,17 +1,26 @@
-from cmm.metrics.cyclability import compute_cyclability_metrics
+from cmm.metrics.cyclability import compute_metrics_from_segment
 import geopandas as gpd
 from shapely.geometry import LineString
 
-def test_compute_cyclability_metrics():
+def test_compute_metrics_from_segment():
     
-    # Test GeoDataFrame
-    gdf = gpd.GeoDataFrame({
-        'highway': ['primary', 'footway'],
-        'bicycle': ['yes', None],
-        'geometry': [LineString([(0,0),(1,1)]), LineString([(0,0),(1,0)])]
-    })
+    # Test segment
+    segment = {
+        'highway': 'primary',
+        'bicycle': 'yes',
+        'geometry': LineString([(0,0),(1,1)]),
+        'surface': 'asphalt',
+        'lighting': 'yes',
+        'maxspeed': 50,
+        'bike_infrastructure': 'lane',
+        'oneway': 'no'
+    }
     
-    metrics = compute_cyclability_metrics(gdf)
+    # Paths to your YAML configs
+    weights_path = "src/cmm/metrics/config/weights.yaml"
+    cyclability_path = "src/cmm/metrics/config/cyclability.yaml"
+
+    metrics = compute_metrics_from_segment(segment, weights_path, cyclability_path)
     
     # check expected type / range
     assert isinstance(metrics, float)

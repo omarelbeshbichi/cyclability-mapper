@@ -6,10 +6,19 @@ from cmm.metrics.compute_metrics import compute_metrics
 def test_compute_metrics_adds_column():
     
     gdf = gpd.GeoDataFrame({
-        'geometry':[LineString([(0,0),(1,1)]), LineString([(0,0),(2,2)])]
+        'geometry': [LineString([(0,0),(1,1)]), LineString([(0,0),(2,2)])],
+        'highway': ['primary', 'footway'],
+        'bicycle': ['yes', None],
+        'surface': ['asphalt', 'gravel'],
+        'lit': ['yes', None],
+        'maxspeed': [50, None]
     })
     
-    result = compute_metrics(gdf)
+    # Paths to your YAML configs
+    weights_path = "src/cmm/metrics/config/weights.yaml"
+    cyclability_path = "src/cmm/metrics/config/cyclability.yaml"
+
+    result = compute_metrics(gdf, weights_path, cyclability_path)
 
     assert 'cyclability_metrics' in result.columns # metrics added
     assert len(result) == len(gdf) # same rows
