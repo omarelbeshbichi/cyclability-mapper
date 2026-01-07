@@ -96,99 +96,58 @@ def gdf_to_postgres_alchemy(gdf: gpd.GeoDataFrame,
     except Exception as e:
         logging.error(f"Error loading data to PostGIS: {e}")
 
-
-##
-
-def generic_prepare_network_segments_gdf(gdf: gpd.GeoDataFrame,
-                                        column_mapping: dict,
-                                        boolean_columns: dict = None,
-                                        numeric_columns: list = None,
-                                        final_columns: list = None) -> gpd.GeoDataFrame:
+###
+def prepare_network_segments_gdf_for_postgis(augmented_gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     """
-    Generic function to prepare a segment GeoDataFrame for PostGIS (network_segments table).
-    It can later be used by passing relevant dictionaries.
+    Prepare a GeoDataFrame for PostGIS of network segments (network_segments SQL table).
 
     Parameters
     ----------
-    gdf: GeoDataFrame
-        Input GeoDataFrame
-    column_mapping: dict
-        Mapping from source column names to PostGIS column names (see init.sql for info)
-    boolean_columns: dict, optional
-        {column_name: {mapping_dict}} to convert booleans
-    numeric_columns: list, optional
-        Columns to force into numeric
-    final_columns: list, optional
-        Columns to keep in the final dataset
-    """
-
-    gdf = gdf.copy()
-    
-    # Rename columns
-    gdf = gdf.rename(columns=column_mapping)
-    
-    # Convert booleans
-    if boolean_columns:
-        for col, mapping in boolean_columns.items():
-            gdf[col] = gdf[col].map(mapping).fillna(False)
-    
-    # Convert numeric columns
-    if numeric_columns:
-        for col in numeric_columns:
-            gdf[col] = pd.to_numeric(gdf[col], errors='coerce')
-    
-    # Select final columns
-    if final_columns:
-        gdf = gdf[final_columns]
-    
-    return gdf
-
-def prepare_network_segments_gdf_cyclability(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
-    """
-    Prepare cyclability network segments GeoDataFrame for PostGIS insertion (network_segments table) 
-
-    Apply standard column renaming, boolean conversion, numeric conversion, and selects the 
-    final set of columns for cyclability analysis. 
-
-    Parameters
-    ----------
-    gdf: gpd.GeoDataFrame
-        Input GeoDataFrame containing road segments and metrics
+    augmented_gdf: GeoDataFrame
+        Processed GeoDataFrame - augmented with metrics scores (output from define_augmented_geodataframe function)
 
     Returns
     -------
     gpd.GeoDataFrame
-        Cyclability-ready GeoDataFrame for PostGIS insertion
+        GeoDataFrame with segments ready for PostGIS insertion     
+
     """
 
-    return generic_prepare_network_segments_gdf(
-        gdf,
-        column_mapping={
+    gdf = augmented_gdf.copy()
+    
+    # Rename columns
+    gdf = gdf.rename(columns={
             'id': 'osm_id',
             'name': 'street_name',
             'geometry': 'geom',
             'bike_infrastructure': 'bike_infra',
             'oneway': 'is_oneway',
             'lighting': 'is_lit'
-        },
-        boolean_columns={
-            'is_oneway': {'yes': True, 'no': False, True: True, False: False},
-            'is_lit': {'yes': True, 'no': False, 'unknown': False, True: True, False: False}
-        },
-        numeric_columns=['maxspeed'],
-        final_columns=['osm_id', 'street_name', 'geom', 'bike_infra', 'maxspeed', 'is_oneway', 'is_lit', 'surface', 'highway']
-    )
+        })
+    
+    # Convert booleans
+    gdf['is_oneway'] = gdf['is_oneway'].map({'yes': True, 'no': False, True: True, False: False}).fillna(False)
+    gdf['is_lit'] = gdf['is_lit'].map({'yes': True, 'no': False, 'unknown': False, True: True, False: False}).fillna(False)
+    
 
-def prepare_metrics_gdf_for_postgis(gdf: gpd.GeoDataFrame,
+    # Convert numeric columns
+    gdf['maxspeed'] = pd.to_numeric(gdf['maxspeed'], errors='coerce')
+    
+    # Select final columns
+    gdf = gdf[['osm_id', 'street_name', 'geom', 'bike_infra', 'maxspeed', 'is_oneway', 'is_lit', 'surface', 'highway']]
+    
+    return gdf
+
+def prepare_metrics_gdf_for_postgis(augmented_gdf: gpd.GeoDataFrame,
                                     metric_name: str,
                                     yaml_path: str) -> pd.DataFrame:
     """
-    Prepare metrics GeoDataFrame for insertion into PostGIS database (segment_metrics table)
+    Prepare GeoDataFrame with metrics for insertion into PostGIS database (segment_metrics SQL table)
 
     Parameters
     ----------
-    gdf: gpd.GeoDataFrame
-        Input GeoDataFrame containing road segment data and metrics
+    augmented_gdf: GeoDataFrame
+        Processed GeoDataFrame - augmented with metrics scores (output from define_augmented_geodataframe function)
     metric_name: str
         Name of current metrics (eg, cyclability)
     yaml_path: str
@@ -200,13 +159,12 @@ def prepare_metrics_gdf_for_postgis(gdf: gpd.GeoDataFrame,
         Metric DataFrame ready for PostGIS insertion
     """
 
-    gdf = gdf.copy()
+    gdf = augmented_gdf.copy()
     
     # Define original metrics column name
     metric_col = metric_name + "_metrics"
 
     # Define versioning
-
     metric_version = get_config_version(yaml_path)
 
     # Convert metrics into a dataframe

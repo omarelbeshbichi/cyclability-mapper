@@ -1,47 +1,131 @@
-from .cyclability import compute_metrics_from_segment
 import pandas as pd
 import geopandas as gpd
 from ..data.normalize.cleaning import prepare_cyclability_segment
+from ..utils.config_reader import read_config
 
-
-
-def compute_cyclability_metrics(row: pd.Series,
-                                weights_config_path,
-                                cyclability_config_path) -> dict:
+def compute_metrics_score_from_segment(segment: dict,
+                                weights_config_path: str,
+                                metrics_config_path: str,
+                                metrics_name: str) -> float:
     """
-    Compute cyclability metrics for single road segment
+    Compute metrics score for a single road segment based on YAML configurations
 
     Parameters
     ----------
-    row: pd.Series
+    segment: dict
+        Dictionary containing parsed segment information
+    weights_config_path: str
+        Path to YAML file containing feature weights
+    metrics_config_path: str
+        Path to YAML file defining metrics feature configurations
+    metrics_name: str
+        Name of metrics (e.g., cyclability) - must comply with YAML definitions
+        
+    Returns
+    -------
+    float
+        Computed metrics score for the segment
+    """
+
+    #%% INGEST
+
+    # Gather config parameters from YAML files (remove version info from resulting dict)
+    weights_config = read_config('weights', weights_config_path)
+    weights_config.pop('version')
+    weights_metrics = weights_config[metrics_name]
+
+    metrics_config = read_config(metrics_name, metrics_config_path)
+    metrics_config.pop('version')
+
+    #%% COMPUTE METRICS SCORE
+
+    metrics_score = 0
+    all_features_scores = {}
+
+    # Cycle each feature in YAML configuration file
+    for feature_name, feature_config in metrics_config.items():
+        # Define value of given feature for current segment
+        feature_value = segment.get(feature_name)
+        # If categorical parameter type in YAML file, select feature value directly from feature_value
+        if feature_config["type"] == "categorical":
+            feature_score = feature_config["mapping"].get(feature_value)    
+            if feature_score is None:
+                raise ValueError(
+                    f"The value {repr(feature_value)} for feature '{feature_name}' "
+                    f"is missing from the YAML mapping. Please add it to the 'categorical' mapping."
+                )
+        
+        # If continuous parameter type in YAML file, get bin for which feature_value is less 
+        # or equal than threshold
+        elif feature_config["type"] == "continuous":
+            for bin in feature_config["bins"]:
+                if float(feature_value) <= bin["max"]:
+                    feature_score = bin["metrics"]
+                    break
+        
+        all_features_scores[feature_name] = feature_score
+
+
+    # Compute final metrics
+
+    ## For each weight group (e.g.: cyclability, physical, traffic, regulation)
+    for group_name, group_config in weights_metrics.items():
+        group_weight = group_config['weight']
+        group_score = 0.0
+
+        # Cycle over available features for i-th group
+        for feature_name, feature_weight in group_config['features'].items():
+            feature_score = all_features_scores[feature_name]
+            
+            # Compute total metrics for i-th group
+            group_score += feature_score * feature_weight
+
+        # Compounded metrics
+        metrics_score += group_score * group_weight
+
+    return metrics_score
+
+def define_segment_with_metrics_score(gdf_row: pd.Series,
+                                    weights_config_path: str,
+                                    metrics_config_path: str,
+                                    metrics_name: str) -> dict:
+    """
+    Return segment augmented with selected metrics score
+
+    Parameters
+    ----------
+    gdf_row: pd.Series
         Row from GeoDataFrame representing a road segment
     weights_config_path: str
         Path to YAML file containing feature weights
-    cyclability_config_path: str
-        Path to YAML file defining cyclability feature configurations
+    metrics_config_path: str
+        Path to YAML file defining metrics feature configurations
+    metrics_name: str
+        Name of metrics (e.g., cyclability) - must comply with YAML definitions
 
     Returns
     -------
     dict
-        Segment dictionary augmented with 'cyclability_metrics'
+        Segment dictionary augmented with metrics score
     """
 
-    # Normalize and parse cycleway information
-    segment = prepare_cyclability_segment(row)
+    # Normalize and parse information into segment
+    if metrics_name == 'cyclability':
+        segment = prepare_cyclability_segment(gdf_row)
 
-    # Compute metrics based on YAML configs
-    metrics = compute_metrics_from_segment(segment, weights_config_path, cyclability_config_path)
+    # Compute metrics score based on YAML configs
+    metrics_score = compute_metrics_score_from_segment(segment, weights_config_path, metrics_config_path, metrics_name)
     
-    segment['cyclability_metrics'] = metrics
+    # Augment segment with metrics score
+    segment[f'{metrics_name}_metrics'] = metrics_score
 
     return segment
 
-
-def compute_metrics(gdf: gpd.GeoDataFrame,
-                    weights_config_path,
-                    cyclability_config_path) -> gpd.GeoDataFrame:
+def define_augmented_geodataframe(gdf: gpd.GeoDataFrame,
+                                weights_config_path,
+                                metrics_config_path: str) -> gpd.GeoDataFrame:
     """
-    Compute cyclability metrics for all segments in a GeoDataFrame
+    Return GeoDataFrame augmented with metrics scores for all segments
 
     Parameters
     ----------
@@ -49,19 +133,19 @@ def compute_metrics(gdf: gpd.GeoDataFrame,
         GeoDataFrame containing road segments
     weights_config_path: str
         Path to YAML file containing feature weights
-    cyclability_config_path: str
-        Path to YAML file defining cyclability feature configurations
-
+    metrics_config_path: str
+        Path to YAML file defining metrics feature configurations
+        
     Returns
     -------
     gpd.GeoDataFrame
-        GeoDataFrame with segments augmented by cyclability metrics
+        GeoDataFrame with segments augmented by metrics scores
     """
 
-    # Compute cyclability metrics for all segments
-    segments = [compute_cyclability_metrics(row, weights_config_path, cyclability_config_path) for _, row in gdf.iterrows()]
+    # Define segments augmented with metrics scores
+    segments_cyclability = [define_segment_with_metrics_score(gdf_row, weights_config_path, metrics_config_path, 'cyclability') for _, gdf_row in gdf.iterrows()]
     
     # Define final GDF
-    gdf_final = gpd.GeoDataFrame(segments, crs=gdf.crs)
+    gdf_final = gpd.GeoDataFrame(segments_cyclability, crs=gdf.crs)
     
     return gdf_final

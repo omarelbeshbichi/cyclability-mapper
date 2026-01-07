@@ -50,7 +50,6 @@ def restrict_gdf(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
 
     return gdf_filtered
 
-
 def extract_all_cycleway_tags(gdf_row: pd.Series) -> dict:
     """Extract all cycleway-related data from GeoDataFrame row and store them in dictionary"""
 

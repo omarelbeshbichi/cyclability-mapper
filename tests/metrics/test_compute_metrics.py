@@ -1,7 +1,7 @@
 
 import geopandas as gpd
 from shapely.geometry import LineString
-from cmm.metrics.compute_metrics import compute_metrics
+from cmm.metrics.compute_metrics import define_augmented_geodataframe
 
 def test_compute_metrics_adds_column():
     
@@ -18,7 +18,7 @@ def test_compute_metrics_adds_column():
     weights_path = "src/cmm/metrics/config/weights.yaml"
     cyclability_path = "src/cmm/metrics/config/cyclability.yaml"
 
-    result = compute_metrics(gdf, weights_path, cyclability_path)
+    result = define_augmented_geodataframe(gdf, weights_path, cyclability_path)
 
     assert 'cyclability_metrics' in result.columns # metrics added
     assert len(result) == len(gdf) # same rows
