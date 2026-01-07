@@ -54,8 +54,8 @@ CREATE TABLE IF NOT EXISTS segment_metrics (
     -- metric score for given segment
     total_score NUMERIC(5,4) CHECK (total_score >= 0 AND total_score <= 1),
 
-    -- components of the given metrics are stored in JSON format
-    components JSONB NOT NULL,
+    -- scores of features of the given metric are stored in JSON format
+    metric_features_scores JSONB NOT NULL,
     -- weights used are stored in JSON format
     metadata JSONB,
 

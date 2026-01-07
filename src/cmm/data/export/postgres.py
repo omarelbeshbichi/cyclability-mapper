@@ -170,7 +170,7 @@ def prepare_metrics_df_for_postgis(augmented_gdf: gpd.GeoDataFrame,
         "metric_name": metric_name,
         "metric_version": metric_version,
         "total_score": gdf_aligned[metric_col],
-        "components": features_scores_json,
+        "metric_features_scores": features_scores_json,
         "metadata": [json.dumps({}) for _ in range(len(gdf))]     # empty JSON for now
     })
 
