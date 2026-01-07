@@ -22,7 +22,7 @@ def test_dataframe_to_postgres():
     gdf = geojson_to_gdf_from_path(dev_geojson_path)
     gdf_proc = validate_gdf_linestrings(gdf)
     gdf_proc = restrict_gdf(gdf_proc)
-    gdf_proc = define_augmented_geodataframe(gdf_proc, weights_config_path, cyclability_config_path)
+    gdf_proc, components = define_augmented_geodataframe(gdf_proc, weights_config_path, cyclability_config_path)
     gdf_proc_prepared = prepare_network_segments_gdf_for_postgis(gdf_proc)
 
     # Define geometry column

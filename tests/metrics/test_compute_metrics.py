@@ -18,7 +18,7 @@ def test_compute_metrics_adds_column():
     weights_path = "src/cmm/metrics/config/weights.yaml"
     cyclability_path = "src/cmm/metrics/config/cyclability.yaml"
 
-    result = define_augmented_geodataframe(gdf, weights_path, cyclability_path)
+    result, result_components = define_augmented_geodataframe(gdf, weights_path, cyclability_path)
 
     assert 'cyclability_metrics' in result.columns # metrics added
     assert len(result) == len(gdf) # same rows

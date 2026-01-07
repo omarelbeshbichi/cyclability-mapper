@@ -4,9 +4,9 @@ from ..data.normalize.cleaning import prepare_cyclability_segment
 from ..utils.config_reader import read_config
 
 def compute_metrics_score_from_segment(segment: dict,
-                                weights_config_path: str,
-                                metrics_config_path: str,
-                                metrics_name: str) -> float:
+                                                    weights_config_path: str,
+                                                    metrics_config_path: str,
+                                                    metrics_name: str) -> tuple[float, dict]:
     """
     Compute metrics score for a single road segment based on YAML configurations
 
@@ -25,6 +25,8 @@ def compute_metrics_score_from_segment(segment: dict,
     -------
     float
         Computed metrics score for the segment
+    dict
+        Compute metrics score components for the segment
     """
 
     #%% INGEST
@@ -65,7 +67,6 @@ def compute_metrics_score_from_segment(segment: dict,
         
         all_features_scores[feature_name] = feature_score
 
-
     # Compute final metrics
 
     ## For each weight group (e.g.: cyclability, physical, traffic, regulation)
@@ -83,12 +84,12 @@ def compute_metrics_score_from_segment(segment: dict,
         # Compounded metrics
         metrics_score += group_score * group_weight
 
-    return metrics_score
+    return metrics_score, all_features_scores
 
 def define_segment_with_metrics_score(gdf_row: pd.Series,
                                     weights_config_path: str,
                                     metrics_config_path: str,
-                                    metrics_name: str) -> dict:
+                                    metrics_name: str) -> tuple[dict, dict]:
     """
     Return segment augmented with selected metrics score
 
@@ -106,7 +107,9 @@ def define_segment_with_metrics_score(gdf_row: pd.Series,
     Returns
     -------
     dict
-        Segment dictionary augmented with metrics score
+        Dictionary storing segments augmented with metrics score
+    dict
+        Dictionary storing segment metrics scores for each feature 
     """
 
     # Normalize and parse information into segment
@@ -114,16 +117,16 @@ def define_segment_with_metrics_score(gdf_row: pd.Series,
         segment = prepare_cyclability_segment(gdf_row)
 
     # Compute metrics score based on YAML configs
-    metrics_score = compute_metrics_score_from_segment(segment, weights_config_path, metrics_config_path, metrics_name)
+    metrics_score, metrics_features_scores = compute_metrics_score_from_segment(segment, weights_config_path, metrics_config_path, metrics_name)
     
     # Augment segment with metrics score
     segment[f'{metrics_name}_metrics'] = metrics_score
 
-    return segment
+    return segment, metrics_features_scores
 
 def define_augmented_geodataframe(gdf: gpd.GeoDataFrame,
                                 weights_config_path,
-                                metrics_config_path: str) -> gpd.GeoDataFrame:
+                                metrics_config_path: str) -> tuple[gpd.GeoDataFrame, list]:
     """
     Return GeoDataFrame augmented with metrics scores for all segments
 
@@ -140,12 +143,21 @@ def define_augmented_geodataframe(gdf: gpd.GeoDataFrame,
     -------
     gpd.GeoDataFrame
         GeoDataFrame with segments augmented by metrics scores
+    list
+        List of metrics scores of all features for all segments
     """
 
     # Define segments augmented with metrics scores
-    segments_cyclability = [define_segment_with_metrics_score(gdf_row, weights_config_path, metrics_config_path, 'cyclability') for _, gdf_row in gdf.iterrows()]
+    segments_with_components_cyclability = [define_segment_with_metrics_score(gdf_row, weights_config_path, metrics_config_path, 'cyclability') for _, gdf_row in gdf.iterrows()]
     
+    # Unpack cyclability segments and associated score features informaton
+    segments_cyclability = []
+    metrics_features_scores_cyclability = []
+    for seg, feats in segments_with_components_cyclability:
+        segments_cyclability.append(seg)
+        metrics_features_scores_cyclability.append(feats)
+
     # Define final GDF
     gdf_final = gpd.GeoDataFrame(segments_cyclability, crs=gdf.crs)
     
-    return gdf_final
+    return gdf_final, metrics_features_scores_cyclability

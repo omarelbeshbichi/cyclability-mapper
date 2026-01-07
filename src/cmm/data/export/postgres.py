@@ -64,7 +64,6 @@ def dataframe_to_postgres(gdf: gpd.GeoDataFrame,
     except Exception as e:
         logging.error(f"Error loading data to PostGIS: {e}")
 
-###
 def prepare_network_segments_gdf_for_postgis(augmented_gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     """
     Prepare a GeoDataFrame for PostGIS of network segments (network_segments SQL table).
@@ -107,6 +106,7 @@ def prepare_network_segments_gdf_for_postgis(augmented_gdf: gpd.GeoDataFrame) ->
     return gdf
 
 def prepare_metrics_df_for_postgis(augmented_gdf: gpd.GeoDataFrame,
+                                   metrics_features_scores_cyclability: list,
                                     metric_name: str,
                                     yaml_path: str,
                                     user: str = "user",
@@ -120,6 +120,8 @@ def prepare_metrics_df_for_postgis(augmented_gdf: gpd.GeoDataFrame,
     ----------
     augmented_gdf: GeoDataFrame
         Processed GeoDataFrame - augmented with metrics scores (output from define_augmented_geodataframe function)
+    metrics_features_scores_cyclability: list
+        List of dictionaries storing metrics scores of all features for all segments
     metric_name: str
         Name of current metrics (eg, cyclability)
     yaml_path: str
@@ -141,7 +143,7 @@ def prepare_metrics_df_for_postgis(augmented_gdf: gpd.GeoDataFrame,
     # Define versioning
     metric_version = get_config_version(yaml_path)
 
-    # HERE segments id etc
+    # Retrieve segments IDs from network_segments table in PostGIS
     try:
         # Create SQLAlchemy engine
         engine = create_engine(f"postgresql+psycopg2://{user}:{password}@{host}/{database}")
@@ -149,21 +151,27 @@ def prepare_metrics_df_for_postgis(augmented_gdf: gpd.GeoDataFrame,
         # Collect ids and osm_ids from network_segments table in PostGIS
         segments_df = pd.read_sql("SELECT id, osm_id FROM network_segments", engine)
 
-        logging.info(f"Segment IDs successfully collected from table network_segments.")
+
+        logging.info(f"Segments IDs successfully collected from table network_segments.")
 
     except Exception as e:
         logging.error(f"Error collecting IDs from table network_segments: {e}")
 
 
+    # Keep only matching elements - used for robustness
+    gdf_aligned = gdf.merge(segments_df, left_on="id", right_on='osm_id', how="inner") 
+
+    # Define components
+    features_scores_json = [json.dumps(f) for f in metrics_features_scores_cyclability]
 
     # Convert metrics into a dataframe
     metrics_df_final = pd.DataFrame({
-        "segment_id": segments_df['id'].values,
+        "segment_id": gdf_aligned['id_y'],
         "metric_name": metric_name,
         "metric_version": metric_version,
-        "total_score": gdf[metric_col],
-        "components": [json.dumps({}) for _ in range(len(gdf))],  # empty JSON for now
-        "metadata": [json.dumps({}) for _ in range(len(gdf))]     # empty JSON
+        "total_score": gdf_aligned[metric_col],
+        "components": features_scores_json,
+        "metadata": [json.dumps({}) for _ in range(len(gdf))]     # empty JSON for now
     })
 
     return metrics_df_final

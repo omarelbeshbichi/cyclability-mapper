@@ -2,7 +2,7 @@ from cmm.metrics.compute_metrics import compute_metrics_score_from_segment
 import geopandas as gpd
 from shapely.geometry import LineString
 
-def test_compute_metrics_from_segment():
+def test_compute_metrics_from_segment_with_components():
     
     # Test segment
     segment = {
@@ -20,7 +20,7 @@ def test_compute_metrics_from_segment():
     weights_path = "src/cmm/metrics/config/weights.yaml"
     cyclability_path = "src/cmm/metrics/config/cyclability.yaml"
 
-    metrics = compute_metrics_score_from_segment(segment, weights_path, cyclability_path, 'cyclability')
+    metrics, components = compute_metrics_score_from_segment(segment, weights_path, cyclability_path, 'cyclability')
     
     # check expected type / range
     assert isinstance(metrics, float)
