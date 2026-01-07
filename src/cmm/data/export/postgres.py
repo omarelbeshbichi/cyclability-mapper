@@ -7,70 +7,21 @@ import geopandas as gpd
 import pandas as pd
 import logging 
 from sqlalchemy import create_engine
+from sqlalchemy import text
 from ...metrics.config.versioning import get_config_version
 import json
 
 
-def gdf_to_postgres(gdf: gpd.GeoDataFrame, 
-                    table_name: str):
+def dataframe_to_postgres(gdf: gpd.GeoDataFrame,
+                        table_name: str,
+                        df_type: str = 'gdf', 
+                        user: str = "user",
+                        password: str = "pass",
+                        host: str = "localhost",
+                        database: str = "db",
+                        if_exists: str = "append"):
     """
-    Load GeoDataFrame data to Postgres database.
-
-    Parameters
-    ----------
-    gdf: gpd.GeoDataFrame
-        GeoPandas GeoDataframe to load.   
-    table_name: str
-        Name of PostGIS table to be used as database
-    """
-    
-    # Initiate Postgres session
-    conn = psycopg2.connect(
-        host = "localhost",
-        user = "user",
-        password = "pass",
-        database = "db"
-    )
-
-    try:
-        cur = conn.cursor()
-
-        # Truncate table (dev)
-        cur.execute(f"TRUNCATE TABLE {table_name} RESTART IDENTITY;")
-
-        query = f"""
-            INSERT INTO {table_name} (street_name, geom) 
-            VALUES (%s, ST_SetSRID(ST_GeomFromText(%s), 4326))
-            """
-        
-        # Insert data in table
-        for _, row in gdf.iterrows():
-            cur.execute(query, (row.get("name"), row.geometry.wkt))
-
-        conn.commit()
-        logging.info("Data successfully loaded in PostGIS.")
-
-    except psycopg2.OperationalError as e:
-            print(f"Database connection error: {e}")
-            
-            # Rollback if error
-            conn.rollback()
-
-    finally:
-        if 'cur' in locals():
-            cur.close()
-        if 'conn' in locals():
-            conn.close()
-
-def gdf_to_postgres_alchemy(gdf: gpd.GeoDataFrame, 
-                            table_name: str,
-                            user: str = "user",
-                           password: str = "pass",
-                           host: str = "localhost",
-                           database: str = "db",
-                            if_exists: str = "replace"):
-    """
-    Load GeoDataFrame data to PostGIS database using GeoPandas to_postgis.
+    Load Dataframe data to PostGIS database using GeoPandas to_postgis.
 
     Parameters
     ----------
@@ -78,10 +29,12 @@ def gdf_to_postgres_alchemy(gdf: gpd.GeoDataFrame,
         GeoPandas GeoDataFrame to load.   
     table_name: str
         Name of PostGIS table to be used as database.
+    df_type: str
+        Type of dataframe: df or gdf.
     user, password, host, database: str
         Database connection parameters.
     if_exists: str
-        What to do if table exists: 'fail', 'replace', or 'append'. Default is 'replace'.
+        What to do if table exists: 'fail', 'replace', or 'append'. Default is 'append'.
     """
 
     try:
@@ -89,8 +42,23 @@ def gdf_to_postgres_alchemy(gdf: gpd.GeoDataFrame,
         engine = create_engine(f"postgresql+psycopg2://{user}:{password}@{host}/{database}")
 
         # Write GeoDataFrame to PostGIS
-        gdf.to_postgis(table_name, engine, if_exists=if_exists, index=False)
-        
+
+        # Reset network_segment table - clear rows, restart ids, delete dependencies
+        # NB: CASCADE -> delete also rows in segment_metrics associated with network_metrics
+        with engine.begin() as conn:
+            conn.execute(text(f"""
+                TRUNCATE TABLE {table_name}
+                RESTART IDENTITY
+                CASCADE;
+            """))
+
+        # Load gdf to network_segments table
+        if df_type == 'gdf':
+            gdf.to_postgis(table_name, engine, if_exists=if_exists, index=False)
+        if df_type == 'df':
+            gdf.to_sql(table_name, engine, if_exists=if_exists, index=False)
+
+
         logging.info(f"Data successfully loaded into table '{table_name}'.")
 
     except Exception as e:
@@ -110,7 +78,6 @@ def prepare_network_segments_gdf_for_postgis(augmented_gdf: gpd.GeoDataFrame) ->
     -------
     gpd.GeoDataFrame
         GeoDataFrame with segments ready for PostGIS insertion     
-
     """
 
     gdf = augmented_gdf.copy()
@@ -124,7 +91,8 @@ def prepare_network_segments_gdf_for_postgis(augmented_gdf: gpd.GeoDataFrame) ->
             'oneway': 'is_oneway',
             'lighting': 'is_lit'
         })
-    
+    gdf = gdf.set_geometry("geom")
+
     # Convert booleans
     gdf['is_oneway'] = gdf['is_oneway'].map({'yes': True, 'no': False, True: True, False: False}).fillna(False)
     gdf['is_lit'] = gdf['is_lit'].map({'yes': True, 'no': False, 'unknown': False, True: True, False: False}).fillna(False)
@@ -138,11 +106,15 @@ def prepare_network_segments_gdf_for_postgis(augmented_gdf: gpd.GeoDataFrame) ->
     
     return gdf
 
-def prepare_metrics_gdf_for_postgis(augmented_gdf: gpd.GeoDataFrame,
+def prepare_metrics_df_for_postgis(augmented_gdf: gpd.GeoDataFrame,
                                     metric_name: str,
-                                    yaml_path: str) -> pd.DataFrame:
+                                    yaml_path: str,
+                                    user: str = "user",
+                                    password: str = "pass",
+                                    host: str = "localhost",
+                                    database: str = "db") -> pd.DataFrame:
     """
-    Prepare GeoDataFrame with metrics for insertion into PostGIS database (segment_metrics SQL table)
+    Prepare DataFrame with metrics for insertion into PostGIS database (segment_metrics SQL table)
 
     Parameters
     ----------
@@ -152,7 +124,9 @@ def prepare_metrics_gdf_for_postgis(augmented_gdf: gpd.GeoDataFrame,
         Name of current metrics (eg, cyclability)
     yaml_path: str
         Path to the YAML configuration file
-
+    user, password, host, database: str
+        Database connection parameters.
+        
     Returns
     -------
     pd.DataFrame
@@ -167,9 +141,24 @@ def prepare_metrics_gdf_for_postgis(augmented_gdf: gpd.GeoDataFrame,
     # Define versioning
     metric_version = get_config_version(yaml_path)
 
+    # HERE segments id etc
+    try:
+        # Create SQLAlchemy engine
+        engine = create_engine(f"postgresql+psycopg2://{user}:{password}@{host}/{database}")
+        
+        # Collect ids and osm_ids from network_segments table in PostGIS
+        segments_df = pd.read_sql("SELECT id, osm_id FROM network_segments", engine)
+
+        logging.info(f"Segment IDs successfully collected from table network_segments.")
+
+    except Exception as e:
+        logging.error(f"Error collecting IDs from table network_segments: {e}")
+
+
+
     # Convert metrics into a dataframe
-    metrics_df = pd.DataFrame({
-        "osm_id": gdf["id"],
+    metrics_df_final = pd.DataFrame({
+        "segment_id": segments_df['id'].values,
         "metric_name": metric_name,
         "metric_version": metric_version,
         "total_score": gdf[metric_col],
@@ -177,4 +166,4 @@ def prepare_metrics_gdf_for_postgis(augmented_gdf: gpd.GeoDataFrame,
         "metadata": [json.dumps({}) for _ in range(len(gdf))]     # empty JSON
     })
 
-    return metrics_df
+    return metrics_df_final
