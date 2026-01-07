@@ -2,7 +2,6 @@
 Module for exporting processed data.
 """
 
-import psycopg2
 import geopandas as gpd
 import pandas as pd
 import logging 
@@ -98,7 +97,11 @@ def prepare_network_segments_gdf_for_postgis(augmented_gdf: gpd.GeoDataFrame) ->
     
 
     # Convert numeric columns
-    gdf['maxspeed'] = pd.to_numeric(gdf['maxspeed'], errors='coerce')
+    gdf['maxspeed'] = (
+        pd.to_numeric(gdf['maxspeed'], errors='coerce')
+        .round()
+        .astype('Int64')   # Enforce Int
+    )
     
     # Select final columns
     gdf = gdf[['osm_id', 'street_name', 'geom', 'bike_infra', 'maxspeed', 'is_oneway', 'is_lit', 'surface', 'highway']]

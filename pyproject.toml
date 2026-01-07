@@ -1,35 +1,36 @@
 [build-system]
-requires = ["setuptools>=61"]
-build-backend = "setuptools.build_meta"
+requires = ['setuptools>=61']
+build-backend = 'setuptools.build_meta'
 
 [project]
-name = "cmm"
-version = "0.1.0"
-description = "City Metrics Mapper (placeholder project)"
-readme = "README.md"
-requires-python = ">=3.10"
+name = 'cmm'
+version = '0.1.0'
+description = 'City Metrics Mapper (placeholder project)'
+readme = 'README.md'
+requires-python = '>=3.10'
 authors = [
-  { name = "Omar El Beshbichi" }
+  { name = 'Omar El Beshbichi' }
 ]
 
 # For now, keep dependencies minimal – will add them in due time
 dependencies = [
-  "numpy>=1.26",
-  "shapely>=2.0.0",
-  "pandas>=2.0.0",
-  "psycopg2-binary>=2.9",
-  "pyyaml>=6.0.1",
-  "geopandas>=1.0.0",
-  "matplotlib>=3.8.0",
-  "SQLAlchemy>=2.0.0",
-  "geoalchemy2>=0.14.0"
+  'numpy>=1.26',
+  'shapely>=2.0.0',
+  'pandas>=2.0.0',
+  'psycopg2-binary>=2.9',
+  'pyyaml>=6.0.1',
+  'geopandas>=1.0.0',
+  'matplotlib>=3.8.0',
+  'SQLAlchemy>=2.0.0',
+  'geoalchemy2>=0.14.0',
+  'requests>=2.32.5'
 ]
 
 [project.optional-dependencies]
 dev = [
-  "pytest",
+  'pytest',
 ]
 
 # Tell setuptools to look for packages under src/
 [tool.setuptools.packages.find]
-where = ["src"]
+where = ['src']
