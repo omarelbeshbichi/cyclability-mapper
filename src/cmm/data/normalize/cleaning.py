@@ -4,6 +4,55 @@ Module providing functions to normalize OSM data.
 
 import geopandas as gpd
 import pandas as pd
+import numpy as np
+
+
+def parse_maxspeed_to_kmh(value):
+    """
+    Convert OSM maxspeed value to km/h.
+    """
+        
+    # Return NaN if None
+    if value is None:
+        return np.nan
+
+    # Return value itself if present
+    if isinstance(value, (int, float)):
+        return int(value)
+
+    # Normalize string for processing
+    value = value.lower().strip()
+
+    # Convert mph to km/h
+    if 'mph' in value:
+        maxspeed_mph = value.split()[0]
+        return int( int(maxspeed_mph) * 1.60934 )
+    
+    # Convert knots to km/h
+    if 'knots' in value:
+        maxspeed_knots = value.split()[0]
+        return int( float(maxspeed_knots) * 1.852 )
+
+    # If digit return value itself
+    if value.isdigit():
+        return int(value)
+    
+    # Else...
+    return np.nan
+
+
+def normalize_maxspeed_info(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+    """
+    Normalize maxspeed column of GeoDataFrame to km/h.
+    """
+    
+    gdf = gdf.copy()
+
+    # Update maxspeed info with normalized data (replace for now)
+    gdf["maxspeed"] = gdf["maxspeed"].apply(parse_maxspeed_to_kmh)
+
+    return gdf
+
 
 def restrict_gdf(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     """
