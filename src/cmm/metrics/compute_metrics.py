@@ -2,6 +2,11 @@ import pandas as pd
 import geopandas as gpd
 from ..data.normalize.cleaning import prepare_cyclability_segment
 from ..utils.config_reader import read_config
+import logging
+
+# Logger setup
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 def compute_metrics_score_from_segment(segment: dict,
                                         weights_config_path: str,
@@ -151,9 +156,21 @@ def define_augmented_geodataframe(gdf: gpd.GeoDataFrame,
         List of metrics scores of all features for all segments
     """
 
+    total = len(gdf)
+    segments_with_components_cyclability = []
+
     # Define segments augmented with metrics scores
-    segments_with_components_cyclability = [define_segment_with_metrics_score(gdf_row, weights_config_path, metrics_config_path, 'cyclability') for _, gdf_row in gdf.iterrows()]
-    
+    for idx, (_, gdf_row) in enumerate(gdf.iterrows(), start=1):
+        # Compute metrics for this row
+        segments_with_components_cyclability.append(
+            define_segment_with_metrics_score(gdf_row, weights_config_path, metrics_config_path, 'cyclability')
+        )
+
+        # Logging of progress every 100 rows or last row
+        if idx % 100 == 0 or idx == total:
+            logger.info(f'Processed {idx}/{total} segments')
+
+
     # Unpack cyclability segments and associated score features informaton
     segments_cyclability = []
     metrics_features_scores_cyclability = []
