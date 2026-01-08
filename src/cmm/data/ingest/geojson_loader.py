@@ -3,6 +3,7 @@ Module providing functions to ingest OSM data.
 """
 
 import pandas as pd
+import geopandas as gpd
 import json
 from pathlib import Path
 import logging
@@ -87,6 +88,33 @@ def feature_collection_to_dataframe(data: dict) -> pd.DataFrame:
     df = pd.concat([df['geometry'], properties_normalized], axis = 1)
 
     return df
+
+def geojson_to_gdf(geojson_dict: dict) -> gpd.GeoDataFrame:
+    """
+    Convert GeoJSON dictionary to GeoDataFrame.
+
+    Missing values are replaced with None to be compatible with data pipeline
+    
+    Parameters
+    ----------
+    geojson_dict: dict 
+        A valid GeoJSON object from parsing of overpass API JSON
+
+    Returns
+    -------
+    gpd.GeoDataFrame 
+        GeoDataFrame with CRS EPSG:4326 and missing values as None
+    """
+
+    gdf = gpd.GeoDataFrame.from_features(
+        geojson_dict["features"],
+        crs="EPSG:4326"
+    )
+
+    # Use None for missing value in database
+    gdf = gdf.where(gdf.notna(), None)
+
+    return gdf
 
 def geojson_to_gdf_from_path(path: str) -> gpd.GeoDataFrame:
     """
