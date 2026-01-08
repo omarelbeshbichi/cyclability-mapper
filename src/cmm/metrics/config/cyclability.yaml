@@ -4,12 +4,19 @@ version: '1.0.0'
 bike_infrastructure:
   type: categorical
   mapping:
+    cycleway: 1.0
     track: 1.0
+    traffic_island: 1.0
+    link: 1.0
+    separate: 1.0
     lane: 0.7
+    shared_lane: 0.65
+    opposite_lane: 0.65
     footway: 0.6
     share_busway: 0.4
     share_lane: 0.4
     none: 0.0
+    crossing: 0.5
   description: 'Bike lane type'
 
 maxspeed:
@@ -46,6 +53,7 @@ surface:
     paving_stones:lanes: 0.8
     sett: 0.75
     cobblestone: 0.7
+    stone: 0.7
     bricks: 0.75
     grass_paver: 0.7
     metal_grid: 0.7
@@ -57,6 +65,7 @@ surface:
     compacted: 0.6
     fine_gravel: 0.6
     gravel: 0.45
+    gravel;grass: 0.4
     shells: 0.45
     rock: 0.4
     pebblestone: 0.4

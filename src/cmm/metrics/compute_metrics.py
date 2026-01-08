@@ -4,9 +4,9 @@ from ..data.normalize.cleaning import prepare_cyclability_segment
 from ..utils.config_reader import read_config
 
 def compute_metrics_score_from_segment(segment: dict,
-                                                    weights_config_path: str,
-                                                    metrics_config_path: str,
-                                                    metrics_name: str) -> tuple[float, dict]:
+                                        weights_config_path: str,
+                                        metrics_config_path: str,
+                                        metrics_name: str) -> tuple[float, dict]:
     """
     Compute metrics score for a single road segment based on YAML configurations
 
@@ -61,7 +61,11 @@ def compute_metrics_score_from_segment(segment: dict,
         # or equal than threshold
         elif feature_config["type"] == "continuous":
             for bin in feature_config["bins"]:
-                if float(feature_value) <= bin["max"]:
+                if feature_name == 'maxspeed' and feature_value == None and (segment.get('highway') == 'footway' or segment.get('highway') == 'cycleway'):
+                    feature_score = 1.0 # High maxspeed score for footway and cycleway type when None is given (typical)
+                    break
+
+                elif float(feature_value) <= bin["max"]:
                     feature_score = bin["metrics"]
                     break
         

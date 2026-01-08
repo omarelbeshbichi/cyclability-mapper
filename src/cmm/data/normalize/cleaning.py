@@ -81,21 +81,21 @@ def restrict_gdf(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
 
     # Filter out irrelevant highway types
     mask = ~((gdf_filtered['highway'] == 'bus_guideway') | 
-             (gdf_filtered['highway'] == 'escape') | 
-             (gdf_filtered['highway'] == 'traceway') | 
-             (gdf_filtered['highway'] == 'steps') |
-             (gdf_filtered['highway'] == 'corridor') | 
-             (gdf_filtered['highway'] == 'via_ferrata') |
-             (gdf_filtered['highway'] == 'proposed') |
-             (gdf_filtered['highway'] == 'construction'))
-    gdf_filtered = gdf_filtered[mask]
+            (gdf_filtered['highway'] == 'escape') | 
+            (gdf_filtered['highway'] == 'traceway') | 
+            (gdf_filtered['highway'] == 'steps') |
+            (gdf_filtered['highway'] == 'corridor') | 
+            (gdf_filtered['highway'] == 'via_ferrata') |
+            (gdf_filtered['highway'] == 'proposed') |
+            (gdf_filtered['highway'] == 'construction') |
+            (gdf_filtered['highway'] == 'service') |
+            (gdf_filtered['highway'] == 'elevator') |
+            (gdf_filtered['highway'] == 'platform') |
+            (gdf_filtered['highway'] == 'track') |
+            (gdf_filtered['highway'] == 'path'))
+            
 
-    # Filter out redundant and unnecessary features
-    # (placeholder filter)
-    gdf_filtered.drop(columns='@id', inplace=True)
-    gdf_filtered.drop(columns='wikidata', inplace=True)
-    gdf_filtered.drop(columns='smoothness', inplace=True)
-    gdf_filtered.drop(columns='crossing', inplace=True)
+    gdf_filtered = gdf_filtered[mask]
 
     return gdf_filtered
 
@@ -207,9 +207,13 @@ def prepare_cyclability_segment(gdf_row: pd.Series) -> dict:
     # Gather oneway info
     oneway_dict = extract_all_oneway_tags(gdf_row)
 
-    ## Handle lack of information
+    ## Handle lighting information
     if lit == None:
         lit = 'unknown'
+    if lit == '24/7':
+        lit = 'yes'
+    if lit == 'disused':
+        lit = 'no'
    
     # Initialize parameters
     bike_ways = 'both'
@@ -223,44 +227,48 @@ def prepare_cyclability_segment(gdf_row: pd.Series) -> dict:
     elif oneway_dict.get('oneway') == 'yes' and oneway_dict.get('oneway:bicycle') == 'no':
         bike_ways = 'both'
 
+    # Extract normalization type (from normalize_cycleway_info) - if not available use None
+    left_type = cycleway_dict['left'].get('type') if cycleway_dict['left'] else None
+    right_type = cycleway_dict['right'].get('type') if cycleway_dict['right'] else None
+    undefined_type = cycleway_dict['undefined'].get('type') if cycleway_dict['undefined'] else None
+
     # Parse cycleway_dict
 
-    ## Cyclable footways
+    ## Define cycleways and cyclable footways
     if highway == 'footway':
         bike_infra = 'footway'
-        maxspeed = 30
+        maxspeed = None
+
+    if highway == 'cycleway':
+        bike_infra = 'cycleway'
+        maxspeed = None
 
     ## Both-sides cycleway
-    if (cycleway_dict['left'] and cycleway_dict['right']):
-        # assuming at this stage left/right symmetrical properties
-        # using properties of left side - arbitrary
-        bike_infra = cycleway_dict['left']['type'] 
-
+    if left_type and right_type:
+        bike_infra = left_type  # arbitrary, symmetric assumption
     ## Generic cycleway info & both sides
-    elif cycleway_dict['undefined']:   
-        bike_infra = cycleway_dict['undefined']['type']
-
+    elif undefined_type:
+        bike_infra = undefined_type
     ## Left cycleway
-    elif cycleway_dict['left'] and not (cycleway_dict['undefined'] or cycleway_dict['right']): 
-        bike_infra = cycleway_dict['left']['type']
-        
+    elif left_type:
+        bike_infra = left_type
         # Check way
-        if 'oneway' in cycleway_dict['left']:
-            # In OSM 'oneway=yes' indicates a one-way cycleway
-            # see: https://wiki.openstreetmap.org/wiki/Key:oneway:bicycle 
-            if cycleway_dict['left']['oneway'] == 'yes':
-                bike_ways = 'one'
-
-    ## Right cycleway   
-    elif cycleway_dict['right'] and not (cycleway_dict['undefined'] or cycleway_dict['left']): 
-        bike_infra = cycleway_dict['right']['type']
-        
+        # In OSM 'oneway=yes' indicates a one-way cycleway
+        # see: https://wiki.openstreetmap.org/wiki/Key:oneway:bicycle 
+        if cycleway_dict['left'].get('oneway') == 'yes':
+            bike_ways = 'one'
+    ## Right cycleway
+    elif right_type:
+        bike_infra = right_type
         # Check way
-        if 'oneway' in cycleway_dict['right']:
-            # Equivalent to left case
-            if cycleway_dict['right']['oneway'] == 'yes':
-                bike_ways = 'one'
+        if cycleway_dict['right'].get('oneway') == 'yes':
+            bike_ways = 'one'
+    else:
+        bike_infra = 'none'
 
+
+    if bike_infra == 'no':
+        bike_infra = 'none'  
 
     ## Store key information in segment dictionary
     segment = {
