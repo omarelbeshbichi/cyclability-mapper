@@ -22,10 +22,10 @@ def test_validate_gdf_linestrings_filters_invalid():
     
     # Test GeoDataFrame
     gdf = gpd.GeoDataFrame({
-        'geometry': [LineString([(0,0),(1,1)]), Point((0,0))]
+        "geometry": [LineString([(0,0),(1,1)]), Point((0,0))]
     })
     
     validated = validate_gdf_linestrings(gdf)
     
-    assert all(validated.geometry.type == 'LineString')
+    assert all(validated.geometry.type == "LineString")
     assert all(validated.geometry.length > 0)

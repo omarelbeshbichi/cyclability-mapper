@@ -37,12 +37,12 @@ def compute_metrics_score_from_segment(segment: dict,
     #%% INGEST
 
     # Gather config parameters from YAML files (remove version info from resulting dict)
-    weights_config = read_config('weights', weights_config_path)
-    weights_config.pop('version')
+    weights_config = read_config("weights", weights_config_path)
+    weights_config.pop("version")
     weights_metrics = weights_config[metrics_name]
 
     metrics_config = read_config(metrics_name, metrics_config_path)
-    metrics_config.pop('version')
+    metrics_config.pop("version")
 
     #%% COMPUTE METRICS SCORE
 
@@ -66,7 +66,7 @@ def compute_metrics_score_from_segment(segment: dict,
         # or equal than threshold
         elif feature_config["type"] == "continuous":
             for bin in feature_config["bins"]:
-                if feature_name == 'maxspeed' and feature_value == None and (segment.get('highway') == 'footway' or segment.get('highway') == 'cycleway'):
+                if feature_name == "maxspeed" and feature_value == None and (segment.get("highway") == "footway" or segment.get("highway") == "cycleway"):
                     feature_score = 1.0 # High maxspeed score for footway and cycleway type when None is given (typical)
                     break
 
@@ -80,11 +80,11 @@ def compute_metrics_score_from_segment(segment: dict,
 
     ## For each weight group (e.g.: cyclability, physical, traffic, regulation)
     for group_name, group_config in weights_metrics.items():
-        group_weight = group_config['weight']
+        group_weight = group_config["weight"]
         group_score = 0.0
 
         # Cycle over available features for i-th group
-        for feature_name, feature_weight in group_config['features'].items():
+        for feature_name, feature_weight in group_config["features"].items():
             feature_score = all_features_scores[feature_name]
             
             # Compute total metrics for i-th group
@@ -122,14 +122,14 @@ def define_segment_with_metrics_score(gdf_row: pd.Series,
     """
 
     # Normalize and parse information into segment
-    if metrics_name == 'cyclability':
+    if metrics_name == "cyclability":
         segment = prepare_cyclability_segment(gdf_row)
 
     # Compute metrics score based on YAML configs
     metrics_score, metrics_features_scores = compute_metrics_score_from_segment(segment, weights_config_path, metrics_config_path, metrics_name)
     
     # Augment segment with metrics score
-    segment[f'{metrics_name}_metrics'] = metrics_score
+    segment[f"{metrics_name}_metrics"] = metrics_score
 
     return segment, metrics_features_scores
 
@@ -163,12 +163,12 @@ def define_augmented_geodataframe(gdf: gpd.GeoDataFrame,
     for idx, (_, gdf_row) in enumerate(gdf.iterrows(), start=1):
         # Compute metrics for this row
         segments_with_components_cyclability.append(
-            define_segment_with_metrics_score(gdf_row, weights_config_path, metrics_config_path, 'cyclability')
+            define_segment_with_metrics_score(gdf_row, weights_config_path, metrics_config_path, "cyclability")
         )
 
         # Logging of progress every 100 rows or last row
         if idx % 100 == 0 or idx == total:
-            logger.info(f'Processed {idx}/{total} segments')
+            logger.info(f"Processed {idx}/{total} segments")
 
 
     # Unpack cyclability segments and associated score features informaton

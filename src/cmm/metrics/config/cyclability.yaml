@@ -1,5 +1,5 @@
 
-version: '1.0.0'
+version: "1.0.0"
 
 bike_infrastructure:
   type: categorical
@@ -17,7 +17,7 @@ bike_infrastructure:
     share_lane: 0.4
     none: 0.0
     crossing: 0.5
-  description: 'Bike lane type'
+  description: "Bike lane type"
 
 maxspeed:
   type: continuous
@@ -30,7 +30,7 @@ maxspeed:
       metrics: 0.4
     - max: 200
       metrics: 0.1
-  description: 'Maximum traffic speed'
+  description: "Maximum traffic speed"
 
 surface:
     # Full categorical list: https://wiki.openstreetmap.org/wiki/Key:surface

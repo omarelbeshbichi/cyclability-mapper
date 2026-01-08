@@ -5,7 +5,7 @@ def get_config_version(yaml_path: str) -> str:
     """
     Generate a version string for a YAML configuration file.
 
-    The version combines the 'version' field in the YAML (default '0.0.0') 
+    The version combines the "version" field in the YAML (default "0.0.0") 
     with a short SHA-256 hash of the canonical YAML content.
 
     Parameters
@@ -20,10 +20,10 @@ def get_config_version(yaml_path: str) -> str:
         the first 8 characters of the SHA-256 hash of the YAML content
     """
     
-    with open(yaml_path, 'r') as f:
+    with open(yaml_path, "r") as f:
         config = yaml.safe_load(f)
     
-    v_prefix = config.get('version', '0.0.0') # default: 0.0.0
+    v_prefix = config.get("version", "0.0.0") # default: 0.0.0
 
     # Determine hash of yaml from 
     canonical_yaml = yaml.dump(config, sort_keys=True).encode("utf-8")

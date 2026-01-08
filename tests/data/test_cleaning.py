@@ -6,13 +6,13 @@ from pathlib import Path
 # Used to generate a test GeoDataFrame
 def make_test_gdf():
     return gpd.GeoDataFrame({
-        'highway': ['footway','primary','motorway','bus_guideway'],
-        'bicycle': [None,'yes','yes','yes'],
-        'geometry': [LineString([(0,0),(1,0)])]*4,
-        '@id':[1,2,3,4],
-        'wikidata':[None]*4,
-        'smoothness':[None]*4,
-        'crossing':[None]*4
+        "highway": ["footway", "primary", "motorway", "bus_guideway"],
+        "bicycle": [None, "yes", "yes", "yes"],
+        "geometry": [LineString([(0,0),(1,0)])]*4,
+        "@id":[1,2,3,4],
+        "wikidata":[None]*4,
+        "smoothness":[None]*4,
+        "crossing":[None]*4
     })
 
 def test_restrict_gdf_filters():
@@ -20,6 +20,6 @@ def test_restrict_gdf_filters():
 
     restricted = restrict_gdf(gdf)
 
-    # Only 'primary' highway should remain
+    # Only "primary" highway should remain
     assert len(restricted) == 1
-    assert restricted.iloc[0]['highway'] == 'primary'
+    assert restricted.iloc[0]["highway"] == "primary"

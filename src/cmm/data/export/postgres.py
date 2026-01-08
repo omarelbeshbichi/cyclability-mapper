@@ -13,7 +13,7 @@ import json
 
 def dataframe_to_postgres(gdf: gpd.GeoDataFrame,
                         table_name: str,
-                        df_type: str = 'gdf', 
+                        df_type: str = "gdf", 
                         user: str = "user",
                         password: str = "pass",
                         host: str = "localhost",
@@ -33,7 +33,7 @@ def dataframe_to_postgres(gdf: gpd.GeoDataFrame,
     user, password, host, database: str
         Database connection parameters.
     if_exists: str
-        What to do if table exists: 'fail', 'replace', or 'append'. Default is 'append'.
+        What to do if table exists: "fail", "replace", or "append". Default is "append".
     """
 
     try:
@@ -52,9 +52,9 @@ def dataframe_to_postgres(gdf: gpd.GeoDataFrame,
             """))
 
         # Load gdf to network_segments table
-        if df_type == 'gdf':
+        if df_type == "gdf":
             gdf.to_postgis(table_name, engine, if_exists=if_exists, index=False)
-        if df_type == 'df':
+        if df_type == "df":
             gdf.to_sql(table_name, engine, if_exists=if_exists, index=False)
 
 
@@ -82,29 +82,29 @@ def prepare_network_segments_gdf_for_postgis(augmented_gdf: gpd.GeoDataFrame) ->
     
     # Rename columns
     gdf = gdf.rename(columns={
-            'id': 'osm_id',
-            'name': 'street_name',
-            'geometry': 'geom',
-            'bike_infrastructure': 'bike_infra',
-            'oneway': 'is_oneway',
-            'lighting': 'is_lit'
+            "id": "osm_id",
+            "name": "street_name",
+            "geometry": "geom",
+            "bike_infrastructure": "bike_infra",
+            "oneway": "is_oneway",
+            "lighting": "is_lit"
         })
     gdf = gdf.set_geometry("geom")
 
     # Convert booleans
-    gdf['is_oneway'] = gdf['is_oneway'].map({'yes': True, 'no': False, True: True, False: False}).fillna(False)
-    gdf['is_lit'] = gdf['is_lit'].map({'yes': True, 'no': False, 'unknown': False, True: True, False: False}).fillna(False)
+    gdf["is_oneway"] = gdf["is_oneway"].map({"yes": True, "no": False, True: True, False: False}).fillna(False)
+    gdf["is_lit"] = gdf["is_lit"].map({"yes": True, "no": False, "unknown": False, True: True, False: False}).fillna(False)
     
 
     # Convert numeric columns
-    gdf['maxspeed'] = (
-        pd.to_numeric(gdf['maxspeed'], errors='coerce')
+    gdf["maxspeed"] = (
+        pd.to_numeric(gdf["maxspeed"], errors="coerce")
         .round()
-        .astype('Int64')   # Enforce Int
+        .astype("Int64")   # Enforce Int
     )
     
     # Select final columns
-    gdf = gdf[['osm_id', 'street_name', 'geom', 'bike_infra', 'maxspeed', 'is_oneway', 'is_lit', 'surface', 'highway']]
+    gdf = gdf[["osm_id", "street_name", "geom", "bike_infra", "maxspeed", "is_oneway", "is_lit", "surface", "highway"]]
     
     return gdf
 
@@ -162,14 +162,14 @@ def prepare_metrics_df_for_postgis(augmented_gdf: gpd.GeoDataFrame,
 
 
     # Keep only matching elements - used for robustness
-    gdf_aligned = gdf.merge(segments_df, left_on="id", right_on='osm_id', how="inner") 
+    gdf_aligned = gdf.merge(segments_df, left_on="id", right_on="osm_id", how="inner") 
 
     # Define components
     features_scores_json = [json.dumps(f) for f in metrics_features_scores_cyclability]
 
     # Convert metrics into a dataframe
     metrics_df_final = pd.DataFrame({
-        "segment_id": gdf_aligned['id_y'],
+        "segment_id": gdf_aligned["id_y"],
         "metric_name": metric_name,
         "metric_version": metric_version,
         "total_score": gdf_aligned[metric_col],

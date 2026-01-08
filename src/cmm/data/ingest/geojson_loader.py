@@ -29,23 +29,23 @@ def load_json_from_path(path: str) -> dict:
 
     # Path checks
     if not p.exists():
-        raise FileNotFoundError(f'The specified path does not refer to any existing file: {path}')
+        raise FileNotFoundError(f"The specified path does not refer to any existing file: {path}")
 
     if p.is_dir():
-        raise IsADirectoryError(f'Path refers to a directory, please specify path of a valid file: {path}')
+        raise IsADirectoryError(f"Path refers to a directory, please specify path of a valid file: {path}")
 
     # Check file type
-    if p.suffix.lower() not in ['.geojson', '.json']:
-        raise ValueError(f'Unsupported file format: {p.suffix}. Expected .json (.geojson) type')
+    if p.suffix.lower() not in [".geojson", ".json"]:
+        raise ValueError(f"Unsupported file format: {p.suffix}. Expected .json (.geojson) type")
 
-    logging.info(f'Path validated, proceeding with loading file: {p}')
+    logging.info(f"Path validated, proceeding with loading file: {p}")
 
     # Read JSON file
-    with open(p, 'r') as f:
+    with open(p, "r") as f:
         try:
             data = json.load(f)
         except json.JSONDecodeError as e:
-            raise ValueError(f'Failed to parse JSON file {p}: {e}')
+            raise ValueError(f"Failed to parse JSON file {p}: {e}")
 
     return data
 
@@ -65,27 +65,27 @@ def feature_collection_to_dataframe(data: dict) -> pd.DataFrame:
         Columns include feature ID, feature geometry, and all associated properties
 
     Notes:
-        - The 'geometry' column contains the OSM GeoJSON standard geometry dictionary (type, coordinates)
+        - The "geometry" column contains the OSM GeoJSON standard geometry dictionary (type, coordinates)
     """
 
     # Validate data type
-    if data.get('type') != 'FeatureCollection':
-        raise ValueError(f'GeoJSON file provided is not a FeatureCollection')
+    if data.get("type") != "FeatureCollection":
+        raise ValueError(f"GeoJSON file provided is not a FeatureCollection")
 
     # Load data into a DataFrame
-    features = data.get('features')
+    features = data.get("features")
     if not isinstance(features, list):
-        raise ValueError('Features are not available in GeoJSON FeatureCollection')
+        raise ValueError("Features are not available in GeoJSON FeatureCollection")
     df = pd.DataFrame(features)
 
     # Normalize dataframe
-    if 'properties' in df:
-        properties_normalized = pd.json_normalize(df['properties'])
+    if "properties" in df:
+        properties_normalized = pd.json_normalize(df["properties"])
     else:
-        raise ValueError(f'Missing properties in GeoJSON file')
+        raise ValueError(f"Missing properties in GeoJSON file")
 
     # Concatenate parts
-    df = pd.concat([df['geometry'], properties_normalized], axis = 1)
+    df = pd.concat([df["geometry"], properties_normalized], axis = 1)
 
     return df
 
@@ -136,16 +136,16 @@ def geojson_to_gdf_from_path(path: str) -> gpd.GeoDataFrame:
     
     # Path checks
     if not p.exists():
-        raise FileNotFoundError(f'The specified path does not refer to any existing file: {path}')
+        raise FileNotFoundError(f"The specified path does not refer to any existing file: {path}")
 
     if p.is_dir():
-        raise IsADirectoryError(f'Path refers to a directory, please specify path of a valid file: {path}')
+        raise IsADirectoryError(f"Path refers to a directory, please specify path of a valid file: {path}")
 
     # Check file type
-    if p.suffix.lower() not in ['.geojson', '.json']:
-        raise ValueError(f'Unsupported file format: {p.suffix}. Expected .json (.geojson) type')
+    if p.suffix.lower() not in [".geojson", ".json"]:
+        raise ValueError(f"Unsupported file format: {p.suffix}. Expected .json (.geojson) type")
 
-    logging.info(f'Path validated, proceeding with loading file: {p}')
+    logging.info(f"Path validated, proceeding with loading file: {p}")
 
     # Read JSON into GeoDataFrame
     gdf = gpd.read_file(p)

@@ -24,12 +24,12 @@ def parse_maxspeed_to_kmh(value):
     value = value.lower().strip()
 
     # Convert mph to km/h
-    if 'mph' in value:
+    if "mph" in value:
         maxspeed_mph = value.split()[0]
         return int( int(maxspeed_mph) * 1.60934 )
     
     # Convert knots to km/h
-    if 'knots' in value:
+    if "knots" in value:
         maxspeed_knots = value.split()[0]
         return int( float(maxspeed_knots) * 1.852 )
 
@@ -72,27 +72,27 @@ def restrict_gdf(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
 
     # Filter out all highway = footway LineStrings with no bicycle designation
     # ~ -> keep all rows not complying with the mask
-    mask = ~((gdf['highway'] == 'footway') & (gdf["bicycle"] != "yes"))
+    mask = ~((gdf["highway"] == "footway") & (gdf["bicycle"] != "yes"))
     gdf_filtered = gdf[mask]
 
     # Filter out motorways
-    mask = ~((gdf_filtered['highway'] == 'motorway') | (gdf_filtered['highway'] == 'motorway_link'))
+    mask = ~((gdf_filtered["highway"] == "motorway") | (gdf_filtered["highway"] == "motorway_link"))
     gdf_filtered = gdf_filtered[mask]
 
     # Filter out irrelevant highway types
-    mask = ~((gdf_filtered['highway'] == 'bus_guideway') | 
-            (gdf_filtered['highway'] == 'escape') | 
-            (gdf_filtered['highway'] == 'traceway') | 
-            (gdf_filtered['highway'] == 'steps') |
-            (gdf_filtered['highway'] == 'corridor') | 
-            (gdf_filtered['highway'] == 'via_ferrata') |
-            (gdf_filtered['highway'] == 'proposed') |
-            (gdf_filtered['highway'] == 'construction') |
-            (gdf_filtered['highway'] == 'service') |
-            (gdf_filtered['highway'] == 'elevator') |
-            (gdf_filtered['highway'] == 'platform') |
-            (gdf_filtered['highway'] == 'track') |
-            (gdf_filtered['highway'] == 'path'))
+    mask = ~((gdf_filtered["highway"] == "bus_guideway") | 
+            (gdf_filtered["highway"] == "escape") | 
+            (gdf_filtered["highway"] == "traceway") | 
+            (gdf_filtered["highway"] == "steps") |
+            (gdf_filtered["highway"] == "corridor") | 
+            (gdf_filtered["highway"] == "via_ferrata") |
+            (gdf_filtered["highway"] == "proposed") |
+            (gdf_filtered["highway"] == "construction") |
+            (gdf_filtered["highway"] == "service") |
+            (gdf_filtered["highway"] == "elevator") |
+            (gdf_filtered["highway"] == "platform") |
+            (gdf_filtered["highway"] == "track") |
+            (gdf_filtered["highway"] == "path"))
             
 
     gdf_filtered = gdf_filtered[mask]
@@ -104,7 +104,7 @@ def extract_all_cycleway_tags(gdf_row: pd.Series) -> dict:
 
     return {
         key: val for key, val in gdf_row.items()
-        if isinstance(val, str) and 'cycleway' in key and pd.notna(val)
+        if isinstance(val, str) and "cycleway" in key and pd.notna(val)
     }
 
 def extract_all_oneway_tags(gdf_row: pd.Series) -> dict:
@@ -112,16 +112,16 @@ def extract_all_oneway_tags(gdf_row: pd.Series) -> dict:
 
     return {
         key: val for key, val in gdf_row.items()
-        if isinstance(val, str) and 'oneway' in key and 'cycleway' not in key and pd.notna(val)
+        if isinstance(val, str) and "oneway" in key and "cycleway" not in key and pd.notna(val)
     }
 
 def init_normal_cycleway_info() -> dict:
     """Initialize normalized cycleway dictionary"""
 
     return {
-        'left': {},
-        'right': {},
-        'undefined': {}
+        "left": {},
+        "right": {},
+        "undefined": {}
     }
 
 def normalize_cycleway_info(tags: dict) -> dict:
@@ -132,11 +132,11 @@ def normalize_cycleway_info(tags: dict) -> dict:
     for key, val in tags.items():
         
         # 1) unpack key
-        keys_split = key.split(':') # 'cycleway:left' -> ['cycleway', 'left']
+        keys_split = key.split(":") # "cycleway:left" -> ["cycleway", "left"]
 
         # 2) cycleway = lane
         if len(keys_split) == 1:
-            cycleway_dict['undefined']['type'] = val
+            cycleway_dict["undefined"]["type"] = val
             continue
 
         # 3) cycleway:left = lane | cycleway:left:oneway = -1 | longer
@@ -144,17 +144,17 @@ def normalize_cycleway_info(tags: dict) -> dict:
 
         ## define param depending on type
         if len(keys_split) == 2:
-            param = 'type'
-            if side not in ['left', 'right', 'both']: # consider here type 'both' although rarely used in API
+            param = "type"
+            if side not in ["left", "right", "both"]: # consider here type "both" although rarely used in API
                 continue
 
         if len(keys_split) > 2:
-            param = ':'.join(keys_split[2:]) # cycleway:left:oneway -> oneway
-            if side not in ['left', 'right', 'both']:
+            param = ":".join(keys_split[2:]) # cycleway:left:oneway -> oneway
+            if side not in ["left", "right", "both"]:
                 continue
         
-        # Handle type 'both' into 'left' and 'right'
-        features = ('left', 'right') if side == 'both' else (side,)
+        # Handle type "both" into "left" and "right"
+        features = ("left", "right") if side == "both" else (side,)
 
         # Populate dictionary
         for feature in features:
@@ -176,29 +176,29 @@ def prepare_cyclability_segment(gdf_row: pd.Series) -> dict:
     -------
     dict
         Dictionary with parsed cyclability information:
-        - 'id': segment identifier
-        - 'name': segment name
-        - 'geometry': segment geometry
-        - 'bike_infrastructure': type of cycling infrastructure
-        - 'oneway': 'yes' if one-way for bikes, 'no' otherwise
-        - 'maxspeed': maximum speed allowed
-        - 'surface': surface type
-        - 'lighting': lighting condition
-        - 'highway': highway type
+        - "id": segment identifier
+        - "name": segment name
+        - "geometry": segment geometry
+        - "bike_infrastructure": type of cycling infrastructure
+        - "oneway": "yes" if one-way for bikes, "no" otherwise
+        - "maxspeed": maximum speed allowed
+        - "surface": surface type
+        - "lighting": lighting condition
+        - "highway": highway type
     """
 
 
     #%% INIT 
     # Gather segments facts
-    id =  gdf_row.get('id')
-    name =  gdf_row.get('name')
-    geometry = gdf_row.get('geometry')
+    id =  gdf_row.get("id")
+    name =  gdf_row.get("name")
+    geometry = gdf_row.get("geometry")
     
     # Gather quality factors
-    lit = gdf_row.get('lit')
-    highway = gdf_row.get('highway')
-    maxspeed = gdf_row.get('maxspeed')
-    surface = gdf_row.get('surface') or 'unknown' # Fallback to 'unknown' if None
+    lit = gdf_row.get("lit")
+    highway = gdf_row.get("highway")
+    maxspeed = gdf_row.get("maxspeed")
+    surface = gdf_row.get("surface") or "unknown" # Fallback to "unknown" if None
     
     # Gather cycleway info
     cycleway_tags = extract_all_cycleway_tags(gdf_row)
@@ -209,38 +209,38 @@ def prepare_cyclability_segment(gdf_row: pd.Series) -> dict:
 
     ## Handle lighting information
     if lit == None:
-        lit = 'unknown'
-    if lit == '24/7':
-        lit = 'yes'
-    if lit == 'disused':
-        lit = 'no'
+        lit = "unknown"
+    if lit == "24/7":
+        lit = "yes"
+    if lit == "disused":
+        lit = "no"
    
     # Initialize parameters
-    bike_ways = 'both'
-    bike_infra = 'none'
+    bike_ways = "both"
+    bike_infra = "none"
 
     #%% PARSE
 
     # Parse oneway information
-    if oneway_dict.get('oneway') == 'yes' and 'oneway:bicycle' not in oneway_dict:
-        bike_ways = 'one'
-    elif oneway_dict.get('oneway') == 'yes' and oneway_dict.get('oneway:bicycle') == 'no':
-        bike_ways = 'both'
+    if oneway_dict.get("oneway") == "yes" and "oneway:bicycle" not in oneway_dict:
+        bike_ways = "one"
+    elif oneway_dict.get("oneway") == "yes" and oneway_dict.get("oneway:bicycle") == "no":
+        bike_ways = "both"
 
     # Extract normalization type (from normalize_cycleway_info) - if not available use None
-    left_type = cycleway_dict['left'].get('type') if cycleway_dict['left'] else None
-    right_type = cycleway_dict['right'].get('type') if cycleway_dict['right'] else None
-    undefined_type = cycleway_dict['undefined'].get('type') if cycleway_dict['undefined'] else None
+    left_type = cycleway_dict["left"].get("type") if cycleway_dict["left"] else None
+    right_type = cycleway_dict["right"].get("type") if cycleway_dict["right"] else None
+    undefined_type = cycleway_dict["undefined"].get("type") if cycleway_dict["undefined"] else None
 
     # Parse cycleway_dict
 
     ## Define cycleways and cyclable footways
-    if highway == 'footway':
-        bike_infra = 'footway'
+    if highway == "footway":
+        bike_infra = "footway"
         maxspeed = None
 
-    if highway == 'cycleway':
-        bike_infra = 'cycleway'
+    if highway == "cycleway":
+        bike_infra = "cycleway"
         maxspeed = None
 
     ## Both-sides cycleway
@@ -253,34 +253,34 @@ def prepare_cyclability_segment(gdf_row: pd.Series) -> dict:
     elif left_type:
         bike_infra = left_type
         # Check way
-        # In OSM 'oneway=yes' indicates a one-way cycleway
+        # In OSM "oneway=yes" indicates a one-way cycleway
         # see: https://wiki.openstreetmap.org/wiki/Key:oneway:bicycle 
-        if cycleway_dict['left'].get('oneway') == 'yes':
-            bike_ways = 'one'
+        if cycleway_dict["left"].get("oneway") == "yes":
+            bike_ways = "one"
     ## Right cycleway
     elif right_type:
         bike_infra = right_type
         # Check way
-        if cycleway_dict['right'].get('oneway') == 'yes':
-            bike_ways = 'one'
+        if cycleway_dict["right"].get("oneway") == "yes":
+            bike_ways = "one"
     else:
-        bike_infra = 'none'
+        bike_infra = "none"
 
 
-    if bike_infra == 'no':
-        bike_infra = 'none'  
+    if bike_infra == "no":
+        bike_infra = "none"  
 
     ## Store key information in segment dictionary
     segment = {
-        'id': id,
-        'name': name,
-        'geometry': geometry,
-        'bike_infrastructure': bike_infra,
-        'oneway': 'yes' if bike_ways == 'one' else 'no',
-        'maxspeed': maxspeed,
-        'surface': surface,
-        'lighting': lit,
-        'highway': highway
+        "id": id,
+        "name": name,
+        "geometry": geometry,
+        "bike_infrastructure": bike_infra,
+        "oneway": "yes" if bike_ways == "one" else "no",
+        "maxspeed": maxspeed,
+        "surface": surface,
+        "lighting": lit,
+        "highway": highway
     }
 
     return segment

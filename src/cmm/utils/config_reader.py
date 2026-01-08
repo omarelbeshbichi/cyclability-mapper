@@ -23,8 +23,8 @@ def read_config(index_name: str,
     config_path = Path(config_path) 
     # Path check
     if not config_path.exists():
-        raise FileNotFoundError(f'Could not find {index_name} config file at {config_path}')
+        raise FileNotFoundError(f"Could not find {index_name} config file at {config_path}")
 
     # Load YAML and return
-    with open(config_path, 'r') as f:
+    with open(config_path, "r") as f:
         return yaml.safe_load(f)

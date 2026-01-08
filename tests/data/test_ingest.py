@@ -10,8 +10,8 @@ def test_load_json_from_path(dev_geojson_path):
 
     data = load_json_from_path(dev_geojson_path)
 
-    assert data['type'] == 'FeatureCollection'
-    #assert len(data['features']) == 1
+    assert data["type"] == "FeatureCollection"
+    #assert len(data["features"]) == 1
 
 def test_feature_collection_to_dataframe(dev_geojson_path):
     
