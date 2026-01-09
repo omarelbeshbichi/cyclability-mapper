@@ -190,7 +190,7 @@ def prepare_cyclability_segment(gdf_row: pd.Series) -> dict:
 
     #%% INIT 
     # Gather segments facts
-    id =  gdf_row.get("id")
+    id =  gdf_row.get("@id")
     name =  gdf_row.get("name")
     geometry = gdf_row.get("geometry")
     

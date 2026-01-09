@@ -4,12 +4,19 @@
 CREATE EXTENSION IF NOT EXISTS postgis;
 
 CREATE TYPE bike_infra_type AS ENUM (
+    'cycleway',
     'track', 
+    'traffic_island',
+    'link',
+    'separate',
     'lane', 
+    'shared_lane',
+    'opposite_lane',
     'footway', 
     'share_busway', 
     'share_lane', 
-    'none'
+    'none',
+    'crossing'
 );
 
 CREATE TABLE IF NOT EXISTS network_segments (
