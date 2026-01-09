@@ -63,6 +63,9 @@ def dataframe_to_postgres(gdf: gpd.GeoDataFrame,
     except Exception as e:
         logging.error(f"Error loading data to PostGIS: {e}")
 
+    finally:
+        engine.dispose()
+
 def prepare_network_segments_gdf_for_postgis(augmented_gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     """
     Prepare a GeoDataFrame for PostGIS of network segments (network_segments SQL table).
