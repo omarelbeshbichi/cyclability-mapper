@@ -58,7 +58,7 @@ def dataframe_to_postgres(gdf: gpd.GeoDataFrame,
             gdf.to_sql(table_name, engine, if_exists=if_exists, index=False)
 
 
-        logging.info(f"Data successfully loaded into table '{table_name}'.")
+        logging.info(f"Data successfully loaded into PostGIS table '{table_name}'.")
 
     except Exception as e:
         logging.error(f"Error loading data to PostGIS: {e}")

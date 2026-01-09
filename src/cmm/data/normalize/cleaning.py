@@ -40,7 +40,6 @@ def parse_maxspeed_to_kmh(value):
     # Else...
     return np.nan
 
-
 def normalize_maxspeed_info(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     """
     Normalize maxspeed column of GeoDataFrame to km/h.
@@ -52,7 +51,6 @@ def normalize_maxspeed_info(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     gdf["maxspeed"] = gdf["maxspeed"].apply(parse_maxspeed_to_kmh)
 
     return gdf
-
 
 def restrict_gdf(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     """
