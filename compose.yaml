@@ -10,7 +10,22 @@ services:
       POSTGRES_PASSWORD: pass
       POSTGRES_DB: db
     volumes:
-      - pgdata:/var/lib/postgresql/data
-      - ./docker/postgres:/docker-entrypoint-initdb.d
+      - pgdata:/var/lib/postgresql/data # store data in persistent database
+      - ./docker/postgres:/docker-entrypoint-initdb.d # connect to init.sql
+
+  frontend:
+    build:
+      context: . # let Docker access everything for building image
+      dockerfile: frontend/kepler/Dockerfile
+    container_name: frontend
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_URL: postgresql://user:pass@postgres:5432/db
+    volumes:
+      - .:/app # temp for faster dev
+    ports:
+      - "8501:8501" # expose port to reach from browser
+
 volumes:
   pgdata:

@@ -9,6 +9,7 @@ from sqlalchemy import create_engine
 from sqlalchemy import text
 from ...metrics.config.versioning import get_config_version
 import json
+import os
 
 
 def dataframe_to_postgres(gdf: gpd.GeoDataFrame,
@@ -35,10 +36,16 @@ def dataframe_to_postgres(gdf: gpd.GeoDataFrame,
     if_exists: str
         What to do if table exists: "fail", "replace", or "append". Default is "append".
     """
+    
+    # Use DATABASE_URL if running inside Docker, else fallback to localhost
+    DATABASE_URL = os.getenv(
+        "DATABASE_URL",
+        "postgresql+psycopg2://user:pass@localhost:5432/db"
+    ) 
 
     try:
         # Create SQLAlchemy engine
-        engine = create_engine(f"postgresql+psycopg2://{user}:{password}@{host}/{database}")
+        engine = create_engine(DATABASE_URL)
 
         # Write GeoDataFrame to PostGIS
 
@@ -141,6 +148,12 @@ def prepare_metrics_df_for_postgis(augmented_gdf: gpd.GeoDataFrame,
         Metric DataFrame ready for PostGIS insertion
     """
 
+    # Use DATABASE_URL if running inside Docker, else fallback to localhost
+    DATABASE_URL = os.getenv(
+        "DATABASE_URL",
+        "postgresql+psycopg2://user:pass@localhost:5432/db"
+    )
+
     gdf = augmented_gdf.copy()
     
     # Define original metrics column name
@@ -152,7 +165,7 @@ def prepare_metrics_df_for_postgis(augmented_gdf: gpd.GeoDataFrame,
     # Retrieve segments IDs from network_segments table in PostGIS
     try:
         # Create SQLAlchemy engine
-        engine = create_engine(f"postgresql+psycopg2://{user}:{password}@{host}/{database}")
+        engine = create_engine(DATABASE_URL)
         
         # Collect ids and osm_ids from network_segments table in PostGIS
         segments_df = pd.read_sql("SELECT id, osm_id FROM network_segments", engine)
@@ -163,6 +176,8 @@ def prepare_metrics_df_for_postgis(augmented_gdf: gpd.GeoDataFrame,
     except Exception as e:
         logging.error(f"Error collecting IDs from table network_segments: {e}")
 
+    finally:
+        engine.dispose()
 
     # Keep only matching elements - used for robustness
     gdf_aligned = gdf.merge(segments_df, left_on="id", right_on="osm_id", how="inner") 

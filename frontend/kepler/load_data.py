@@ -3,18 +3,23 @@ from sqlalchemy import create_engine
 import logging 
 import json
 import pandas as pd
+import os
 
-def load_segments(user: str = "user",
-                host: str = "localhost",
-                password: str = "pass",
-                database: str = "db") -> gpd.GeoDataFrame:
+
+def load_segments() -> gpd.GeoDataFrame:
     """
     Text
     """
 
+    # Use DATABASE_URL if running inside Docker, else fallback to localhost
+    DATABASE_URL = os.getenv(
+        "DATABASE_URL",
+        "postgresql+psycopg2://user:pass@localhost:5432/db"
+    )
+
     try:
         # Create SQLAlchemy engine
-        engine = create_engine(f"postgresql+psycopg2://{user}:{password}@{host}/{database}")
+        engine = create_engine(DATABASE_URL)
 
         # Select data from PostGIS virtual (view) table v_cyclability_score
         query = """
