@@ -2,7 +2,6 @@ import geopandas as gpd
 from sqlalchemy import create_engine
 import logging 
 import json
-import pandas as pd
 import os
 
 

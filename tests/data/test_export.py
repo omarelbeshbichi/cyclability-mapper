@@ -34,10 +34,6 @@ def test_dataframe_to_postgres():
             gdf = gdf_proc_prepared,
             table_name = "network_segments",
             df_type = "gdf",
-            user = "user",
-            password = "pass",
-            host = "localhost",
-            database = "db",
             if_exists = "append"
         )
 

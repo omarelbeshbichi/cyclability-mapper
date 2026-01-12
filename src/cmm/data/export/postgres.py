@@ -14,11 +14,7 @@ import os
 
 def dataframe_to_postgres(gdf: gpd.GeoDataFrame,
                         table_name: str,
-                        df_type: str = "gdf", 
-                        user: str = "user",
-                        password: str = "pass",
-                        host: str = "localhost",
-                        database: str = "db",
+                        df_type: str = "gdf",
                         if_exists: str = "append"):
     """
     Load Dataframe data to PostGIS database using GeoPandas to_postgis.
@@ -31,8 +27,6 @@ def dataframe_to_postgres(gdf: gpd.GeoDataFrame,
         Name of PostGIS table to be used as database.
     df_type: str
         Type of dataframe: df or gdf.
-    user, password, host, database: str
-        Database connection parameters.
     if_exists: str
         What to do if table exists: "fail", "replace", or "append". Default is "append".
     """
@@ -121,11 +115,7 @@ def prepare_network_segments_gdf_for_postgis(augmented_gdf: gpd.GeoDataFrame) ->
 def prepare_metrics_df_for_postgis(augmented_gdf: gpd.GeoDataFrame,
                                    metrics_features_scores_cyclability: list,
                                     metric_name: str,
-                                    yaml_path: str,
-                                    user: str = "user",
-                                    password: str = "pass",
-                                    host: str = "localhost",
-                                    database: str = "db") -> pd.DataFrame:
+                                    yaml_path: str) -> pd.DataFrame:
     """
     Prepare DataFrame with metrics for insertion into PostGIS database (segment_metrics SQL table)
 
@@ -139,8 +129,6 @@ def prepare_metrics_df_for_postgis(augmented_gdf: gpd.GeoDataFrame,
         Name of current metrics (eg, cyclability)
     yaml_path: str
         Path to the YAML configuration file
-    user, password, host, database: str
-        Database connection parameters.
         
     Returns
     -------
