@@ -2,17 +2,31 @@ from keplergl import KeplerGl
 from .load_data import load_segments
 from cmm.utils.config_reader import read_config
 
-def create_map(user="user", host="localhost", password="pass", database="db", kepler_config_path: str = None):
+def create_map(kepler_config_path: str = None):
 
     config = read_config("kepler", "json", kepler_config_path)
 
-    gdf = load_segments(user, host, password, database)
+    gdf = load_segments()
     gdf = gdf.rename_geometry("geometry")
 
-    m = KeplerGl(height=800)
+    # Compute bounding box and center map to given data
+    bounds = gdf.total_bounds  # [minx, miny, maxx, maxy]
+    center_lon = (bounds[0] + bounds[2]) / 2
+    center_lat = (bounds[1] + bounds[3]) / 2
 
-    # Apply data and configurations
+    # Add start location (mapState)
+    config.setdefault("config", {})["mapState"] = {
+        "latitude": center_lat,
+        "longitude": center_lon,
+        "zoom": 12,
+        "bearing": 0,
+        "pitch": 0
+    }
+
+    # Initialize KeplerGL map + apply configuration setup
+    m = KeplerGl(config = config)
+
+    # Apply data
     m.add_data(gdf, "segments")
-    m.config = config
 
     return m

@@ -23,8 +23,9 @@ def read_config(index_name: str,
     dict
         Parsed configuration from the YAML file
     """
-
+   
     config_path = Path(config_path) 
+    
     # Path check
     if not config_path.exists():
         raise FileNotFoundError(f"Could not find {index_name} config file at {config_path}")
@@ -37,3 +38,5 @@ def read_config(index_name: str,
     elif file_type == "json":
         with open(config_path, "r") as f:
             return json.load(f)
+    else:
+        return {}
