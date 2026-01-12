@@ -37,11 +37,11 @@ def compute_metrics_score_from_segment(segment: dict,
     #%% INGEST
 
     # Gather config parameters from YAML files (remove version info from resulting dict)
-    weights_config = read_config("weights", weights_config_path)
+    weights_config = read_config("weights", "yaml", weights_config_path)
     weights_config.pop("version")
     weights_metrics = weights_config[metrics_name]
 
-    metrics_config = read_config(metrics_name, metrics_config_path)
+    metrics_config = read_config(metrics_name, "yaml", metrics_config_path)
     metrics_config.pop("version")
 
     #%% COMPUTE METRICS SCORE
