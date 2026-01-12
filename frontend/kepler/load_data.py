@@ -35,27 +35,24 @@ def load_segments(user: str = "user",
             if isinstance(gdf['metric_features_scores'].iloc[0], str):
                 gdf['metric_features_scores'] = gdf['metric_features_scores'].apply(json.loads)
             
-            # After flattening the JSON columns
-            gdf['all_scores'] = (
-                "bike_inf:" + gdf['metric_features_scores'].str['bike_infrastructure'].round(2).astype(str) + " | " +
-                "maxspeed:" + gdf['metric_features_scores'].str["maxspeed"].round(2).astype(str) + " | " +
-                "surface:" + gdf['metric_features_scores'].str["surface"].round(2).astype(str) + " | " +
-                "lighting:" + gdf['metric_features_scores'].str["lighting"].round(2).astype(str) + " | " +
-                "oneway:" + gdf['metric_features_scores'].str["oneway"].round(2).astype(str)
-            )
-
-
-
-
-            # Extract JSON fields into separate columns
-            #json_df = gdf['metric_features_scores'].apply(pd.Series)
+            # Use a dictionary to map short labels to JSON keys
+            labels = {
+                "bike_inf": "bike_infrastructure",
+                "maxspeed": "maxspeed",
+                "surface": "surface",
+                "lighting": "lighting",
+                "oneway": "oneway"
+            }
             
-            # Prefix column names to avoid conflicts
-            #json_df.columns = [f"score_{col}" for col in json_df.columns]
-            
-            # Replace original metric_features_scores with new columns
-            #gdf = gdf.drop('metric_features_scores', axis=1)
-            #gdf = gdf.join(json_df)
+            # Build the parts dynamically
+            parts = [
+                f"{label}: " + gdf['metric_features_scores'].str[key].round(2).astype(str)
+                for label, key in labels.items()
+            ]
+
+            # Join with newline for vertical display
+            gdf['all_scores'] = parts[0].str.cat(parts[1:], sep=" | ")
+
 
         logging.info(f"Data successfully queried from PostGIS database for frontend use.")
 

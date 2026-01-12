@@ -14,9 +14,7 @@
             },
             "isVisible": true,
             "visConfig": {
-              "thickness": 1,
-              "enable3d": true,
-              "sizeRange": [50],
+              "thickness": 0.5,
               "elevationScale": 5,
               "strokeColorRange": {
                 "type": "sequential",
