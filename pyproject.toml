@@ -24,7 +24,9 @@ dependencies = [
   "SQLAlchemy>=2.0.0",
   "geoalchemy2>=0.14.0",
   "requests>=2.32.5",
-  "keplergl>=0.3.2"
+  "keplergl>=0.3.2",
+  "fastapi >= 0.112.0",
+  "uvicorn >= 0.24.0"
 ]
 
 [project.optional-dependencies]
