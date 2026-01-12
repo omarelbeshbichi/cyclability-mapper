@@ -1,0 +1,63 @@
+{
+  "version": "v1",
+  "config": {
+    "visState": {
+      "layers": [
+        {
+          "id": "cyclability",
+          "type": "geojson",
+          "config": {
+            "dataId": "segments",
+            "label": "Cyclability",
+            "columns": {
+              "geojson": "geometry"
+            },
+            "isVisible": true,
+            "visConfig": {
+              "thickness": 1,
+              "enable3d": true,
+              "sizeRange": [50],
+              "elevationScale": 5,
+              "strokeColorRange": {
+                "type": "sequential",
+                "category": "Custom",
+                "colors": [
+                  "#d7191c",
+                  "#eb643d",
+                  "#fba35d",
+                  "#fed98e",
+                  "#ffffbf",
+                  "#d9ef8b",
+                  "#a6d96a",
+                  "#66bd63",
+                  "#1a9641"
+                ]
+              }
+            }
+          },
+          "visualChannels": {
+            "strokeColorField": {
+              "name": "total_score",
+              "type": "real"
+            },
+            "strokeColorScale": "linear"
+          }
+        }
+      ]
+    },
+    "interactionConfig": {
+      "tooltip": {
+        "enabled": true,
+        "compareMode": false,
+        "fieldsToShow": {
+          "segments": [
+            { "name": "osm_id", "format": null },
+            { "name": "total_score", "format": null },
+            { "name": "all_scores", "format": null }
+          ]
+        }
+      }
+    }
+
+  }
+}

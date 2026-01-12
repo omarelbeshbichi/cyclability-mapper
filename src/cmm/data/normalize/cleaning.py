@@ -236,13 +236,11 @@ def prepare_cyclability_segment(gdf_row: pd.Series) -> dict:
     if highway == "footway":
         bike_infra = "footway"
         maxspeed = None
-
-    if highway == "cycleway":
+    elif highway == "cycleway":
         bike_infra = "cycleway"
         maxspeed = None
-
     ## Both-sides cycleway
-    if left_type and right_type:
+    elif left_type and right_type:
         bike_infra = left_type  # arbitrary, symmetric assumption
     ## Generic cycleway info & both sides
     elif undefined_type:
@@ -264,6 +262,7 @@ def prepare_cyclability_segment(gdf_row: pd.Series) -> dict:
     else:
         bike_infra = "none"
 
+    # Final adjustments
 
     if bike_infra == "no":
         bike_infra = "none"  

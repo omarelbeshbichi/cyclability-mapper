@@ -77,7 +77,8 @@ SELECT
     ns.osm_id,
     ns.geom,
     sm.total_score,
-    sm.metric_version
+    sm.metric_version,
+    sm.metric_features_scores
 FROM network_segments ns
 JOIN segment_metrics sm ON ns.id = sm.segment_id
 WHERE sm.metric_name = 'cyclability' --- only cyclability metrics

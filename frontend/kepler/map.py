@@ -1,57 +1,18 @@
 from keplergl import KeplerGl
 from .load_data import load_segments
+from cmm.utils.config_reader import read_config
 
+def create_map(user="user", host="localhost", password="pass", database="db", kepler_config_path: str = None):
 
-def create_map(user="user", host="localhost", password="pass", database="db"):
+    config = read_config("kepler", "json", kepler_config_path)
 
     gdf = load_segments(user, host, password, database)
     gdf = gdf.rename_geometry("geometry")
 
     m = KeplerGl(height=800)
-    m.add_data(gdf, "segments")
 
-    # THIS is the correct attribute
-    m.config = {
-        "version": "v1",
-        "config": {
-            "visState": {
-                "layers": [
-                    {
-                        "id": "cyclability",
-                        "type": "geojson",
-                        "config": {
-                            "dataId": "segments",
-                            "label": "Cyclability",
-                            "columns": {
-                                "geojson": "geometry"
-                            },
-                            "isVisible": True,
-                            "visConfig": {
-                                "thickness": 1,
-                                "strokeColorRange": {
-                                    "type": "sequential",
-                                    "category": "Custom",
-                                    "colors": [
-                                        "#d7191c",
-                                        "#fdae61",
-                                        "#ffffbf",
-                                        "#a6d96a",
-                                        "#1a9641"
-                                    ]
-                                }
-                            }
-                        },
-                        "visualChannels": {
-                            "strokeColorField": {
-                                "name": "total_score",
-                                "type": "real"
-                            },
-                            "strokeColorScale": "linear"
-                        }
-                    }
-                ]
-            }
-        }
-    }
+    # Apply data and configurations
+    m.add_data(gdf, "segments")
+    m.config = config
 
     return m
