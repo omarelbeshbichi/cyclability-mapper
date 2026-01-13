@@ -5,16 +5,18 @@ CREATE EXTENSION IF NOT EXISTS postgis;
 
 CREATE TYPE bike_infra_type AS ENUM (
     'cycleway',
-    'track', 
+    'track',
     'traffic_island',
     'link',
     'separate',
-    'lane', 
+    'opposite',
+    'lane',
     'shared_lane',
     'opposite_lane',
-    'footway', 
-    'share_busway', 
-    'share_lane', 
+    'footway',
+    'share_busway',
+    'shared',
+    'share_lane',
     'none',
     'crossing'
 );
@@ -82,4 +84,4 @@ SELECT
 FROM network_segments ns
 JOIN segment_metrics sm ON ns.id = sm.segment_id
 WHERE sm.metric_name = 'cyclability' --- only cyclability metrics
-  AND sm.metric_version = 'v1.0.0-5613271a' -- hardcoded for now 
+  AND sm.metric_version = 'v1.0.0-db4a59c8' -- hardcoded for now 

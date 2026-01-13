@@ -222,6 +222,8 @@ def prepare_cyclability_segment(gdf_row: pd.Series) -> dict:
         lit = "yes"
     if lit == "disused":
         lit = "no"
+    if lit == "yes;no":
+        lit = "yes"
    
     # Initialize parameters
     bike_ways = "both"

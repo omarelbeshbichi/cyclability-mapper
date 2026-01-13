@@ -57,10 +57,11 @@ def compute_metrics_score_from_segment(segment: dict,
         # If categorical parameter type in YAML file, select feature value directly from feature_value
         if feature_config["type"] == "categorical":
             feature_score = feature_config["mapping"].get(feature_value)    
-            if is_null:
+            if feature_score is None:
                 raise ValueError(
                     f"The value {repr(feature_value)} for feature '{feature_name}' "
-                    f"is missing from the YAML mapping. Please add it to the 'categorical' mapping."
+                    f"is missing from the YAML mapping. Please add it to the 'categorical' mapping.\n"
+                    f"Segment for which mapping is missing: '{segment.get('id')}'"
                 )
         
         # If continuous parameter type in YAML file, get bin for which feature_value is less 
