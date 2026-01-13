@@ -45,6 +45,7 @@ surface:
     concrete: 1.0
     concrete:lanes: 1.0
     concrete:plates: 0.95
+    concrete:slabs: 0.9
     metal: 0.95
     tiles: 0.95
     acrylic: 0.95
@@ -59,6 +60,7 @@ surface:
     cobblestone:flattened:large_stone: 0.55
     cobblestone:rounded: 0.55
     stone: 0.7
+    stone:slabs: 0.7
     bricks: 0.75
     grass_paver: 0.7
     metal_grid: 0.7

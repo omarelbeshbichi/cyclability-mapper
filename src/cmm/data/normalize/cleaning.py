@@ -73,10 +73,15 @@ def restrict_gdf(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
         GeoPandas GeoDataFrame storing filtered GeoJSON FeatureCollection to be used in package pipeline.
     """
 
+    # Filter out all segments with bicycle restriction
+    # ~ -> keep all rows not complying with the mask
+    mask = ~(gdf["bicycle"] == "no")
+    gdf_filtered = gdf[mask]
+
     # Filter out all highway = footway LineStrings with no bicycle designation
     # ~ -> keep all rows not complying with the mask
-    mask = ~((gdf["highway"] == "footway") & (gdf["bicycle"] != "yes"))
-    gdf_filtered = gdf[mask]
+    mask = ~((gdf_filtered["highway"] == "footway") & (gdf_filtered["bicycle"] != "yes"))
+    gdf_filtered = gdf_filtered[mask]
 
     # Filter out all highway = pedestrian LineStrings with no bicycle designation
     # ~ -> keep all rows not complying with the mask
