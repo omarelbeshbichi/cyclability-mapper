@@ -11,10 +11,9 @@ def parse_maxspeed_to_kmh(value):
     """
     Convert OSM maxspeed value to km/h.
     """
-        
-    # Return NaN if None
-    if value is None:
-        return np.nan
+    
+    if value == None:
+        return None
 
     # Return value itself if present
     if isinstance(value, (int, float)):
@@ -28,7 +27,7 @@ def parse_maxspeed_to_kmh(value):
         maxspeed_mph = value.split()[0]
         return int( int(maxspeed_mph) * 1.60934 )
     
-    # Convert knots to km/h
+    # Convert knots to km/h (irrelevant but added nonetheless)
     if "knots" in value:
         maxspeed_knots = value.split()[0]
         return int( float(maxspeed_knots) * 1.852 )
@@ -38,7 +37,7 @@ def parse_maxspeed_to_kmh(value):
         return int(value)
     
     # Else...
-    return np.nan
+    return None
 
 def normalize_maxspeed_info(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     """
@@ -49,6 +48,12 @@ def normalize_maxspeed_info(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
 
     # Update maxspeed info with normalized data (replace for now)
     gdf["maxspeed"] = gdf["maxspeed"].apply(parse_maxspeed_to_kmh)
+    
+    # Convert updated values as strings and use None for NaN - comply with pipeline
+    gdf["maxspeed"] = [
+        str(int(val)) if not pd.isna(val) else None 
+        for val in gdf["maxspeed"]
+    ]
 
     return gdf
 
@@ -72,6 +77,11 @@ def restrict_gdf(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     # ~ -> keep all rows not complying with the mask
     mask = ~((gdf["highway"] == "footway") & (gdf["bicycle"] != "yes"))
     gdf_filtered = gdf[mask]
+
+    # Filter out all highway = pedestrian LineStrings with no bicycle designation
+    # ~ -> keep all rows not complying with the mask
+    mask = ~((gdf_filtered["highway"] == "pedestrian") & (gdf_filtered["bicycle"] != "yes"))
+    gdf_filtered = gdf_filtered[mask]
 
     # Filter out motorways
     mask = ~((gdf_filtered["highway"] == "motorway") | (gdf_filtered["highway"] == "motorway_link"))
@@ -233,6 +243,7 @@ def prepare_cyclability_segment(gdf_row: pd.Series) -> dict:
     # Parse cycleway_dict
 
     ## Define cycleways and cyclable footways
+    # In footways and cycleways I don't apply maxspeed penalty
     if highway == "footway":
         bike_infra = "footway"
         maxspeed = None

@@ -65,6 +65,7 @@ surface:
     compacted: 0.6
     fine_gravel: 0.6
     gravel: 0.45
+    gravel;ground: 0.45
     gravel;grass: 0.4
     shells: 0.45
     rock: 0.4

@@ -53,10 +53,11 @@ def compute_metrics_score_from_segment(segment: dict,
     for feature_name, feature_config in metrics_config.items():
         # Define value of given feature for current segment
         feature_value = segment.get(feature_name)
+        is_null = pd.isna(feature_value)
         # If categorical parameter type in YAML file, select feature value directly from feature_value
         if feature_config["type"] == "categorical":
             feature_score = feature_config["mapping"].get(feature_value)    
-            if feature_score is None:
+            if is_null:
                 raise ValueError(
                     f"The value {repr(feature_value)} for feature '{feature_name}' "
                     f"is missing from the YAML mapping. Please add it to the 'categorical' mapping."
@@ -66,10 +67,15 @@ def compute_metrics_score_from_segment(segment: dict,
         # or equal than threshold
         elif feature_config["type"] == "continuous":
             for bin in feature_config["bins"]:
-                if feature_name == "maxspeed" and feature_value == None and (segment.get("highway") == "footway" or segment.get("highway") == "cycleway"):
-                    feature_score = 1.0 # High maxspeed score for footway and cycleway type when None is given (typical)
+                # High maxspeed score for footway and cycleway type when no info is given (typical)
+                if feature_name == "maxspeed" and is_null and (segment.get("highway") == "footway" or segment.get("highway") == "cycleway"):
+                    feature_score = 1.0 
                     break
-
+                # Assign neutral maxspeed score if maxspeed is not given and segment type is legal
+                elif feature_name == "maxspeed" and is_null:
+                    feature_score = 0.5
+                    break
+                # Assign score
                 elif float(feature_value) <= bin["max"]:
                     feature_score = bin["metrics"]
                     break

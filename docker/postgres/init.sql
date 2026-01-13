@@ -82,4 +82,4 @@ SELECT
 FROM network_segments ns
 JOIN segment_metrics sm ON ns.id = sm.segment_id
 WHERE sm.metric_name = 'cyclability' --- only cyclability metrics
-  AND sm.metric_version = 'v1.0.0-499b495d' -- hardcoded for now 
+  AND sm.metric_version = 'v1.0.0-5613271a' -- hardcoded for now 
