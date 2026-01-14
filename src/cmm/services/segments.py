@@ -1,13 +1,13 @@
 import geopandas as gpd
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 import logging 
 import json
 import os
 
 
-def load_segments() -> gpd.GeoDataFrame:
+def load_segments_for_viz() -> gpd.GeoDataFrame:
     """
-    Text
+    Load cyclability segments from PostGIS for visualization use.
     """
 
     # Use DATABASE_URL if running inside Docker, else fallback to localhost
@@ -16,9 +16,10 @@ def load_segments() -> gpd.GeoDataFrame:
         "postgresql+psycopg2://user:pass@localhost:5432/db"
     )
 
+    # Create SQLAlchemy engine
+    engine = create_engine(DATABASE_URL)
+
     try:
-        # Create SQLAlchemy engine
-        engine = create_engine(DATABASE_URL)
 
         # Select data from PostGIS virtual (view) table v_cyclability_score
         query = """
@@ -60,6 +61,8 @@ def load_segments() -> gpd.GeoDataFrame:
 
         logging.info(f"Data successfully queried from PostGIS database for frontend use.")
 
+        return gdf
+    
     except Exception as e:
         logging.error(f"Error loading data from PostGIS for frontend use: {e}")
         raise 
@@ -67,4 +70,50 @@ def load_segments() -> gpd.GeoDataFrame:
     finally:
         engine.dispose()
 
-    return gdf
+def load_segment_from_id(osm_id: str) -> gpd.GeoDataFrame:
+    """
+    Load network segment from PostGIS associated to specific OSM ID.
+    """
+
+    # Normalize ID in compliace with PostGIS
+    osm_id = f"way/{osm_id}"
+    
+    # Use DATABASE_URL if running inside Docker, else fallback to localhost
+    DATABASE_URL = os.getenv(
+        "DATABASE_URL",
+        "postgresql+psycopg2://user:pass@localhost:5432/db"
+    )
+
+    # Create SQLAlchemy engine
+    engine = create_engine(DATABASE_URL)
+
+    try:
+
+        # Select data from PostGIS virtual (view) table v_cyclability_score
+        query = text("""
+        SELECT
+            osm_id,
+            street_name,
+            bike_infra,
+            maxspeed,
+            is_oneway,
+            is_lit,
+            surface,
+            highway
+        FROM network_segments ns
+        WHERE ns.osm_id = :osm_id;
+        """)
+
+        with engine.connect() as conn:
+            result = conn.execute(query, {"osm_id": osm_id}).mappings().first()
+
+        logging.info(f"Data successfully queried from PostGIS database for frontend use.")
+
+        return dict(result) if result else None
+    
+    except Exception as e:
+        logging.error(f"Error loading data from PostGIS for frontend use: {e}")
+        raise 
+
+    finally:
+        engine.dispose()

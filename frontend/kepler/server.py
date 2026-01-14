@@ -15,7 +15,7 @@ def serve_map():
     m = create_map(kepler_config_path)
 
     # Obtain HTML representation of kepler map (save to temp -> load from temp)
-    with tempfile.NamedTemporaryFile(suffix=".html", delete = False) as f:        
+    with tempfile.NamedTemporaryFile(suffix = ".html", delete = False) as f:        
         m.save_to_html(file_name = f.name, read_only = True)
         html_content = f.read().decode("utf-8")
 
