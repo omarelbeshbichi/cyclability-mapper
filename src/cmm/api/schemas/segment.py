@@ -13,6 +13,7 @@ class SegmentNetworkOut(BaseModel):
     highway: Optional[str]
     total_score: Optional[float]
     metric_features_scores: Optional[Dict[str, float]]
+    metric_version: Optional[str]
 
 class SegmentQuery(BaseModel):
     city: str = Field(min_length = 2)

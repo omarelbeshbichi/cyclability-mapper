@@ -72,8 +72,18 @@ CREATE TABLE IF NOT EXISTS segment_metrics (
 );
 
 --- define virtual view table used to query cyclability data for frontend/API use
---- select cyclability indeces from segment_metrics table 
+--- select cyclability indeces from segment_metrics table (for now redundant, only metric available)
 CREATE VIEW v_cyclability_segment_detail AS
+WITH latest_metric AS ( -- define helper table picking up latest metric data (using latest metric_version)
+    SELECT DISTINCT ON (segment_id)
+        segment_id,
+        total_score,
+        metric_features_scores,
+        metric_version
+    FROM segment_metrics
+    WHERE metric_name = 'cyclability' 
+    ORDER BY segment_id, metric_version DESC -- order by version: 'v1.0.1-anysha' > 'v1.0.0-xyz'
+)
 SELECT
     ns.id,
     ns.osm_id,
@@ -85,10 +95,8 @@ SELECT
     ns.is_lit,
     ns.surface,
     ns.highway,
-    sm.total_score,
-    sm.metric_features_scores,
-    sm.metric_version
+    lm.total_score, -- use helper table here
+    lm.metric_features_scores,
+    lm.metric_version
 FROM network_segments ns
-JOIN segment_metrics sm ON ns.id = sm.segment_id
-WHERE sm.metric_name = 'cyclability'
-  AND sm.metric_version = 'v1.0.0-e31332ad';
+JOIN latest_metric lm ON ns.id = lm.segment_id;

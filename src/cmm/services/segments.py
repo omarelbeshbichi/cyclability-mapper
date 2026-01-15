@@ -101,7 +101,8 @@ def load_segment_from_id(osm_id: str) -> gpd.GeoDataFrame:
             surface,
             highway,
             total_score,
-            metric_features_scores
+            metric_features_scores,
+            metric_version
         FROM v_cyclability_segment_detail
         WHERE osm_id = :osm_id;
         """)
