@@ -21,14 +21,14 @@ def load_segments_for_viz() -> gpd.GeoDataFrame:
 
     try:
 
-        # Select data from PostGIS virtual (view) table v_cyclability_score
+        # Select data from PostGIS virtual (view) table v_cyclability_segment_detail
         query = """
         SELECT
             osm_id,
             total_score,
             metric_features_scores,
             geom
-        FROM v_cyclability_score
+        FROM v_cyclability_segment_detail
         """
 
         # Read data and store in GeoDataFrame
@@ -89,7 +89,7 @@ def load_segment_from_id(osm_id: str) -> gpd.GeoDataFrame:
 
     try:
 
-        # Select data from PostGIS virtual (view) table v_cyclability_score
+        # Select data from PostGIS virtual (view) table v_cyclability_segment_detail
         query = text("""
         SELECT
             osm_id,
@@ -99,9 +99,11 @@ def load_segment_from_id(osm_id: str) -> gpd.GeoDataFrame:
             is_oneway,
             is_lit,
             surface,
-            highway
-        FROM network_segments ns
-        WHERE ns.osm_id = :osm_id;
+            highway,
+            total_score,
+            metric_features_scores
+        FROM v_cyclability_segment_detail
+        WHERE osm_id = :osm_id;
         """)
 
         with engine.connect() as conn:

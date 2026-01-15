@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, Dict
+
 
 class SegmentNetworkOut(BaseModel):
     osm_id: str
@@ -10,6 +11,8 @@ class SegmentNetworkOut(BaseModel):
     is_lit: Optional[bool]
     surface: Optional[str]
     highway: Optional[str]
+    total_score: Optional[float]
+    metric_features_scores: Optional[Dict[str, float]]
 
 class SegmentQuery(BaseModel):
     city: str = Field(min_length = 2)
