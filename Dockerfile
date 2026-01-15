@@ -13,4 +13,4 @@ RUN pip install -e .
 
 COPY frontend/ frontend/
 
-CMD ["uvicorn", "frontend.kepler.server:app", "--host", "0.0.0.0", "--port", "8501"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -1,0 +1,15 @@
+from fastapi import APIRouter, HTTPException
+
+from cmm.api.schemas.segment import SegmentNetworkOut
+from cmm.services.segments import load_segment_from_id
+
+router = APIRouter(prefix = "/segments", tags = ["segments"])
+
+@router.get("/{osm_id}", response_model = SegmentNetworkOut)
+def get_segment(osm_id: str):
+    segment = load_segment_from_id(osm_id)
+
+    if segment is None:
+        raise HTTPException(status_code = 404, detail = "Segment not available in DB")
+
+    return segment

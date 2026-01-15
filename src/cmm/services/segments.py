@@ -107,12 +107,12 @@ def load_segment_from_id(osm_id: str) -> gpd.GeoDataFrame:
         with engine.connect() as conn:
             result = conn.execute(query, {"osm_id": osm_id}).mappings().first()
 
-        logging.info(f"Data successfully queried from PostGIS database for frontend use.")
+        logging.info(f"Data successfully queried from PostGIS database for API use.")
 
         return dict(result) if result else None
     
     except Exception as e:
-        logging.error(f"Error loading data from PostGIS for frontend use: {e}")
+        logging.error(f"Error loading data from PostGIS for API use: {e}")
         raise 
 
     finally:
