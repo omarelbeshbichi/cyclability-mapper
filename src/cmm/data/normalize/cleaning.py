@@ -5,7 +5,7 @@ Module providing functions to normalize OSM data.
 import geopandas as gpd
 import pandas as pd
 import numpy as np
-
+from cmm.domain.segment import Segment, CyclabilitySegment
 
 def parse_maxspeed_to_kmh(value):
     """
@@ -175,7 +175,7 @@ def normalize_cycleway_info(tags: dict) -> dict:
     
     return cycleway_dict
 
-def prepare_cyclability_segment(gdf_row: pd.Series) -> dict:
+def prepare_cyclability_segment(gdf_row: pd.Series) -> CyclabilitySegment:
     """
     Prepare dictionary of cyclability features from a single GeoDataFrame row.
 
@@ -187,8 +187,8 @@ def prepare_cyclability_segment(gdf_row: pd.Series) -> dict:
 
     Returns
     -------
-    dict
-        Dictionary with parsed cyclability information:
+    CyclabilitySegment
+        CyclabilitySegment dataclass with parsed cyclability information:
         - "id": segment identifier
         - "name": segment name
         - "geometry": segment geometry
@@ -285,17 +285,15 @@ def prepare_cyclability_segment(gdf_row: pd.Series) -> dict:
     if bike_infra == "no":
         bike_infra = "none"  
 
-    ## Store key information in segment dictionary
-    segment = {
-        "id": id,
-        "name": name,
-        "geometry": geometry,
-        "bike_infrastructure": bike_infra,
-        "oneway": "yes" if bike_ways == "one" else "no",
-        "maxspeed": maxspeed,
-        "surface": surface,
-        "lighting": lit,
-        "highway": highway
-    }
-
-    return segment
+    ## Store key information in Segment dataclass
+    return CyclabilitySegment(
+        id = id,
+        name = name,
+        geometry = geometry,
+        bike_infrastructure = bike_infra,
+        oneway = "yes" if bike_ways == "one" else "no",
+        maxspeed = maxspeed,
+        surface = surface,
+        lighting = lit,
+        highway = highway
+    )
