@@ -54,9 +54,9 @@ def dataframe_to_postgres(gdf: gpd.GeoDataFrame,
 
         # Load gdf to network_segments table
         if df_type == "gdf":
-            gdf.to_postgis(table_name, engine, if_exists=if_exists, index=False)
+            gdf.to_postgis(table_name, engine, if_exists = if_exists, index = False)
         if df_type == "df":
-            gdf.to_sql(table_name, engine, if_exists=if_exists, index=False)
+            gdf.to_sql(table_name, engine, if_exists = if_exists, index=  False)
 
 
         logging.info(f"Data successfully loaded into PostGIS table '{table_name}'.")
