@@ -10,7 +10,6 @@ def main(south, west, north, east):
     from cmm.utils.misc import get_project_root
     from cmm.data.ingest.overpass_queries import roads_in_bbox
 
-
     root = get_project_root()
 
     query = roads_in_bbox(

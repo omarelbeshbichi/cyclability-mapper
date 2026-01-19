@@ -86,7 +86,6 @@ def prepare_network_segments_gdf_for_postgis(augmented_gdf: gpd.GeoDataFrame) ->
     
     # Rename columns
     gdf = gdf.rename(columns={
-            "id": "osm_id",
             "name": "street_name",
             "geometry": "geom",
             "bike_infrastructure": "bike_infra",
@@ -168,14 +167,14 @@ def prepare_metrics_df_for_postgis(augmented_gdf: gpd.GeoDataFrame,
         engine.dispose()
 
     # Keep only matching elements - used for robustness
-    gdf_aligned = gdf.merge(segments_df, left_on="id", right_on="osm_id", how="inner") 
+    gdf_aligned = gdf.merge(segments_df, on = "osm_id", how = "inner") 
 
     # Define components
     features_scores_json = [json.dumps(f) for f in metrics_features_scores_cyclability]
 
     # Convert metrics into a dataframe
     metrics_df_final = pd.DataFrame({
-        "segment_id": gdf_aligned["id_y"],
+        "segment_id": gdf_aligned["id"],
         "metric_name": metric_name,
         "metric_version": metric_version,
         "total_score": gdf_aligned[metric_col],

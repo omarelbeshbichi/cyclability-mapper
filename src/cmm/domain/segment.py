@@ -3,7 +3,7 @@ from typing import Optional, Any
 
 @dataclass
 class Segment:
-    id: Any
+    osm_id: Any
     name: Optional[str]
     geometry: Any
 

@@ -67,7 +67,7 @@ def test_overpass_elements_to_geojson():
 
     assert feature["type"] == "Feature"
     assert feature["id"] == "way/1"
-    assert feature["properties"]["@id"] == "way/1"
+    assert feature["properties"]["osm_id"] == "way/1"
     assert feature["properties"]["highway"] == "residential"
 
     assert feature["geometry"]["type"] == "LineString"

@@ -9,7 +9,7 @@ def make_test_gdf():
         "highway": ["footway", "primary", "motorway", "bus_guideway"],
         "bicycle": [None, "yes", "yes", "yes"],
         "geometry": [LineString([(0,0),(1,0)])]*4,
-        "@id":[1,2,3,4],
+        "osm_id":[1,2,3,4],
         "wikidata":[None]*4,
         "smoothness":[None]*4,
         "crossing":[None]*4

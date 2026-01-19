@@ -36,7 +36,7 @@ def overpass_elements_to_geojson(elements: list) -> dict:
         feature = {
             "type": "Feature",
             "properties": {
-                "@id": f"way/{element['id']}",
+                "osm_id": f"way/{element['id']}",
                 **element.get("tags", {}) # Return empty dictionary if no tags
             },
             "geometry": {

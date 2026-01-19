@@ -203,7 +203,7 @@ def prepare_cyclability_segment(gdf_row: pd.Series) -> CyclabilitySegment:
 
     #%% INIT 
     # Gather segments facts
-    id =  gdf_row.get("@id")
+    osm_id =  gdf_row.get("osm_id")
     name =  gdf_row.get("name")
     geometry = gdf_row.get("geometry")
     
@@ -285,9 +285,15 @@ def prepare_cyclability_segment(gdf_row: pd.Series) -> CyclabilitySegment:
     if bike_infra == "no":
         bike_infra = "none"  
 
+    ## If data present in gdf, load them instead of parsing
+    # This section is used when loading data from PostGIS (jobs/recompute_metrics)
+    if "bike_infra" in gdf_row and pd.notna(gdf_row["bike_infra"]):
+        bike_infra = gdf_row["bike_infra"]
+        bike_ways = gdf_row["is_oneway"]
+        
     ## Store key information in Segment dataclass
     return CyclabilitySegment(
-        id = id,
+        osm_id = osm_id,
         name = name,
         geometry = geometry,
         bike_infrastructure = bike_infra,
