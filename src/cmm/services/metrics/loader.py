@@ -46,7 +46,7 @@ def load_segments_for_metrics_recompute() -> gpd.GeoDataFrame:
 
         # Resolve bool to comply with pipeline
         gdf["lit"] = gdf["lit"].map({True: "yes", False: "no"})
-        gdf["is_oneway"] = gdf["is_oneway"].map({True: "yes", False: "no"})
+        gdf["is_oneway"] = gdf["is_oneway"].map({True: "one", False: "both"})
 
 
         logging.info(f"Data successfully retrieved from PostGIS database for metrics recomputation.")
