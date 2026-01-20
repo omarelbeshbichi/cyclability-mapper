@@ -237,6 +237,8 @@ def prepare_cyclability_segment(gdf_row: pd.Series) -> CyclabilitySegment:
     #%% PARSE
 
     # Parse oneway information
+        # In OSM "oneway=yes" indicates a one-way cycleway
+        # see: https://wiki.openstreetmap.org/wiki/Key:oneway:bicycle 
     if oneway_dict.get("oneway") == "yes" and "oneway:bicycle" not in oneway_dict:
         bike_ways = "one"
     elif oneway_dict.get("oneway") == "yes" and oneway_dict.get("oneway:bicycle") == "no":
@@ -266,22 +268,13 @@ def prepare_cyclability_segment(gdf_row: pd.Series) -> CyclabilitySegment:
     ## Left cycleway
     elif left_type:
         bike_infra = left_type
-        # Check way
-        # In OSM "oneway=yes" indicates a one-way cycleway
-        # see: https://wiki.openstreetmap.org/wiki/Key:oneway:bicycle 
-        if cycleway_dict["left"].get("oneway") == "yes":
-            bike_ways = "one"
     ## Right cycleway
     elif right_type:
         bike_infra = right_type
-        # Check way
-        if cycleway_dict["right"].get("oneway") == "yes":
-            bike_ways = "one"
     else:
         bike_infra = "none"
 
     # Final adjustments
-
     if bike_infra == "no":
         bike_infra = "none"  
 
