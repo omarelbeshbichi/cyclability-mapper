@@ -2,12 +2,28 @@
 Utility functions for common Shapely geometrical operations.
 """
 
-from shapely.geometry import Point
+from shapely.geometry import Point, box, Polygon
+from shapely.geometry.base import BaseGeometry
 
 # Geometry info
-def get_bounds(geom):
-    """Return (minx, miny, maxx, maxy) bounding the geometry."""
-    return geom.bounds
+def geom_from_bbox(south: float,
+                    west: float,
+                    north: float,
+                    east: float) -> Polygon:
+    """
+    Define geometry (Polygon) from bounding box.
+    """
+
+    geom = box(west, south, east, north)
+    return geom
+
+def bbox_from_geom(geom: BaseGeometry) -> tuple[float, float, float, float]:
+    """
+    Returns bounding box of given Shapely geometry.
+    """
+
+    minx, miny, maxx, maxy = geom.bounds
+    return miny, minx, maxy, maxx
 
 def get_length(geom):
     """Return length of the geometry."""

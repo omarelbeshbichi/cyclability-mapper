@@ -38,11 +38,11 @@ def load_segments_for_metrics_recompute() -> gpd.GeoDataFrame:
         gdf = gpd.read_postgis(query, engine, geom_col = "geom", crs = "EPSG:4326")
 
         # Rename for pipeline compatibility
-        gdf = gdf.rename(columns={'street_name': 'name'})
-        gdf = gdf.rename(columns={'geom': 'geometry'})
-        gdf = gdf.rename(columns={'is_lit': 'lit'})
+        gdf = gdf.rename(columns={"street_name": "name"})
+        gdf = gdf.rename(columns={"geom": "geometry"})
+        gdf = gdf.rename(columns={"is_lit": "lit"})
         
-        gdf = gdf.set_geometry('geometry')
+        gdf = gdf.set_geometry("geometry")
 
         # Resolve bool to comply with pipeline
         gdf["lit"] = gdf["lit"].map({True: "yes", False: "no"})

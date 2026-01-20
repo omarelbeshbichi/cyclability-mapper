@@ -207,7 +207,7 @@ def define_augmented_geodataframe(gdf: gpd.GeoDataFrame,
 
         # Logging of progress every 100 rows or last row
         if idx % 100 == 0 or idx == total:
-            logger.info(f"Processed {idx}/{total} segments")
+            logger.info(f"Processed {idx}/{total} segments.")
 
     # Cyclability - Unpack segments and associated score features informaton
     segments_cyclability = []

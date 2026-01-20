@@ -1,5 +1,6 @@
 
 from pathlib import Path
+import logging
 
 from cmm.data.ingest.geojson_loader import geojson_to_gdf
 from cmm.data.ingest.overpass_client import run_overpass_query
@@ -31,6 +32,7 @@ def build_network_from_api(query: str,
     upload : bool, optional
         If True, upload processed network segments and metrics to PostGIS.
     """
+    logging.info("API FETCH")
 
     # Fetch data from API
     data_json = run_overpass_query(query, 200, 50, 2.0)
@@ -38,16 +40,19 @@ def build_network_from_api(query: str,
     gdf = geojson_to_gdf(data_geojson)
 
     # Transformation layer
+    logging.info("TRANSFORM DATA")
     gdf_proc = validate_gdf_linestrings(gdf) # Validate geometry
     gdf_proc = restrict_gdf(gdf_proc) # Restrict data
     gdf_proc = normalize_maxspeed_info(gdf_proc) # Normalize maxspeed info to km/h
 
     # Compute metrics and augment dataframe
+    logging.info("COMPUTE METRICS")
     gdf_proc, metrics_features_scores = define_augmented_geodataframe(gdf_proc, 
                                                                     weights_config_path, 
                                                                     cyclability_config_path)
         
     if upload == True:
+        logging.info("SAVE TO DATABASE")
         # Prepare segments GDF for PostGIS upload
         gdf_proc_prepared = prepare_network_segments_gdf_for_postgis(gdf_proc)
 
@@ -59,3 +64,4 @@ def build_network_from_api(query: str,
 
         # Upload metrics GDF to PostGIS
         dataframe_to_postgres(df_metrics_prepared, 'segment_metrics', 'df', 'append')
+        

@@ -5,7 +5,7 @@ Module providing functions to normalize OSM data.
 import geopandas as gpd
 import pandas as pd
 import numpy as np
-from cmm.domain.segment import Segment, CyclabilitySegment
+from cmm.domain.segment import CyclabilitySegment
 
 def parse_maxspeed_to_kmh(value):
     """

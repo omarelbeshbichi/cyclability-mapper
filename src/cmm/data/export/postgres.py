@@ -7,10 +7,229 @@ import pandas as pd
 import logging 
 from sqlalchemy import create_engine
 from sqlalchemy import text
+from sqlalchemy.sql import quoted_name
 from ...metrics.config.versioning import get_config_version
 import json
 import os
+from shapely import wkb
+from shapely.geometry import Polygon
 
+def reference_area_to_postgres(name: str, 
+                                geom: Polygon):
+    """
+    Insert or update reference area geometry to PostGIS (table refresh_areas).
+
+    Parameters
+    ----------
+    name : str
+        Name of the refresh area (e.g. "rome_center")
+    geom: Polygon
+        Reference geometry used to define bounding box.
+    """
+
+    DATABASE_URL = os.getenv(
+        "DATABASE_URL",
+        "postgresql+psycopg2://user:pass@localhost:5432/db"
+    )
+
+    try:
+    
+        engine = create_engine(DATABASE_URL)
+
+        with engine.begin() as conn:
+            conn.execute(
+                text("""
+                    INSERT INTO refresh_areas (name, geom, created_at)
+                    VALUES (
+                        :name,
+                        ST_SetSRID(ST_GeomFromWKB(:geom), 4326),
+                        NOW()
+                    )
+                    ON CONFLICT (name)
+                    DO UPDATE SET
+                        geom = EXCLUDED.geom,
+                        created_at = NOW();
+                """),
+                {
+                    "name": name,
+                    "geom": wkb.dumps(geom)
+                }
+            )
+
+        logging.info(f"Reference area '{name}' added successfully to refresh_areas table.")
+
+    finally:
+        engine.dispose()
+
+def load_reference_area(name: str):
+    """
+    Load reference geometry stored in refresh_areas table to define refresh bounding box.
+    """
+
+    DATABASE_URL = os.getenv(
+        "DATABASE_URL",
+        "postgresql+psycopg2://user:pass@localhost:5432/db"
+    )
+
+    engine = create_engine(DATABASE_URL)
+
+    try:
+        with engine.begin() as conn:
+            result = conn.execute(
+                text("""
+                    SELECT ST_AsBinary(geom) AS geom_wkb
+                    FROM refresh_areas
+                    WHERE name = :name
+                """),
+                {"name": name}
+            ).fetchone()
+
+            if result is None:
+                raise ValueError(f"Refresh area '{name}' not found")
+
+            geom_wkb = result[0]
+
+            # Handle memoryview type (used in psycopg2 and other drivers)
+            if isinstance(geom_wkb, memoryview):
+                geom_wkb = geom_wkb.tobytes()
+
+            return wkb.loads(geom_wkb)
+
+    finally:
+        engine.dispose()
+
+def truncate_table(table_name: str):
+    """
+    Remove all rows from a PostGIS table, reset IDs, and cascade deletes.
+    """
+
+    DATABASE_URL = os.getenv(
+        "DATABASE_URL",
+        "postgresql+psycopg2://user:pass@localhost:5432/db"
+    )
+
+    try:
+        engine = create_engine(DATABASE_URL)
+
+        quoted_table = quoted_name(table_name, quote=True)
+
+        with engine.begin() as conn:
+            conn.execute(text(f"""
+                TRUNCATE TABLE {quoted_table}
+                RESTART IDENTITY
+                CASCADE;
+            """))
+
+        logging.info(f"Table '{table_name}' successfully cleared.")
+
+    except Exception as e:
+        logging.error(f"Error clearing table '{table_name}': {e}")
+
+    finally:
+        engine.dispose()
+
+def delete_segments_in_bbox(south: float, 
+                            west: float, 
+                            north: float, 
+                            east: float):
+    """
+    Remove from PostGIS table all segments intersecting given bounding box.
+    """
+
+    # Use DATABASE_URL if running inside Docker, else fallback to localhost
+    DATABASE_URL = os.getenv(
+        "DATABASE_URL",
+        "postgresql+psycopg2://user:pass@localhost:5432/db"
+    ) 
+
+    # Normalize values as floats
+    south = float(south)
+    west  = float(west)
+    north = float(north)
+    east  = float(east)
+
+    try:
+        # Create SQLAlchemy engine
+        engine = create_engine(DATABASE_URL)
+
+        # Use SQL query to delete only data associated with segments within the provided bounding box.
+        with engine.begin() as conn:
+                result = conn.execute(text(f"""
+                DELETE FROM network_segments
+                WHERE ST_Intersects(
+                        geom,
+                        ST_MakeEnvelope(:west, :south, :east, :north, 4326)
+                );
+            """), {
+                "south": south,
+                "west": west,
+                "north": north,
+                "east": east
+            })
+            
+        deleted_rows = result.rowcount
+
+        logging.info(f"{deleted_rows} rows of network_segments within bbox ({south}, {west}, {north}, {east}) deleted from PostGIS.")
+        
+
+    except Exception as e:
+        logging.error(f"Error deleting bbox data from PostGIS: {e}")
+
+    finally:
+        engine.dispose()
+
+def delete_segment_metrics_in_bbox(south: float, 
+                            west: float, 
+                            north: float, 
+                            east: float):
+    """
+    Remove from PostGIS metrics table all data associated to a given bounding box.
+    """
+
+    DATABASE_URL = os.getenv(
+        "DATABASE_URL",
+        "postgresql+psycopg2://user:pass@localhost:5432/db"
+    )
+
+    # Normalize values as floats
+    south = float(south)
+    west  = float(west)
+    north = float(north)
+    east  = float(east)
+
+    try:
+        engine = create_engine(DATABASE_URL)
+
+        # Use SQL query to delete only metrics associated with segments within the provided bounding box.
+        with engine.begin() as conn:
+            result = conn.execute(
+                text("""
+                    DELETE FROM segment_metrics sm
+                    USING network_segments ns
+                    WHERE sm.segment_id = ns.id
+                    AND ST_Intersects(
+                        geom,
+                        ST_MakeEnvelope(:west, :south, :east, :north, 4326)
+                    );
+                """),
+                {
+                    "south": south,
+                    "west": west,
+                    "north": north,
+                    "east": east,
+                }
+            )
+
+            deleted_rows = result.rowcount
+
+        logging.info(f"{deleted_rows} rows of segment_metrics within bbox ({south}, {west}, {north}, {east}) deleted from PostGIS.")
+
+    except Exception as e:
+        logging.error(f"Error deleting segment_metrics in bbox: {e}")
+        raise
+
+    finally:
+        engine.dispose()
 
 def dataframe_to_postgres(gdf: gpd.GeoDataFrame,
                         table_name: str,
@@ -43,23 +262,15 @@ def dataframe_to_postgres(gdf: gpd.GeoDataFrame,
 
         # Write GeoDataFrame to PostGIS
 
-        # Reset network_segment table - clear rows, restart ids, delete dependencies
-        # NB: CASCADE -> delete also rows in segment_metrics associated with network_metrics
-        with engine.begin() as conn:
-            conn.execute(text(f"""
-                TRUNCATE TABLE {table_name}
-                RESTART IDENTITY
-                CASCADE;
-            """))
-
         # Load gdf to network_segments table
         if df_type == "gdf":
             gdf.to_postgis(table_name, engine, if_exists = if_exists, index = False)
         if df_type == "df":
             gdf.to_sql(table_name, engine, if_exists = if_exists, index=  False)
 
+        rows_inserted = len(gdf)
 
-        logging.info(f"Data successfully loaded into PostGIS table '{table_name}'.")
+        logging.info(f"Data successfully loaded into PostGIS table '{table_name}': {rows_inserted} rows.")
 
     except Exception as e:
         logging.error(f"Error loading data to PostGIS: {e}")

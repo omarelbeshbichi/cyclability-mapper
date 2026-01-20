@@ -1,10 +1,11 @@
 
 from pathlib import Path
+import logging 
 
 from cmm.services.metrics.loader import load_segments_for_metrics_recompute
 from cmm.metrics.compute_metrics import define_augmented_geodataframe
-from cmm.data.export.postgres import prepare_network_segments_gdf_for_postgis
 from cmm.data.export.postgres import prepare_metrics_df_for_postgis
+from cmm.data.export.postgres import truncate_table
 from cmm.data.export.postgres import dataframe_to_postgres
 
 def recompute_metrics_from_postgis(weights_config_path: Path,
@@ -25,20 +26,22 @@ def recompute_metrics_from_postgis(weights_config_path: Path,
     """
 
     # Retrieve segments from PostGIS
+    logging.info("LOAD SEGMENTS")
     gdf = load_segments_for_metrics_recompute()
 
     # Compute metrics and augment dataframe
+    logging.info("COMPUTE METRICS")
     gdf_proc, metrics_features_scores = define_augmented_geodataframe(gdf, 
                                                                     weights_config_path, 
                                                                     cyclability_config_path)
         
     if upload == True:
-        # Prepare segments GDF for PostGIS upload
-        gdf_proc_prepared = prepare_network_segments_gdf_for_postgis(gdf_proc)
 
-        # Upload network segments data to PostGIS
-        dataframe_to_postgres(gdf_proc_prepared, 'network_segments', 'gdf', 'append')
+        # Clear-up metrics database
+        logging.info("CLEAR DATABASE")
+        truncate_table("segment_metrics")
 
+        logging.info("SAVE TO DATABASE")
         # Prepare metrics GDF for PostGIS upload 
         df_metrics_prepared = prepare_metrics_df_for_postgis(gdf_proc, metrics_features_scores, 'cyclability', cyclability_config_path)
 
