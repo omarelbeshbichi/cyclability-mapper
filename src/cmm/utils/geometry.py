@@ -4,6 +4,7 @@ Utility functions for common Shapely geometrical operations.
 
 from shapely.geometry import Point, box, Polygon
 from shapely.geometry.base import BaseGeometry
+from pyproj import Geod
 
 # Geometry info
 def geom_from_bbox(south: float,
@@ -28,6 +29,15 @@ def bbox_from_geom(geom: BaseGeometry) -> tuple[float, float, float, float]:
 def get_length(geom):
     """Return length of the geometry."""
     return geom.length
+
+def geodesic_length(geom):
+    """
+    Calculate WGS84 geodesic length of segment (more accurate - it computes length on ellipsoid surface instead of using projections). 
+    """
+    
+    geod = Geod(ellps = "WGS84") # WGS84: World Geodetic System 1984
+
+    return geod.geometry_length(geom)
 
 # Geometrical operations
 def midpoint(geom):

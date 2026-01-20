@@ -206,7 +206,8 @@ def prepare_cyclability_segment(gdf_row: pd.Series) -> CyclabilitySegment:
     osm_id =  gdf_row.get("osm_id")
     name =  gdf_row.get("name")
     geometry = gdf_row.get("geometry")
-    
+    segment_length = gdf_row.get("segment_length")
+
     # Gather quality factors
     lit = gdf_row.get("lit")
     highway = gdf_row.get("highway")
@@ -289,6 +290,7 @@ def prepare_cyclability_segment(gdf_row: pd.Series) -> CyclabilitySegment:
         osm_id = osm_id,
         name = name,
         geometry = geometry,
+        segment_length = segment_length,
         bike_infrastructure = bike_infra,
         oneway = "yes" if bike_ways == "one" else "no",
         maxspeed = maxspeed,

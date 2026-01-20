@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS network_segments (
     osm_id TEXT UNIQUE,
     street_name TEXT,
     geom GEOMETRY(LineString, 4326) NOT NULL,
+    segment_length DOUBLE PRECISION,
 
     -- ENUMs for faster filtering
     bike_infra bike_infra_type NOT NULL DEFAULT 'none',
@@ -107,6 +108,7 @@ SELECT
     ns.osm_id,
     ns.street_name,
     ns.geom,
+    ns.segment_length,
     ns.bike_infra,
     ns.maxspeed,
     ns.is_oneway,

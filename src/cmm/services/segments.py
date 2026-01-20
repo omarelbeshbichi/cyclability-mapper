@@ -27,7 +27,8 @@ def load_segments_for_viz() -> gpd.GeoDataFrame:
             osm_id,
             total_score,
             metric_features_scores,
-            geom
+            geom,
+            segment_length
         FROM v_cyclability_segment_detail
         """
 

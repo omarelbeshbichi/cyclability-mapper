@@ -12,6 +12,7 @@ from cmm.metrics.compute_metrics import define_augmented_geodataframe
 from cmm.data.export.postgres import prepare_network_segments_gdf_for_postgis
 from cmm.data.export.postgres import prepare_metrics_df_for_postgis
 from cmm.data.export.postgres import dataframe_to_postgres
+from cmm.utils.geometry import geodesic_length
 
 def build_network_from_api(query: str,
                            weights_config_path: Path,
@@ -44,6 +45,9 @@ def build_network_from_api(query: str,
     gdf_proc = validate_gdf_linestrings(gdf) # Validate geometry
     gdf_proc = restrict_gdf(gdf_proc) # Restrict data
     gdf_proc = normalize_maxspeed_info(gdf_proc) # Normalize maxspeed info to km/h
+
+    # ---- length-only computation (meters) ----
+    gdf_proc["segment_length"] = gdf_proc.geometry.apply(geodesic_length) 
 
     # Compute metrics and augment dataframe
     logging.info("COMPUTE METRICS")

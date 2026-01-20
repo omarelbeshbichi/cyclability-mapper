@@ -318,7 +318,7 @@ def prepare_network_segments_gdf_for_postgis(augmented_gdf: gpd.GeoDataFrame) ->
     )
     
     # Select final columns
-    gdf = gdf[["osm_id", "street_name", "geom", "bike_infra", "maxspeed", "is_oneway", "is_lit", "surface", "highway"]]
+    gdf = gdf[["osm_id", "street_name", "geom", "segment_length", "bike_infra", "maxspeed", "is_oneway", "is_lit", "surface", "highway"]]
     
     return gdf
 

@@ -6,6 +6,7 @@ class Segment:
     osm_id: Any
     name: Optional[str]
     geometry: Any
+    segment_length: float
 
     # Base method to assign metrics
     def set_metrics(self, metrics_name: str, value: float) -> None:

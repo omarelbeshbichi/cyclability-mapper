@@ -51,6 +51,7 @@
           "segments": [
             { "name": "osm_id", "format": null },
             { "name": "total_score", "format": null },
+            { "name": "segment_length", "format": null },
             { "name": "all_scores", "format": null }
           ]
         }

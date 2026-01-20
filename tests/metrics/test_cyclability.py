@@ -2,7 +2,7 @@ from cmm.metrics.compute_metrics import compute_metrics_score_from_segment
 import geopandas as gpd
 from shapely.geometry import LineString
 from cmm.domain.segment import CyclabilitySegment
-
+from cmm.utils.geometry import geodesic_length
 def test_compute_metrics_from_segment_with_components():
     
     # Test segment
@@ -10,6 +10,7 @@ def test_compute_metrics_from_segment_with_components():
         osm_id="way/123",
         name = "street",
         geometry= LineString([(0,0),(1,1)]),
+        segment_length= geodesic_length(LineString([(0,0),(1,1)])),
         bike_infrastructure= "lane",
         oneway= "no",
         maxspeed= 50,
