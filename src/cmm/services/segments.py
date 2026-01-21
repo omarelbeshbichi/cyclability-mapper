@@ -5,7 +5,7 @@ import json
 import os
 
 
-def load_segments_for_viz() -> gpd.GeoDataFrame:
+def load_segments_for_viz(city_name: str) -> gpd.GeoDataFrame:
     """
     Load cyclability segments from PostGIS for visualization use.
     """
@@ -22,7 +22,7 @@ def load_segments_for_viz() -> gpd.GeoDataFrame:
     try:
 
         # Select data from PostGIS virtual (view) table v_cyclability_segment_detail
-        query = """
+        query = text("""
         SELECT
             osm_id,
             total_score,
@@ -30,10 +30,15 @@ def load_segments_for_viz() -> gpd.GeoDataFrame:
             geom,
             segment_length
         FROM v_cyclability_segment_detail
-        """
+        WHERE city_name = :city_name
+        """)
 
         # Read data and store in GeoDataFrame
-        gdf = gpd.read_postgis(query, engine, geom_col="geom", crs="EPSG:4326")
+        gdf = gpd.read_postgis(query, 
+                               engine, 
+                               geom_col = "geom", 
+                               params = {"city_name": city_name},
+                               crs="EPSG:4326")
 
         # Load metric_features_scores
         if 'metric_features_scores' in gdf.columns:

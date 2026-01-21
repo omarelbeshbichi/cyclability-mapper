@@ -2,11 +2,12 @@ from keplergl import KeplerGl
 from cmm.services.segments import load_segments_for_viz
 from cmm.utils.config_reader import read_config
 
-def create_map(kepler_config_path: str = None):
+def create_map(city_name: str, 
+               kepler_config_path: str = None):
 
     config = read_config("kepler", "json", kepler_config_path)
 
-    gdf = load_segments_for_viz()
+    gdf = load_segments_for_viz(city_name)
     gdf = gdf.rename_geometry("geometry")
 
     # Compute bounding box and center map to given data

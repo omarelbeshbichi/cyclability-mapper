@@ -1,11 +1,11 @@
 import geopandas as gpd
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 import logging 
 import os
 
-def load_segments_for_metrics_recompute() -> gpd.GeoDataFrame:
+def load_segments_for_metrics_recompute(city_name: str) -> gpd.GeoDataFrame:
     """
-    Load cyclability segments from PostGIS for metrics recomputation.
+    Load cyclability segments of given city from PostGIS for metrics recomputation.
     """
 
     # Use DATABASE_URL if running inside Docker, else fallback to localhost
@@ -20,7 +20,7 @@ def load_segments_for_metrics_recompute() -> gpd.GeoDataFrame:
     try:
 
         # Select data from PostGIS virtual (view) table v_cyclability_segment_detail
-        query = """
+        query = text("""
         SELECT
             osm_id,
             street_name,
@@ -32,10 +32,15 @@ def load_segments_for_metrics_recompute() -> gpd.GeoDataFrame:
             surface,
             highway
         FROM v_cyclability_segment_detail
-        """
+        WHERE city_name = :city_name
+        """)
 
         # Read data and store in GeoDataFrame
-        gdf = gpd.read_postgis(query, engine, geom_col = "geom", crs = "EPSG:4326")
+        gdf = gpd.read_postgis(query, 
+                               engine, 
+                               geom_col = "geom",
+                               params = {"city_name": city_name}, 
+                               crs = "EPSG:4326")
 
         # Rename for pipeline compatibility
         gdf = gdf.rename(columns={"street_name": "name"})
@@ -49,12 +54,12 @@ def load_segments_for_metrics_recompute() -> gpd.GeoDataFrame:
         gdf["is_oneway"] = gdf["is_oneway"].map({True: "one", False: "both"})
 
 
-        logging.info(f"Data successfully retrieved from PostGIS database for metrics recomputation.")
+        logging.info(f"{city_name} data successfully retrieved from PostGIS database for metrics recomputation.")
 
         return gdf
     
     except Exception as e:
-        logging.error(f"Error loading data from PostGIS for metrics recomputation: {e}")
+        logging.error(f"Error loading {city_name} data from PostGIS for metrics recomputation: {e}")
         raise 
 
     finally:

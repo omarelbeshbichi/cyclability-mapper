@@ -14,16 +14,19 @@ from cmm.data.export.postgres import prepare_metrics_df_for_postgis
 from cmm.data.export.postgres import dataframe_to_postgres
 from cmm.utils.geometry import geodesic_length
 
-def build_network_from_api(query: str,
-                           weights_config_path: Path,
-                           cyclability_config_path: Path,
-                           upload: bool = True) -> None:
+def build_network_from_api(city_name: str,
+                            query: str,
+                            weights_config_path: Path,
+                            cyclability_config_path: Path,
+                            upload: bool = True) -> None:
     """
     Build road network from an Overpass API query and compute cyclability metrics.
     Optionally uploads processed network segments and metrics to PostGIS.
 
     Parameters
     ----------
+    city_name: str
+        Name of given city (e.g., "oslo").
     query : str
         Overpass QL query used to fetch data.
     weights_config_path : Path
@@ -58,13 +61,13 @@ def build_network_from_api(query: str,
     if upload == True:
         logging.info("SAVE TO DATABASE")
         # Prepare segments GDF for PostGIS upload
-        gdf_proc_prepared = prepare_network_segments_gdf_for_postgis(gdf_proc)
+        gdf_proc_prepared = prepare_network_segments_gdf_for_postgis(city_name, gdf_proc)
 
         # Upload network segments data to PostGIS
         dataframe_to_postgres(gdf_proc_prepared, 'network_segments', 'gdf', 'append')
 
         # Prepare metrics GDF for PostGIS upload 
-        df_metrics_prepared = prepare_metrics_df_for_postgis(gdf_proc, metrics_features_scores, 'cyclability', cyclability_config_path)
+        df_metrics_prepared = prepare_metrics_df_for_postgis(city_name, gdf_proc, metrics_features_scores, 'cyclability', cyclability_config_path)
 
         # Upload metrics GDF to PostGIS
         dataframe_to_postgres(df_metrics_prepared, 'segment_metrics', 'df', 'append')

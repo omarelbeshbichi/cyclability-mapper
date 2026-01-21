@@ -14,17 +14,17 @@ import os
 from shapely import wkb
 from shapely.geometry import Polygon
 
-def reference_area_to_postgres(name: str, 
+def reference_area_to_postgres(city_name: str, 
                                 geom: Polygon):
     """
     Insert or update reference area geometry to PostGIS (table refresh_areas).
 
     Parameters
     ----------
-    name : str
-        Name of the refresh area (e.g. "rome_center")
+    city_name : str
+        Name of given city (e.g. "oslo")
     geom: Polygon
-        Reference geometry used to define bounding box.
+        Reference geometry used to define bounding box
     """
 
     DATABASE_URL = os.getenv(
@@ -39,29 +39,29 @@ def reference_area_to_postgres(name: str,
         with engine.begin() as conn:
             conn.execute(
                 text("""
-                    INSERT INTO refresh_areas (name, geom, created_at)
+                    INSERT INTO refresh_areas (city_name, geom, created_at)
                     VALUES (
-                        :name,
+                        :city_name,
                         ST_SetSRID(ST_GeomFromWKB(:geom), 4326),
                         NOW()
                     )
-                    ON CONFLICT (name)
+                    ON CONFLICT (city_name)
                     DO UPDATE SET
                         geom = EXCLUDED.geom,
                         created_at = NOW();
                 """),
                 {
-                    "name": name,
+                    "city_name": city_name,
                     "geom": wkb.dumps(geom)
                 }
             )
 
-        logging.info(f"Reference area '{name}' added successfully to refresh_areas table.")
+        logging.info(f"Reference area '{city_name}' added successfully to refresh_areas table.")
 
     finally:
         engine.dispose()
 
-def load_reference_area(name: str):
+def load_reference_area(city_name: str):
     """
     Load reference geometry stored in refresh_areas table to define refresh bounding box.
     """
@@ -74,18 +74,19 @@ def load_reference_area(name: str):
     engine = create_engine(DATABASE_URL)
 
     try:
+
         with engine.begin() as conn:
             result = conn.execute(
                 text("""
                     SELECT ST_AsBinary(geom) AS geom_wkb
                     FROM refresh_areas
-                    WHERE name = :name
+                    WHERE city_name = :city_name
                 """),
-                {"name": name}
+                {"city_name": city_name}
             ).fetchone()
 
             if result is None:
-                raise ValueError(f"Refresh area '{name}' not found")
+                raise ValueError(f"'{city_name}' not found in PostGIS (refresh_areas table).")
 
             geom_wkb = result[0]
 
@@ -94,6 +95,55 @@ def load_reference_area(name: str):
                 geom_wkb = geom_wkb.tobytes()
 
             return wkb.loads(geom_wkb)
+
+    finally:
+        engine.dispose()
+
+def delete_city_rows(table_name: str, city_name: str):
+    """
+    Remove all rows associated with a given city from PostGIS table.
+    """
+
+    DATABASE_URL = os.getenv(
+        "DATABASE_URL",
+        "postgresql+psycopg2://user:pass@localhost:5432/db"
+    )
+
+    engine = create_engine(DATABASE_URL)
+
+    try:
+        quoted_table = quoted_name(table_name, quote = True)
+
+        with engine.begin() as conn:
+            
+            # Delete data in segment_metrics -> use network_segments to get city_name info
+            if table_name == "segment_metrics":
+                conn.execute(
+                    text(f"""
+                        DELETE FROM {quoted_table} sm
+                        USING network_segments ns
+                        WHERE sm.segment_id = ns.id
+                          AND ns.city_name = :city_name
+                    """),
+                    {"city_name": city_name}
+                )
+            else:
+                # Retrieve city_name directly (network_segments and refresh areas have it)
+                conn.execute(
+                    text(f"""
+                        DELETE FROM {quoted_table}
+                        WHERE city_name = :city_name;
+                    """),
+                    {"city_name": city_name}
+                )
+
+        logging.info(
+            f"Rows for city '{city_name}' successfully removed from '{table_name}'."
+        )
+
+    except Exception as e:
+        logging.error(f"Error deleting rows from '{table_name}': {e}")
+        raise
 
     finally:
         engine.dispose()
@@ -128,7 +178,8 @@ def truncate_table(table_name: str):
     finally:
         engine.dispose()
 
-def delete_segments_in_bbox(south: float, 
+def delete_segments_in_bbox(city_name: str, 
+                            south: float, 
                             west: float, 
                             north: float, 
                             east: float):
@@ -156,11 +207,13 @@ def delete_segments_in_bbox(south: float,
         with engine.begin() as conn:
                 result = conn.execute(text(f"""
                 DELETE FROM network_segments
-                WHERE ST_Intersects(
+                WHERE city_name = :city_name
+                AND ST_Intersects(
                         geom,
                         ST_MakeEnvelope(:west, :south, :east, :north, 4326)
                 );
             """), {
+                "city_name": city_name,
                 "south": south,
                 "west": west,
                 "north": north,
@@ -169,19 +222,19 @@ def delete_segments_in_bbox(south: float,
             
         deleted_rows = result.rowcount
 
-        logging.info(f"{deleted_rows} rows of network_segments within bbox ({south}, {west}, {north}, {east}) deleted from PostGIS.")
-        
+        logging.info(f"{deleted_rows} rows for {city_name} deleted from PostGIS (network_segments) within bbox ({south}, {west}, {north}, {east}).")
 
     except Exception as e:
-        logging.error(f"Error deleting bbox data from PostGIS: {e}")
+        logging.error(f"Error deleting bbox data for {city_name} from PostGIS: {e}")
 
     finally:
         engine.dispose()
 
-def delete_segment_metrics_in_bbox(south: float, 
-                            west: float, 
-                            north: float, 
-                            east: float):
+def delete_segment_metrics_in_bbox(city_name: str,
+                                    south: float, 
+                                    west: float, 
+                                    north: float, 
+                                    east: float):
     """
     Remove from PostGIS metrics table all data associated to a given bounding box.
     """
@@ -207,12 +260,14 @@ def delete_segment_metrics_in_bbox(south: float,
                     DELETE FROM segment_metrics sm
                     USING network_segments ns
                     WHERE sm.segment_id = ns.id
+                    AND ns.city_name = :city_name
                     AND ST_Intersects(
                         geom,
                         ST_MakeEnvelope(:west, :south, :east, :north, 4326)
                     );
                 """),
                 {
+                    "city_name": city_name,
                     "south": south,
                     "west": west,
                     "north": north,
@@ -222,7 +277,7 @@ def delete_segment_metrics_in_bbox(south: float,
 
             deleted_rows = result.rowcount
 
-        logging.info(f"{deleted_rows} rows of segment_metrics within bbox ({south}, {west}, {north}, {east}) deleted from PostGIS.")
+        logging.info(f"{deleted_rows} rows for {city_name} deleted from PostGIS (segment_metrics) within bbox ({south}, {west}, {north}, {east}).")
 
     except Exception as e:
         logging.error(f"Error deleting segment_metrics in bbox: {e}")
@@ -278,12 +333,15 @@ def dataframe_to_postgres(gdf: gpd.GeoDataFrame,
     finally:
         engine.dispose()
 
-def prepare_network_segments_gdf_for_postgis(augmented_gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+def prepare_network_segments_gdf_for_postgis(city_name: str, 
+                                             augmented_gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     """
     Prepare a GeoDataFrame for PostGIS of network segments (network_segments SQL table).
 
     Parameters
     ----------
+    city_name: str
+        Name of given city (e.g., "oslo").
     augmented_gdf: GeoDataFrame
         Processed GeoDataFrame - augmented with metrics scores (output from define_augmented_geodataframe function)
 
@@ -295,6 +353,9 @@ def prepare_network_segments_gdf_for_postgis(augmented_gdf: gpd.GeoDataFrame) ->
 
     gdf = augmented_gdf.copy()
     
+    # Assign city name
+    gdf["city_name"] = city_name
+
     # Rename columns
     gdf = gdf.rename(columns={
             "name": "street_name",
@@ -318,12 +379,23 @@ def prepare_network_segments_gdf_for_postgis(augmented_gdf: gpd.GeoDataFrame) ->
     )
     
     # Select final columns
-    gdf = gdf[["osm_id", "street_name", "geom", "segment_length", "bike_infra", "maxspeed", "is_oneway", "is_lit", "surface", "highway"]]
+    gdf = gdf[["osm_id", 
+               "street_name", 
+               "city_name", 
+               "geom", 
+               "segment_length", 
+               "bike_infra", 
+               "maxspeed", 
+               "is_oneway", 
+               "is_lit", 
+               "surface", 
+               "highway"]]
     
     return gdf
 
-def prepare_metrics_df_for_postgis(augmented_gdf: gpd.GeoDataFrame,
-                                   metrics_features_scores_cyclability: list,
+def prepare_metrics_df_for_postgis(city_name: str,
+                                    augmented_gdf: gpd.GeoDataFrame,
+                                    metrics_features_scores_cyclability: list,
                                     metric_name: str,
                                     yaml_path: str) -> pd.DataFrame:
     """
@@ -331,6 +403,8 @@ def prepare_metrics_df_for_postgis(augmented_gdf: gpd.GeoDataFrame,
 
     Parameters
     ----------
+    city_name: str
+        Name of given city (e.g., "oslo).
     augmented_gdf: GeoDataFrame
         Processed GeoDataFrame - augmented with metrics scores (output from define_augmented_geodataframe function)
     metrics_features_scores_cyclability: list
@@ -366,13 +440,20 @@ def prepare_metrics_df_for_postgis(augmented_gdf: gpd.GeoDataFrame,
         engine = create_engine(DATABASE_URL)
         
         # Collect ids and osm_ids from network_segments table in PostGIS
-        segments_df = pd.read_sql("SELECT id, osm_id FROM network_segments", engine)
+        segments_df = pd.read_sql(
+            """
+            SELECT id, osm_id
+            FROM network_segments
+            WHERE city_name = %(city_name)s
+            """, 
+            engine,
+            params = {"city_name": city_name}
+        )
 
-
-        logging.info(f"Segments IDs successfully collected from table network_segments.")
+        logging.info(f"{city_name} segments IDs successfully collected from table network_segments.")
 
     except Exception as e:
-        logging.error(f"Error collecting IDs from table network_segments: {e}")
+        logging.error(f"Error collecting {city_name} segments IDs from table network_segments: {e}")
 
     finally:
         engine.dispose()

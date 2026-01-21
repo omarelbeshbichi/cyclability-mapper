@@ -6,4 +6,4 @@ from frontend.kepler.app import app as frontend_app
 app = FastAPI(title = "cmm system")
 
 app.mount("/api", api_app)
-app.mount("/", frontend_app)
+app.mount("/maps", frontend_app)

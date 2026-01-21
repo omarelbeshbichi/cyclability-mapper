@@ -6,13 +6,13 @@ import tempfile
 
 app = FastAPI()
 
-@app.get("/", response_class = HTMLResponse)
-def serve_map():
+@app.get("/{city_name}", response_class = HTMLResponse)
+def serve_map(city_name: str):
 
     root_path = get_project_root()
     kepler_config_path = root_path  / "frontend" / "kepler" / "kepler_config.json"
 
-    m = create_map(kepler_config_path)
+    m = create_map(city_name, kepler_config_path)
 
     # Obtain HTML representation of kepler map (save to temp -> load from temp)
     with tempfile.NamedTemporaryFile(suffix = ".html", delete = False) as f:        
