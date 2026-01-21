@@ -76,7 +76,8 @@ def load_segments_for_viz(city_name: str) -> gpd.GeoDataFrame:
     finally:
         engine.dispose()
 
-def load_segment_from_id(osm_id: str) -> gpd.GeoDataFrame:
+def load_segment_from_id(city_name: str,
+                         osm_id: str) -> gpd.GeoDataFrame:
     """
     Load network segment from PostGIS associated to specific OSM ID.
     """
@@ -110,11 +111,13 @@ def load_segment_from_id(osm_id: str) -> gpd.GeoDataFrame:
             metric_features_scores,
             metric_version
         FROM v_cyclability_segment_detail
-        WHERE osm_id = :osm_id;
+        WHERE city_name = :city_name
+        AND osm_id = :osm_id;
         """)
 
         with engine.connect() as conn:
-            result = conn.execute(query, {"osm_id": osm_id}).mappings().first()
+            result = conn.execute(query, 
+                                  {"city_name": city_name, "osm_id": osm_id}).mappings().first()
 
         logging.info(f"Data successfully queried from PostGIS database for API use.")
 
