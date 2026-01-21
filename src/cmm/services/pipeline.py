@@ -45,6 +45,7 @@ def build_network_from_api(city_name: str,
 
     # Transformation layer
     logging.info("TRANSFORM DATA")
+    logging.info(f"Raw features count: {len(gdf)}")
     gdf_proc = validate_gdf_linestrings(gdf) # Validate geometry
     gdf_proc = restrict_gdf(gdf_proc) # Restrict data
     gdf_proc = normalize_maxspeed_info(gdf_proc) # Normalize maxspeed info to km/h

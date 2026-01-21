@@ -105,7 +105,9 @@ def restrict_gdf(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
             (gdf_filtered["highway"] == "elevator") |
             (gdf_filtered["highway"] == "platform") |
             (gdf_filtered["highway"] == "track") |
-            (gdf_filtered["highway"] == "path"))
+            (gdf_filtered["highway"] == "path") |
+            (gdf_filtered["highway"] == "trunk") | # assuming trunks are mostly not cyclable
+            (gdf_filtered["highway"] == "trunk_link"))
             
 
     gdf_filtered = gdf_filtered[mask]
