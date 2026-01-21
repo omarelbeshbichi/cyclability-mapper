@@ -88,7 +88,7 @@ def compute_metrics_score_from_segment(segment: Segment,
                 raise ValueError(
                     f"The value {repr(feature_value)} for feature '{feature_name}' "
                     f"is missing from the YAML mapping. Please add it to the 'categorical' mapping.\n"
-                    f"Segment for which mapping is missing: '{segment.id}'"
+                    f"Segment for which mapping is missing: '{segment.osm_id}'"
                 )
         
         # If continuous parameter type in YAML file, get bin for which feature_value is less 

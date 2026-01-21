@@ -8,6 +8,7 @@ import json
 from pathlib import Path
 import logging
 import geopandas as gpd
+from shapely.geometry import shape
 
 def load_json_from_path(path: str) -> dict:
     """
@@ -89,32 +90,49 @@ def feature_collection_to_dataframe(data: dict) -> pd.DataFrame:
 
     return df
 
-def geojson_to_gdf(geojson_dict: dict) -> gpd.GeoDataFrame:
+def geojson_to_gdf(geojson_dict: dict,
+                   chunk_size: int = 5000) -> list[gpd.GeoDataFrame]:
     """
-    Convert GeoJSON dictionary to GeoDataFrame.
+    Convert GeoJSON dictionary to list of GeoDataFrame chunks.
 
-    Missing values are replaced with None to be compatible with data pipeline
+    Chunks are returned to better handle large amount of data from API.
+
+    Missing values are replaced with None to be compatible with data pipeline.
     
     Parameters
     ----------
     geojson_dict: dict 
         A valid GeoJSON object from parsing of overpass API JSON
-
+    chunk_size: int
+        Number of features per chunk
     Returns
     -------
-    gpd.GeoDataFrame 
-        GeoDataFrame with CRS EPSG:4326 and missing values as None
+    List[gpd.GeoDataFrame] 
+        List of GeoDataFrame chunks with CRS EPSG:4326 and missing values as None
     """
 
-    gdf = gpd.GeoDataFrame.from_features(
-        geojson_dict["features"],
-        crs="EPSG:4326"
-    )
+    logging.info(f"GENERATE GEODATAFRAME CHUNKS")
 
-    # Use None for missing value in database
-    gdf = gdf.where(gdf.notna(), None)
+    features = geojson_dict.get("features", [])
+    gdfs = []
 
-    return gdf
+    for i in range(0, len(features), chunk_size):
+        # Slice features in chunks
+        chunk = features[i:i+chunk_size]
+        # Collect associated geometries and properties
+        geometries = [shape(f["geometry"]) for f in chunk]
+        props = [f["properties"] for f in chunk]
+        
+        # Build-up GeoDataFrame for chunk
+        gdf_chunk = gpd.GeoDataFrame(props, geometry=geometries, crs="EPSG:4326")
+        
+        # Replace missing values with None
+        gdf_chunk = gdf_chunk.where(gdf_chunk.notna(), None)
+        
+        # Append chunks to final list of GDFs
+        gdfs.append(gdf_chunk)
+
+    return gdfs
 
 def geojson_to_gdf_from_path(path: str) -> gpd.GeoDataFrame:
     """

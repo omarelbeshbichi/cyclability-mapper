@@ -18,10 +18,14 @@ def build_network_from_api(city_name: str,
                             query: str,
                             weights_config_path: Path,
                             cyclability_config_path: Path,
-                            upload: bool = True) -> None:
+                            upload: bool = True,
+                            chunk_size: int = 5000) -> None:
     """
     Build road network from an Overpass API query and compute cyclability metrics.
     Optionally uploads processed network segments and metrics to PostGIS.
+
+    For better memory handling, the pipeline is called by splitting the inbound data in chunks 
+    (maximum size per chunk is determined by chunk_size)
 
     Parameters
     ----------
@@ -35,41 +39,59 @@ def build_network_from_api(city_name: str,
         Path to the cyclability configuration file.
     upload : bool, optional
         If True, upload processed network segments and metrics to PostGIS.
+    chunk_size: int
+        Number of features per gdf chunk
     """
+    
     logging.info("API FETCH")
-
+    
     # Fetch data from API
     data_json = run_overpass_query(query, 200, 50, 2.0)
     data_geojson = overpass_elements_to_geojson(data_json["elements"])
-    gdf = geojson_to_gdf(data_geojson)
+    
+    logging.info(f"CREATE GDF CHUNKS")
+    logging.info(f"Maximum chunk size: {chunk_size}")
 
-    # Transformation layer
-    logging.info("TRANSFORM DATA")
-    logging.info(f"Raw features count: {len(gdf)}")
-    gdf_proc = validate_gdf_linestrings(gdf) # Validate geometry
-    gdf_proc = restrict_gdf(gdf_proc) # Restrict data
-    gdf_proc = normalize_maxspeed_info(gdf_proc) # Normalize maxspeed info to km/h
+    gdf_chunks = geojson_to_gdf(data_geojson, chunk_size)
+    total_chunks = len(gdf_chunks)  
 
-    # ---- length-only computation (meters) ----
-    gdf_proc["segment_length"] = gdf_proc.geometry.apply(geodesic_length) 
+    logging.info(f"PROCESS GDF CHUNKS")
+    for idx, gdf_chunk in enumerate(gdf_chunks, start = 1):
 
-    # Compute metrics and augment dataframe
-    logging.info("COMPUTE METRICS")
-    gdf_proc, metrics_features_scores = define_augmented_geodataframe(gdf_proc, 
-                                                                    weights_config_path, 
-                                                                    cyclability_config_path)
-        
-    if upload == True:
-        logging.info("SAVE TO DATABASE")
-        # Prepare segments GDF for PostGIS upload
-        gdf_proc_prepared = prepare_network_segments_gdf_for_postgis(city_name, gdf_proc)
+        logging.info(f"Process gdf chunk: {idx}/{total_chunks}")
+        # Transformation layer
+        logging.info(f"Transform data for gdf chunk: {idx}")
+        gdf_chunk = validate_gdf_linestrings(gdf_chunk) # Validate geometry
+        gdf_chunk = restrict_gdf(gdf_chunk) # Restrict data
+        gdf_chunk = normalize_maxspeed_info(gdf_chunk) # Normalize maxspeed info to km/h
 
-        # Upload network segments data to PostGIS
-        dataframe_to_postgres(gdf_proc_prepared, 'network_segments', 'gdf', 'append')
 
-        # Prepare metrics GDF for PostGIS upload 
-        df_metrics_prepared = prepare_metrics_df_for_postgis(city_name, gdf_proc, metrics_features_scores, 'cyclability', cyclability_config_path)
+        # Ensure every segment has ID
+        #if 'id' not in gdf_chunk.columns or gdf_chunk['id'].isna().any():
+        #    logging.warning(f"Chunk {idx} has missing segment IDs. Generating temporary IDs.")
+        #    gdf_chunk = gdf_chunk.reset_index(drop=True)
+        #    gdf_chunk['id'] = gdf_chunk.index.astype(str)  # simple string ID
 
-        # Upload metrics GDF to PostGIS
-        dataframe_to_postgres(df_metrics_prepared, 'segment_metrics', 'df', 'append')
-        
+        # ---- length-only computation (meters) ----
+        gdf_chunk["segment_length"] = gdf_chunk.geometry.apply(geodesic_length) 
+
+        # Compute metrics and augment dataframe
+        logging.info(f"Compute metrics for gdf chunk: {idx}")
+        gdf_chunk, metrics_features_scores = define_augmented_geodataframe(gdf_chunk, 
+                                                                        weights_config_path, 
+                                                                        cyclability_config_path)
+            
+        if upload == True:
+            logging.info(f"Save gdf chunk {idx} to database")
+            # Prepare segments GDF for PostGIS upload
+            gdf_proc_prepared = prepare_network_segments_gdf_for_postgis(city_name, gdf_chunk)
+
+            # Upload network segments data to PostGIS
+            dataframe_to_postgres(gdf_proc_prepared, 'network_segments', 'gdf', 'append')
+
+            # Prepare metrics GDF for PostGIS upload 
+            df_metrics_prepared = prepare_metrics_df_for_postgis(city_name, gdf_chunk, metrics_features_scores, 'cyclability', cyclability_config_path)
+
+            # Upload metrics GDF to PostGIS
+            dataframe_to_postgres(df_metrics_prepared, 'segment_metrics', 'df', 'append')
+            

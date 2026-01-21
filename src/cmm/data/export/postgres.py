@@ -12,7 +12,7 @@ from ...metrics.config.versioning import get_config_version
 import json
 import os
 from shapely import wkb
-from shapely.geometry import Polygon
+from shapely.geometry import Polygon, base
 
 def reference_area_to_postgres(city_name: str, 
                                 geom: Polygon):
@@ -24,7 +24,7 @@ def reference_area_to_postgres(city_name: str,
     city_name : str
         Name of given city (e.g. "oslo")
     geom: Polygon
-        Reference geometry used to define bounding box
+        Reference polygon used to define database data
     """
 
     DATABASE_URL = os.getenv(
@@ -63,7 +63,7 @@ def reference_area_to_postgres(city_name: str,
 
 def load_reference_area(city_name: str):
     """
-    Load reference geometry stored in refresh_areas table to define refresh bounding box.
+    Load reference geometry stored in refresh_areas table to define refresh polygon.
     """
 
     DATABASE_URL = os.getenv(
@@ -178,13 +178,10 @@ def truncate_table(table_name: str):
     finally:
         engine.dispose()
 
-def delete_segments_in_bbox(city_name: str, 
-                            south: float, 
-                            west: float, 
-                            north: float, 
-                            east: float):
+def delete_segments_in_polygon(city_name: str,
+                                polygon: base.BaseGeometry):
     """
-    Remove from PostGIS table all segments intersecting given bounding box.
+    Remove from PostGIS table all segments intersecting given polygon.
     """
 
     # Use DATABASE_URL if running inside Docker, else fallback to localhost
@@ -193,36 +190,30 @@ def delete_segments_in_bbox(city_name: str,
         "postgresql+psycopg2://user:pass@localhost:5432/db"
     ) 
 
-    # Normalize values as floats
-    south = float(south)
-    west  = float(west)
-    north = float(north)
-    east  = float(east)
+    # Convert geometry to WKT
+    wkt = polygon.wkt
 
     try:
         # Create SQLAlchemy engine
         engine = create_engine(DATABASE_URL)
 
-        # Use SQL query to delete only data associated with segments within the provided bounding box.
+        # Use SQL query to delete only data associated with segments within the provided reference polygon.
         with engine.begin() as conn:
                 result = conn.execute(text(f"""
                 DELETE FROM network_segments
                 WHERE city_name = :city_name
                 AND ST_Intersects(
                         geom,
-                        ST_MakeEnvelope(:west, :south, :east, :north, 4326)
+                        ST_SetSRID(ST_GeomFromText(:polygon_wkt), 4326)
                 );
             """), {
                 "city_name": city_name,
-                "south": south,
-                "west": west,
-                "north": north,
-                "east": east
+                "polygon_wkt": wkt
             })
             
         deleted_rows = result.rowcount
 
-        logging.info(f"{deleted_rows} rows for {city_name} deleted from PostGIS (network_segments) within bbox ({south}, {west}, {north}, {east}).")
+        logging.info(f"{deleted_rows} rows for {city_name} deleted from PostGIS (network_segments) within polygon.")
 
     except Exception as e:
         logging.error(f"Error deleting bbox data for {city_name} from PostGIS: {e}")
@@ -230,13 +221,10 @@ def delete_segments_in_bbox(city_name: str,
     finally:
         engine.dispose()
 
-def delete_segment_metrics_in_bbox(city_name: str,
-                                    south: float, 
-                                    west: float, 
-                                    north: float, 
-                                    east: float):
+def delete_segment_metrics_in_polygon(city_name: str,
+                                      polygon: base.BaseGeometry):
     """
-    Remove from PostGIS metrics table all data associated to a given bounding box.
+    Remove from PostGIS metrics table all data associated to a given reference polygon.
     """
 
     DATABASE_URL = os.getenv(
@@ -244,16 +232,13 @@ def delete_segment_metrics_in_bbox(city_name: str,
         "postgresql+psycopg2://user:pass@localhost:5432/db"
     )
 
-    # Normalize values as floats
-    south = float(south)
-    west  = float(west)
-    north = float(north)
-    east  = float(east)
+    # Convert polygon to WKT for PostGIS
+    wkt = polygon.wkt
 
     try:
         engine = create_engine(DATABASE_URL)
 
-        # Use SQL query to delete only metrics associated with segments within the provided bounding box.
+        # Use SQL query to delete only metrics associated with segments within the provided reference polygon.
         with engine.begin() as conn:
             result = conn.execute(
                 text("""
@@ -263,21 +248,18 @@ def delete_segment_metrics_in_bbox(city_name: str,
                     AND ns.city_name = :city_name
                     AND ST_Intersects(
                         geom,
-                        ST_MakeEnvelope(:west, :south, :east, :north, 4326)
+                        ST_SetSRID(ST_GeomFromText(:polygon_wkt), 4326)
                     );
                 """),
                 {
                     "city_name": city_name,
-                    "south": south,
-                    "west": west,
-                    "north": north,
-                    "east": east,
+                    "polygon_wkt": wkt
                 }
             )
 
             deleted_rows = result.rowcount
 
-        logging.info(f"{deleted_rows} rows for {city_name} deleted from PostGIS (segment_metrics) within bbox ({south}, {west}, {north}, {east}).")
+        logging.info(f"{deleted_rows} rows for {city_name} deleted from PostGIS (segment_metrics) within polygon.")
 
     except Exception as e:
         logging.error(f"Error deleting segment_metrics in bbox: {e}")
