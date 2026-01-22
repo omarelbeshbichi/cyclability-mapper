@@ -6,19 +6,27 @@ bike_infrastructure:
   mapping:
     cycleway: 1.0
     track: 1.0
+    track;lane: 1.0
     traffic_island: 1.0
     link: 1.0
     separate: 1.0
     opposite: 0.8
     lane: 0.7
+    shoulder: 0.7
+    opposite_track: 0.7
+    opposite_share_busway: 0.6
     shared_lane: 0.65
     opposite_lane: 0.65
     footway: 0.6
     share_busway: 0.4
     shared: 0.5
     share_lane: 0.4
+    road: 0.2
+    highway: 0.2
+    proposed: 0.0
     none: 0.0
     crossing: 0.5
+    
   description: "Bike lane type"
 
 maxspeed:
@@ -41,6 +49,7 @@ surface:
     # --- Fully paved ---
     paved: 1.0
     asphalt: 1.0
+    asfalto_leggero: 1.0
     chipseal: 0.95
     concrete: 1.0
     concrete:lanes: 1.0
@@ -59,6 +68,8 @@ surface:
     cobblestone:flattened: 0.65
     cobblestone:flattened:large_stone: 0.55
     cobblestone:rounded: 0.55
+    roman_paving;sett: 0.6
+    roman_paving: 0.6
     stone: 0.7
     stone:slabs: 0.7
     bricks: 0.75
@@ -103,7 +114,7 @@ surface:
     salt: 0.2
 
     # --- Unknown ---
-    unknown: 0.5
+    unknown: 0.5 # conservative assumption
 
   description: "Normalized surface quality score"
 
@@ -112,7 +123,7 @@ lighting:
   mapping:
     "yes": 1.0
     "no": 0.5
-    "unknown": 0.5
+    "unknown": 0.5 # conservative assumption
 
 oneway:
   type: categorical

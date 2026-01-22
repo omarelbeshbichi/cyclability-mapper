@@ -1,6 +1,7 @@
 import requests
 from typing import Tuple
-from shapely.geometry import shape, Polygon
+import osmnx as ox
+from shapely.geometry import shape, Polygon, MultiPolygon
 
 def city_to_bbox(city_name: str) -> Tuple[float, float, float, float]:
     """
@@ -54,48 +55,46 @@ def city_to_bbox(city_name: str) -> Tuple[float, float, float, float]:
 
     return south, west, north, east
 
-def city_to_polygon(city_name: str) -> Polygon:
+def city_to_polygon(city_name: str, country_code: str = "it"):
     """
-    Obtain the city boundary as a polygon starting from the city name using Nominatim.
-
-    Nominatim returns a JSON containing a GeoJSON polygon of the city when `polygon_geojson=1` is used.
-
-    Returns
-    -------
-    shapely.geometry.Polygon or MultiPolygon
-        The polygon representing the city boundary.
+    Get city boundary polygon from OpenStreetMap (Nominatim).
+    Returns a shapely geometry.
     """
 
     url = "https://nominatim.openstreetmap.org/search"
-    
-    params = {
-        "q": city_name,
-        "format": "json",        # JSON output
-        "limit": 1,
-        "polygon_geojson": 1     # Get the city boundary polygon
-    }
-    
-    headers = {"User-Agent": "cmm-pipeline"}
 
-    r = requests.get(url, 
-                     params = params, 
-                     headers = headers, 
-                     timeout = 10)
+    params = {
+        "q": f"{city_name}, {country_code}",
+        "format": "json",
+        "polygon_geojson": 1,
+        "limit": 1
+    }
+
+    headers = {
+        "User-Agent": "city-boundary-script"
+    }
+
+    r = requests.get(url, params = params, headers = headers)
     r.raise_for_status()
-    
     data = r.json()
 
     if not data:
-        raise ValueError(f"City not found: {city_name}")
+        # retry without country code
+        params["q"] = city_name
+        r = requests.get(url, params = params, headers = headers)
+        r.raise_for_status()
+        data = r.json()
 
-    geom = data[0].get("geojson")
+    if not data or "geojson" not in data[0]:
+        raise ValueError(f"No boundary polygon found for {city_name}")
 
-    if not geom:
-        raise ValueError(f"No polygon found for city: {city_name}")
+    geom = shape(data[0]["geojson"])
 
-    city_polygon = shape(geom)
+    if isinstance(geom, MultiPolygon):
+        # take the largest polygon by area
+        geom = max(geom.geoms, key=lambda p: p.area)
 
-    if not isinstance(city_polygon, Polygon):
-        raise ValueError(f"Returned geometry is not a Polygon for city: {city_name}")
+    if not isinstance(geom, Polygon):
+        raise TypeError(f"Expected Polygon, got {type(geom)}")
 
-    return city_polygon
+    return geom

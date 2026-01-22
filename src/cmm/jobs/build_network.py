@@ -3,12 +3,13 @@ import logging
 
 @click.command()
 @click.option("--c", "--city-name", "city_name", type = str, required = True)
+@click.option("--cc", "--country-code", "country_code", type = str, required = True)
 @click.option("--south", type = float, required = False)
 @click.option("--west", type = float, required = False)
 @click.option("--north", type = float, required = False)
 @click.option("--east", type = float, required = False)
 @click.option("--chunk", "chunk_size", type = int, default = 5000, required = False)
-def main(city_name, south, west, north, east, chunk_size):
+def main(city_name, country_code, south, west, north, east, chunk_size):
     from cmm.services.pipeline import build_network_from_api
     from cmm.utils.misc import get_project_root
     from cmm.data.ingest.overpass_queries import roads_in_bbox, roads_in_polygon
@@ -16,6 +17,8 @@ def main(city_name, south, west, north, east, chunk_size):
     from cmm.data.export.postgres import reference_area_to_postgres
     from cmm.utils.geometry import geom_from_bbox
     from cmm.data.ingest.geocoding import city_to_polygon
+
+    timeout = 50
 
     if all(v is not None for v in [south, west, north, east]):
         # Build bbox as prescribed as input
@@ -27,8 +30,8 @@ def main(city_name, south, west, north, east, chunk_size):
         ref_polygon = geom_from_bbox(south, west, north, east)
     else:
         # Build polygon based on city_name
-        polygon = city_to_polygon(city_name)
-        query = roads_in_polygon(polygon)
+        polygon = city_to_polygon(city_name, country_code)
+        query = roads_in_polygon(polygon, timeout)
         ref_polygon = polygon
 
     # Clear-up database

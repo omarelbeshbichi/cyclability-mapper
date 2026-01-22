@@ -10,10 +10,11 @@ def create_map(city_name: str,
     gdf = load_segments_for_viz(city_name)
     gdf = gdf.rename_geometry("geometry")
 
-    # Compute bounding box and center map to given data
-    bounds = gdf.total_bounds  # [minx, miny, maxx, maxy]
-    center_lon = (bounds[0] + bounds[2]) / 2
-    center_lat = (bounds[1] + bounds[3]) / 2
+    # Compute where map should be initialized
+    city_geom = gdf.geometry.union_all()
+    centroid = city_geom.centroid
+    center_lon = centroid.x
+    center_lat = centroid.y
 
     # Add start location (mapState)
     config.setdefault("config", {})["mapState"] = {

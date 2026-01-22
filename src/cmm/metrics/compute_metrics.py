@@ -83,6 +83,8 @@ def compute_metrics_score_from_segment(segment: Segment,
         is_null = pd.isna(feature_value)
         # If categorical parameter type in YAML file, select feature value directly from feature_value
         if feature_config["type"] == "categorical":
+            # Make feature value lower case (consistency)
+            feature_value = str(feature_value).lower()
             feature_score = feature_config["mapping"].get(feature_value)    
             if feature_score is None:
                 raise ValueError(
@@ -99,7 +101,7 @@ def compute_metrics_score_from_segment(segment: Segment,
                 if feature_name == "maxspeed" and is_null and (segment.highway == "footway" or segment.highway == "cycleway"):
                     feature_score = 1.0 
                     break
-                # Assign neutral maxspeed score if maxspeed is not given and segment type is legal
+                # Conservative assumption: assign neutral maxspeed score if maxspeed is not given and segment type is legal
                 elif feature_name == "maxspeed" and is_null:
                     feature_score = 0.5
                     break

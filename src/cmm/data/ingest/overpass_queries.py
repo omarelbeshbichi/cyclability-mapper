@@ -1,4 +1,5 @@
 from shapely.geometry import Polygon
+from typing import Optional
 
 def roads_in_bbox(south: float, west: float, north: float, east: float) -> str:
     """
@@ -15,7 +16,8 @@ def roads_in_bbox(south: float, west: float, north: float, east: float) -> str:
     out geom;
     """
 
-def roads_in_polygon(city_polygon: Polygon) -> str:
+def roads_in_polygon(city_polygon: Polygon,
+                     timeout: Optional[int] = 50) -> str:
     """
     Build Overpass QL query fetching road geometries within a defined Polygon
     """
@@ -28,7 +30,7 @@ def roads_in_polygon(city_polygon: Polygon) -> str:
 
     # Build the Overpass QL query
     query = f"""
-    [out:json][timeout:50];
+    [out:json][timeout:{timeout}];
     (
       way
         ["highway"]

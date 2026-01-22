@@ -11,6 +11,9 @@ def parse_maxspeed_to_kmh(value):
     """
     Convert OSM maxspeed value to km/h.
     """
+
+    if value is None or pd.isna(value):
+        return None
     
     if value == None:
         return None
@@ -51,7 +54,7 @@ def normalize_maxspeed_info(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     
     # Convert updated values as strings and use None for NaN - comply with pipeline
     gdf["maxspeed"] = [
-        str(int(val)) if not pd.isna(val) else None 
+        str(val) if not pd.isna(val) else None 
         for val in gdf["maxspeed"]
     ]
 
@@ -214,7 +217,7 @@ def prepare_cyclability_segment(gdf_row: pd.Series) -> CyclabilitySegment:
     lit = gdf_row.get("lit")
     highway = gdf_row.get("highway")
     maxspeed = gdf_row.get("maxspeed")
-    surface = gdf_row.get("surface") or "unknown" # Fallback to "unknown" if None
+    surface = gdf_row.get("surface")
     
     # Gather cycleway info
     cycleway_tags = extract_all_cycleway_tags(gdf_row)
@@ -224,15 +227,15 @@ def prepare_cyclability_segment(gdf_row: pd.Series) -> CyclabilitySegment:
     oneway_dict = extract_all_oneway_tags(gdf_row)
 
     ## Handle lighting information
-    if lit == None:
+    if pd.isna(lit):
         lit = "unknown"
     if lit == "24/7":
         lit = "yes"
     if lit == "disused":
         lit = "no"
-    if lit == "yes;no":
+    if lit == "yes;no": # Assumption
         lit = "yes"
-    if lit == "limited":
+    if lit == "limited": # Assumption
         lit = "yes"
    
     # Initialize parameters
@@ -281,7 +284,16 @@ def prepare_cyclability_segment(gdf_row: pd.Series) -> CyclabilitySegment:
 
     # Final adjustments
     if bike_infra == "no":
-        bike_infra = "none"  
+        bike_infra = "none"
+    if bike_infra == "no|no":
+        bike_infra = "none"    
+    if bike_infra == "yes": # assumption: assuming lane for generic "cycleway:yes" OSM datum
+        bike_infra = "lane" 
+    if bike_infra in ("left", "right"): # assumption: assuming lane for generic "cycleway:left | right" OSM datum
+        bike_infra = "lane"
+
+    if pd.isna(surface):
+        surface = "unknown"
 
     ## If data present in gdf, load them instead of parsing
     # This section is used when loading data from PostGIS (jobs/recompute_metrics)
