@@ -6,6 +6,35 @@ import geopandas as gpd
 import pandas as pd
 import numpy as np
 from cmm.domain.segment import CyclabilitySegment
+from typing import Any
+
+#%% Introduce helper functions to handle both gdf rows from itertuple and iterrows loops 
+# Switched to itertuple loop for computational efficiency
+
+# equivalent to - gdf_row.get("id")
+def row_get(row: Any, 
+            key: str, 
+            default = None):
+    if hasattr(row, "_fields"):  # itertuples namedtuple
+        return getattr(row, key, default)
+    else:  # pd.Series
+        return row.get(key, default)
+
+# equivalent to - gdf_row.items()
+def row_items(row: Any):
+    if hasattr(row, "_fields"):
+        return zip(row._fields, row)
+    else:
+        return row.items()
+
+# equivalent to - "item" in gdf_row
+def row_has(row: Any, key: str) -> bool:
+    if hasattr(row, "_fields"):
+        return hasattr(row, key)
+    else:
+        return key in row
+
+#%%
 
 def parse_maxspeed_to_kmh(value):
     """
@@ -117,19 +146,19 @@ def restrict_gdf(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
 
     return gdf_filtered
 
-def extract_all_cycleway_tags(gdf_row: pd.Series) -> dict:
+def extract_all_cycleway_tags(gdf_row: Any) -> dict:
     """Extract all cycleway-related data from GeoDataFrame row and store them in dictionary"""
 
     return {
-        key: val for key, val in gdf_row.items()
+        key: val for key, val in row_items(gdf_row)
         if isinstance(val, str) and "cycleway" in key and pd.notna(val)
     }
 
-def extract_all_oneway_tags(gdf_row: pd.Series) -> dict:
+def extract_all_oneway_tags(gdf_row: Any) -> dict:
     """Extract all oneway-related data from GeoDataFrame row and store them in dictionary"""
 
     return {
-        key: val for key, val in gdf_row.items()
+        key: val for key, val in row_items(gdf_row)
         if isinstance(val, str) and "oneway" in key and "cycleway" not in key and pd.notna(val)
     }
 
@@ -180,13 +209,13 @@ def normalize_cycleway_info(tags: dict) -> dict:
     
     return cycleway_dict
 
-def prepare_cyclability_segment(gdf_row: pd.Series) -> CyclabilitySegment:
+def prepare_cyclability_segment(gdf_row: Any) -> CyclabilitySegment:
     """
     Prepare dictionary of cyclability features from a single GeoDataFrame row.
 
     Parameters
     ----------
-    gdf_row: pd.Series
+    gdf_row: Any
         Row from GeoDataFrame representing a road segment, containing 
         required attributes.
 
@@ -207,17 +236,26 @@ def prepare_cyclability_segment(gdf_row: pd.Series) -> CyclabilitySegment:
 
 
     #%% INIT 
+
+    # Initialize missing info dict
+    # assuming that if bike_infrastructure is missing -> no infrastructure at all
+    missing_info = {
+        "maxspeed": False,
+        "surface": False,
+        "lighting": False
+    }
+
     # Gather segments facts
-    osm_id =  gdf_row.get("osm_id")
-    name =  gdf_row.get("name")
-    geometry = gdf_row.get("geometry")
-    segment_length = gdf_row.get("segment_length")
+    osm_id =  row_get(gdf_row, "osm_id")
+    name =  row_get(gdf_row, "name")
+    geometry = row_get(gdf_row, "geometry")
+    segment_length = row_get(gdf_row, "segment_length")
 
     # Gather quality factors
-    lit = gdf_row.get("lit")
-    highway = gdf_row.get("highway")
-    maxspeed = gdf_row.get("maxspeed")
-    surface = gdf_row.get("surface")
+    lit = row_get(gdf_row, "lit")
+    highway = row_get(gdf_row, "highway")
+    maxspeed = row_get(gdf_row, "maxspeed")
+    surface = row_get(gdf_row, "surface")
     
     # Gather cycleway info
     cycleway_tags = extract_all_cycleway_tags(gdf_row)
@@ -229,6 +267,7 @@ def prepare_cyclability_segment(gdf_row: pd.Series) -> CyclabilitySegment:
     ## Handle lighting information
     if pd.isna(lit):
         lit = "unknown"
+        missing_info["lighting"] = True
     if lit == "24/7":
         lit = "yes"
     if lit == "disused":
@@ -247,10 +286,11 @@ def prepare_cyclability_segment(gdf_row: pd.Series) -> CyclabilitySegment:
     # Parse oneway information
         # In OSM "oneway=yes" indicates a one-way cycleway
         # see: https://wiki.openstreetmap.org/wiki/Key:oneway:bicycle 
-    if oneway_dict.get("oneway") == "yes" and "oneway:bicycle" not in oneway_dict:
-        bike_ways = "one"
-    elif oneway_dict.get("oneway") == "yes" and oneway_dict.get("oneway:bicycle") == "no":
-        bike_ways = "both"
+    if oneway_dict.get("oneway") == "yes":
+        if "oneway:bicycle" not in oneway_dict:
+            bike_ways = "one"
+        elif oneway_dict.get("oneway:bicycle") == "no":
+            bike_ways = "both"
 
     # Extract normalization type (from normalize_cycleway_info) - if not available use None
     left_type = cycleway_dict["left"].get("type") if cycleway_dict["left"] else None
@@ -294,13 +334,25 @@ def prepare_cyclability_segment(gdf_row: pd.Series) -> CyclabilitySegment:
 
     if pd.isna(surface):
         surface = "unknown"
+        missing_info["surface"] = True
+
+    # Missing maxspeed info: 
+    # If normal roads (no footways and cycleways) and excellent cycleway infrastructures not available, trigger missing data
+    if pd.isna(maxspeed) and highway not in ("footway", "cycleway") and bike_infra not in ("cycleway", 
+                                                                                           "track", 
+                                                                                           "track;lane", 
+                                                                                           "traffic_island", 
+                                                                                           "link", 
+                                                                                           "separate", 
+                                                                                           "seprarate"):
+        missing_info["maxspeed"] = True
 
     ## If data present in gdf, load them instead of parsing
     # This section is used when loading data from PostGIS (jobs/recompute_metrics)
-    if "bike_infra" in gdf_row and pd.notna(gdf_row["bike_infra"]):
-        bike_infra = gdf_row["bike_infra"]
-        bike_ways = gdf_row["is_oneway"]
-        
+    if row_has(gdf_row, "bike_infra") and pd.notna(gdf_row.bike_infra):
+        bike_infra = gdf_row.bike_infra
+        bike_ways = gdf_row.is_oneway
+    
     ## Store key information in Segment dataclass
     return CyclabilitySegment(
         osm_id = osm_id,
@@ -312,5 +364,6 @@ def prepare_cyclability_segment(gdf_row: pd.Series) -> CyclabilitySegment:
         maxspeed = maxspeed,
         surface = surface,
         lighting = lit,
-        highway = highway
+        highway = highway,
+        missing_info = missing_info
     )

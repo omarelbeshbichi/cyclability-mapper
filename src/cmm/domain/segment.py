@@ -1,5 +1,5 @@
-from dataclasses import dataclass
-from typing import Optional, Any
+from dataclasses import dataclass, field
+from typing import Optional, Any, Dict
 
 @dataclass
 class Segment:
@@ -24,6 +24,8 @@ class CyclabilitySegment(Segment):
     highway: str
 
     cyclability_metrics: Optional[float] = None
+
+    missing_info: Dict[str, bool] = field(default_factory = dict)
 
     # Add method to assign metrics for cyclability
     def set_metrics(self, metrics_name: str, value: float) -> None:

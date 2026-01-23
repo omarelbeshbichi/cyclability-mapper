@@ -51,10 +51,12 @@ def main(city_name, country_code, south, west, north, east, chunk_size):
         city_name = city_name,
         query = query,
         weights_config_path = root / "src/cmm/metrics/config/weights.yaml",
-        cyclability_config_path = root / "src/cmm/metrics/config/cyclability.yaml",
+        metrics_config_path = root / "src/cmm/metrics/config/cyclability.yaml",
         upload = True,
         chunk_size = chunk_size # maximum data chunk size to process in one go
     )
+
+    
 
     logging.info("DONE")
 if __name__ == "__main__":

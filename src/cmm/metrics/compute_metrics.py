@@ -36,8 +36,8 @@ def prepare_segment_for_metrics(gdf_row: pd.Series,
         raise ValueError(f"Metrics not available: {metrics_name}")
 
 def compute_metrics_score_from_segment(segment: Segment,
-                                        weights_config_path: str,
-                                        metrics_config_path: str,
+                                        weights_config: dict,
+                                        metrics_config: dict,
                                         metrics_name: str) -> tuple[float, dict]:
     """
     Compute metrics score for a single road segment based on YAML configurations
@@ -46,10 +46,10 @@ def compute_metrics_score_from_segment(segment: Segment,
     ----------
     segment: Segment
         Segment object containing parsed segment information
-    weights_config_path: str
-        Path to YAML file containing feature weights
-    metrics_config_path: str
-        Path to YAML file defining metrics feature configurations
+    weights_config: dict
+        Dict from YAML file containing feature weights
+    metrics_config: dict
+        Dict from YAML file defining metrics feature configurations
     metrics_name: str
         Name of metrics (e.g., cyclability) - must comply with YAML definitions
         
@@ -63,13 +63,8 @@ def compute_metrics_score_from_segment(segment: Segment,
 
     #%% INGEST
 
-    # Gather config parameters from YAML files (remove version info from resulting dict)
-    weights_config = read_config("weights", "yaml", weights_config_path)
-    weights_config.pop("version")
+    # Gather metrics weights from YAML files
     weights_metrics = weights_config[metrics_name]
-
-    metrics_config = read_config(metrics_name, "yaml", metrics_config_path)
-    metrics_config.pop("version")
 
     #%% COMPUTE METRICS SCORE
 
@@ -98,8 +93,14 @@ def compute_metrics_score_from_segment(segment: Segment,
         elif feature_config["type"] == "continuous":
             for bin in feature_config["bins"]:
                 # High maxspeed score for footway and cycleway type when no info is given (typical)
-                if feature_name == "maxspeed" and is_null and (segment.highway == "footway" or segment.highway == "cycleway"):
+                if feature_name == "maxspeed" and is_null and (segment.highway in ("footway", "cycleway")):
                     feature_score = 1.0 
+                    break
+                # Assumption: assign high maxspeed score when no info is avaiable BUT bike_infrastructure is of highest quality,
+                # i.e., separate from road itself.
+                # bike_infrastructure is processed before maxspeed, so all_features_scores can be accessed.
+                elif feature_name == "maxspeed" and is_null and all_features_scores.get("bike_infrastructure") == 1.0:
+                    feature_score = 1.0
                     break
                 # Conservative assumption: assign neutral maxspeed score if maxspeed is not given and segment type is legal
                 elif feature_name == "maxspeed" and is_null:
@@ -132,8 +133,8 @@ def compute_metrics_score_from_segment(segment: Segment,
     return metrics_score, all_features_scores
 
 def define_segment_with_metrics_score(gdf_row: pd.Series,
-                                    weights_config_path: str,
-                                    metrics_config_path: str,
+                                    weights_config: dict,
+                                    metrics_config: dict,
                                     metrics_name: str) -> tuple[Segment, dict]:
     """
     Return segment augmented with selected metrics score
@@ -142,10 +143,10 @@ def define_segment_with_metrics_score(gdf_row: pd.Series,
     ----------
     gdf_row: pd.Series
         Row from GeoDataFrame representing a road segment
-    weights_config_path: str
-        Path to YAML file containing feature weights
-    metrics_config_path: str
-        Path to YAML file defining metrics feature configurations
+    weights_config: dict
+        Dict from YAML file containing feature weights
+    metrics_config: dict
+        Dict from YAML file defining metrics feature configurations
     metrics_name: str
         Name of metrics (e.g., cyclability) - must comply with YAML definitions
 
@@ -162,7 +163,7 @@ def define_segment_with_metrics_score(gdf_row: pd.Series,
     segment = prepare_segment_for_metrics(gdf_row, metrics_name)
 
     # Compute metrics score based on YAML configs
-    metrics_score, metrics_features_scores = compute_metrics_score_from_segment(segment, weights_config_path, metrics_config_path, metrics_name)
+    metrics_score, metrics_features_scores = compute_metrics_score_from_segment(segment, weights_config, metrics_config, metrics_name)
     
     # Augment segment dataclass with metrics score (use dataclass method set_metrics)
     segment.set_metrics(metrics_name, metrics_score)
@@ -170,8 +171,8 @@ def define_segment_with_metrics_score(gdf_row: pd.Series,
     return segment, metrics_features_scores
 
 def define_augmented_geodataframe(gdf: gpd.GeoDataFrame,
-                                weights_config_path,
-                                metrics_config_path: str) -> tuple[gpd.GeoDataFrame, list]:
+                                weights_config: dict,
+                                metrics_config: dict) -> tuple[gpd.GeoDataFrame, list]:
     """
     Return GeoDataFrame augmented with metrics scores for all segments and list of metrics features scores.
 
@@ -181,10 +182,10 @@ def define_augmented_geodataframe(gdf: gpd.GeoDataFrame,
     ----------
     gdf: gpd.GeoDataFrame
         GeoDataFrame containing road segments
-    weights_config_path: str
-        Path to YAML file containing feature weights
-    metrics_config_path: str
-        Path to YAML file defining metrics feature configurations
+    weights_config: dict
+        Dict from YAML file containing feature weights
+    metrics_config: dict
+        Dict from YAML file defining metrics feature configurations
         
     Returns
     -------
@@ -200,11 +201,11 @@ def define_augmented_geodataframe(gdf: gpd.GeoDataFrame,
     segments_with_components_cyclability = []
 
     # Cyclability - Define segments augmented with metrics scores
-    for idx, (_, gdf_row) in enumerate(gdf.iterrows(), start = 1):
+    for idx, gdf_row in enumerate(gdf.itertuples(index=False), start = 1):
         
         # Compute segment augmented with metrics (and metric components) for this row
         segments_with_components_cyclability.append(
-            define_segment_with_metrics_score(gdf_row, weights_config_path, metrics_config_path, "cyclability")
+            define_segment_with_metrics_score(gdf_row, weights_config, metrics_config, "cyclability")
         )
 
         # Logging of progress every 100 rows or last row

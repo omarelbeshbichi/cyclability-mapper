@@ -379,7 +379,7 @@ def prepare_metrics_df_for_postgis(city_name: str,
                                     augmented_gdf: gpd.GeoDataFrame,
                                     metrics_features_scores_cyclability: list,
                                     metric_name: str,
-                                    yaml_path: str) -> pd.DataFrame:
+                                    metrics_config_path: str) -> pd.DataFrame:
     """
     Prepare DataFrame with metrics for insertion into PostGIS database (segment_metrics SQL table)
 
@@ -393,7 +393,7 @@ def prepare_metrics_df_for_postgis(city_name: str,
         List of dictionaries storing metrics scores of all features for all segments
     metric_name: str
         Name of current metrics (eg, cyclability)
-    yaml_path: str
+    metrics_config_path: str
         Path to the YAML configuration file
         
     Returns
@@ -414,7 +414,7 @@ def prepare_metrics_df_for_postgis(city_name: str,
     metric_col = metric_name + "_metrics"
 
     # Define versioning
-    metric_version = get_config_version(yaml_path)
+    metric_version = get_config_version(metrics_config_path)
 
     # Retrieve segments IDs from network_segments table in PostGIS
     try:

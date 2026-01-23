@@ -13,11 +13,12 @@ from cmm.data.export.postgres import prepare_network_segments_gdf_for_postgis
 from cmm.data.export.postgres import prepare_metrics_df_for_postgis
 from cmm.data.export.postgres import dataframe_to_postgres
 from cmm.utils.geometry import geodesic_length
+from ..utils.config_reader import read_config
 
 def build_network_from_api(city_name: str,
                             query: str,
                             weights_config_path: Path,
-                            cyclability_config_path: Path,
+                            metrics_config_path: Path,
                             upload: bool = True,
                             chunk_size: int = 5000) -> None:
     """
@@ -35,14 +36,22 @@ def build_network_from_api(city_name: str,
         Overpass QL query used to fetch data.
     weights_config_path : Path
         Path to the weights configuration file used.
-    cyclability_config_path : Path
-        Path to the cyclability configuration file.
+    metrics_config : Path
+        Path to the metrics (cyclability) configuration file.
     upload : bool, optional
         If True, upload processed network segments and metrics to PostGIS.
     chunk_size: int
         Number of features per gdf chunk
     """
     
+    # Get config info
+    #(remove version info from resulting dict)
+    weights_config = read_config("weights", "yaml", weights_config_path)
+    weights_config.pop("version")
+
+    metrics_config = read_config("cyclability", "yaml", metrics_config_path)
+    metrics_config.pop("version")
+
     logging.info("API FETCH")
     
     # Fetch data from API
@@ -65,7 +74,6 @@ def build_network_from_api(city_name: str,
         gdf_chunk = restrict_gdf(gdf_chunk) # Restrict data
         gdf_chunk = normalize_maxspeed_info(gdf_chunk) # Normalize maxspeed info to km/h
 
-
         # Ensure every segment has ID
         #if 'id' not in gdf_chunk.columns or gdf_chunk['id'].isna().any():
         #    logging.warning(f"Chunk {idx} has missing segment IDs. Generating temporary IDs.")
@@ -78,8 +86,8 @@ def build_network_from_api(city_name: str,
         # Compute metrics and augment dataframe
         logging.info(f"Compute metrics for gdf chunk: {idx}")
         gdf_chunk, metrics_features_scores = define_augmented_geodataframe(gdf_chunk, 
-                                                                        weights_config_path, 
-                                                                        cyclability_config_path)
+                                                                        weights_config, 
+                                                                        metrics_config)
             
         if upload == True:
             logging.info(f"Save gdf chunk {idx} to database")
@@ -90,7 +98,7 @@ def build_network_from_api(city_name: str,
             dataframe_to_postgres(gdf_proc_prepared, 'network_segments', 'gdf', 'append')
 
             # Prepare metrics GDF for PostGIS upload 
-            df_metrics_prepared = prepare_metrics_df_for_postgis(city_name, gdf_chunk, metrics_features_scores, 'cyclability', cyclability_config_path)
+            df_metrics_prepared = prepare_metrics_df_for_postgis(city_name, gdf_chunk, metrics_features_scores, 'cyclability', metrics_config_path)
 
             # Upload metrics GDF to PostGIS
             dataframe_to_postgres(df_metrics_prepared, 'segment_metrics', 'df', 'append')
