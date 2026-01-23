@@ -71,6 +71,7 @@ def recompute_metrics_from_postgis(city_name: str,
 
 def compute_city_metrics_from_postgis(city_name: str,
                                         metrics_config_path: Path,
+                                        weights_config_path: Path,
                                         upload: bool = True) -> None:
     """
     Compute overall cyclability metrics (and percentage missing data) for given city stored in PostGIS.
@@ -82,6 +83,8 @@ def compute_city_metrics_from_postgis(city_name: str,
         Name of given city (e.g., "oslo").
     cyclability_config_path : Path
         Path to the cyclability configuration file.
+    weights_config_path: Path
+        Path to the weights configuration file.
     upload : bool, optional
         If True, upload processed network segments and metrics to PostGIS.
     """
@@ -96,7 +99,9 @@ def compute_city_metrics_from_postgis(city_name: str,
 
     # Compute overall city metrics and assocaited features uncertainty
     logging.info("COMPUTE CITY METRICS")
-    total_city_score, city_missing_features = compute_total_city_metrics(gdf)
+    total_city_score, feature_uncertainty_contributions, total_city_score_uncertainty = compute_total_city_metrics(gdf, 
+                                                                                   "cyclability", 
+                                                                                   weights_config_path)
 
     if upload == True:
 
@@ -106,7 +111,8 @@ def compute_city_metrics_from_postgis(city_name: str,
                                                                 'cyclability',
                                                                 metrics_config_path,
                                                                 total_city_score,
-                                                                city_missing_features)
+                                                                feature_uncertainty_contributions,
+                                                                total_city_score_uncertainty)
         
         # Upload metrics GDF to PostGIS
         dataframe_to_postgres(df_prepared, 

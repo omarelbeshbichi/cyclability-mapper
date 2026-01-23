@@ -93,8 +93,11 @@ CREATE TABLE IF NOT EXISTS city_metrics (
     -- metric score for given city
     total_city_score NUMERIC(5,4) CHECK (total_city_score >= 0 AND total_city_score <= 1),
 
+    -- metric score uncertainty
+    total_city_score_uncertainty NUMERIC(5,4) CHECK (total_city_score_uncertainty >= 0 AND total_city_score_uncertainty <= 1),
+
     -- percentage of missing features of the given metric are stored in JSON format
-    city_missing_features JSONB NOT NULL,
+    feature_uncertainty_contributions JSONB NOT NULL,
 
     created_at TIMESTAMP DEFAULT NOW()
 

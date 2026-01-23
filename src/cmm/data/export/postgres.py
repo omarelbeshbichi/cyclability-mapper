@@ -463,7 +463,8 @@ def prepare_total_city_metrics_df_for_postgis(city_name: str,
                                     metric_name: str,
                                     metrics_config_path: str,
                                     total_city_score: float,
-                                    city_missing_features: dict) -> pd.DataFrame:
+                                    feature_uncertainty_contributions: dict,
+                                    total_city_score_uncertainty: float) -> pd.DataFrame:
     """
     Prepare DataFrame with total city metrics and uncertainty for insertion into PostGIS database (city_metrics SQL table)
 
@@ -477,8 +478,10 @@ def prepare_total_city_metrics_df_for_postgis(city_name: str,
         Path to the YAML configuration file
     total_city_score: float
         Total city score as computed from compute_total_city_metrics
-    city_missing_features: dict
+    feature_uncertainty_contributions: dict
         Percentage missing features as computed from compute_total_city_metrics
+    total_city_score_uncertainty: float
+        Total metric uncertainty
     Returns
     -------
     pd.DataFrame
@@ -489,7 +492,7 @@ def prepare_total_city_metrics_df_for_postgis(city_name: str,
     metric_version = get_config_version(metrics_config_path)
 
     # Round missing features with max four decimals
-    rounded_missing_features = {key: round(value, 4) for key, value in city_missing_features.items()}
+    rounded_missing_features = {key: round(value, 4) for key, value in feature_uncertainty_contributions.items()}
 
     # Convert metrics into a dataframe
     df_final = pd.DataFrame({
@@ -497,7 +500,8 @@ def prepare_total_city_metrics_df_for_postgis(city_name: str,
         "metric_name": [metric_name],
         "metric_version": [metric_version],
         "total_city_score": [total_city_score],
-        "city_missing_features": [json.dumps(rounded_missing_features)]
+        "total_city_score_uncertainty": [total_city_score_uncertainty],
+        "feature_uncertainty_contributions": [json.dumps(rounded_missing_features)]
     })
 
     return df_final

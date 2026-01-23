@@ -6,6 +6,7 @@ from cmm.utils.helpers import row_get, row_has, row_items
 import logging
 from cmm.domain.segment import Segment
 from typing import Any
+from pathlib import Path
 
 # Logger setup
 logging.basicConfig(level=logging.INFO)
@@ -230,7 +231,9 @@ def define_augmented_geodataframe(gdf: gpd.GeoDataFrame,
     
     return gdf_final, metrics_features_scores_cyclability
 
-def compute_total_city_metrics(gdf: gpd.GeoDataFrame) -> tuple[float, dict]:
+def compute_total_city_metrics(gdf: gpd.GeoDataFrame,
+                               metrics_name: str,
+                               weights_config_path: Path) -> tuple[float, dict, float]:
     """
     Compute the overall city score and the percentage of missing features in GeoDataFrame.
 
@@ -241,19 +244,29 @@ def compute_total_city_metrics(gdf: gpd.GeoDataFrame) -> tuple[float, dict]:
         - segment_length: length of each segment
         - total_score: score of each segment
         - missing_info: dict indicating missing features for the segment
-
+    metrics_name: str
+        Metrics name (e.g., "cyclability")
+    weights_config_path: Path
+        Path of weights configuration file.
     Returns
     -------
     total_city_score : float
         The weighted average score of the city, normalized by total network length.
-    city_missing_features : dict
-        A dictionary showing the percentage of segments missing each feature 
-        (i.e., 'maxspeed', 'surface', 'lighting').
+    feature_uncertainty_contributions : dict
+        Per-feature contribution to metric uncertainty
+    total_city_score_uncertainty: float
+        Total metric uncertainty
     """
+
+    # Get config info
+    #(remove version info from resulting dict)
+    weights_config = read_config("weights", "yaml", weights_config_path)
+    weights_config.pop("version")
+    weights_metrics = weights_config[metrics_name]
 
     # Initialize variables
     total_city_score = 0.0
-    city_missing_features = {
+    feature_uncertainty_contributions = {
         "maxspeed": 0.0,
         "surface": 0.0,
         "lighting": 0.0
@@ -261,8 +274,6 @@ def compute_total_city_metrics(gdf: gpd.GeoDataFrame) -> tuple[float, dict]:
 
     # Define total network segments length
     total_network_length = gdf["segment_length"].sum()
-    # Total number of segments
-    n_segments = gdf.shape[0]
 
     for row in gdf.itertuples(index = False):
         
@@ -273,20 +284,41 @@ def compute_total_city_metrics(gdf: gpd.GeoDataFrame) -> tuple[float, dict]:
         # Get partially normalized score
         total_city_score += score * length
 
-        # Count missing data in dedicated dict
-        for feature in city_missing_features:
+        # Get uncertainty data by counting lengths of segments that do not have info in dedicated dict
+        for feature in feature_uncertainty_contributions:
             if missing_info.get(feature):
-                city_missing_features[feature] += 1
+                feature_uncertainty_contributions[feature] += length
 
-    # Divide by total amount of segments
-    city_missing_features = {
-        idx: val / n_segments for  idx, val in city_missing_features.items() 
-    }        
-
-    # Normalize by total network segment length
+    # Divide by total length of segments
     total_city_score = total_city_score / total_network_length
 
-    print(f"total_length: {total_network_length}")
-    print(f"Total rows: {n_segments}")
+    feature_uncertainty_contributions = {
+        idx: val / total_network_length for  idx, val in feature_uncertainty_contributions.items() 
+    }        
 
-    return total_city_score, city_missing_features
+    # Apply weight to uncertainty
+    feature_weight_total = {
+        "maxspeed": 0.0,
+        "surface": 0.0,
+        "lighting": 0.0
+    }
+    # Cycle over all features considered in feature_uncertainty_contributions
+    for feature in feature_uncertainty_contributions:
+        # Cycle over all parts of weight YAML
+        for group_config in weights_metrics.values():            
+            # Store group weight
+            group_weight = group_config["weight"]
+            # Cycle over features for i-th group
+            for feature_name, rel_weight in group_config["features"].items():
+                # Collect info only if given feature is found
+                if feature_name == feature:
+                    feature_weight_total[feature] = rel_weight * group_weight
+
+    all_scores = pd.Series(feature_uncertainty_contributions)
+    all_weights = pd.Series(feature_weight_total)
+
+    feature_uncertainty_contributions = all_scores * all_weights
+
+    total_city_score_uncertainty = feature_uncertainty_contributions.sum()
+
+    return total_city_score, feature_uncertainty_contributions, total_city_score_uncertainty

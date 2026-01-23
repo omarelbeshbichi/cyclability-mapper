@@ -25,7 +25,7 @@ def main(city_name, chunk_size):
 
     # Compute overall city data and store in PostGIS database
     logging.info("COMPUTE OVERALL CITY METRICS")
-    compute_city_metrics_from_postgis(city_name, metrics_config_path)    
+    compute_city_metrics_from_postgis(city_name, metrics_config_path, weights_config_path)    
 
     logging.info("DONE")
 if __name__ == "__main__":
