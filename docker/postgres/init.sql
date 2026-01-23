@@ -107,6 +107,7 @@ WITH latest_metric AS ( -- define helper table picking up latest metric data (us
     SELECT DISTINCT ON (segment_id)
         segment_id,
         total_score,
+        missing_features,
         metric_features_scores,
         metric_version
     FROM segment_metrics
@@ -127,6 +128,7 @@ SELECT
     ns.highway,
     ns.city_name,
     lm.total_score, -- use helper table here
+    lm.missing_features,
     lm.metric_features_scores,
     lm.metric_version
 FROM network_segments ns

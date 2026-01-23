@@ -452,8 +452,52 @@ def prepare_metrics_df_for_postgis(city_name: str,
         "metric_name": metric_name,
         "metric_version": metric_version,
         "total_score": gdf_aligned[metric_col],
+        "missing_features": [json.dumps(m) for m in gdf_aligned["missing_info"]],
         "metric_features_scores": features_scores_json,
         "metadata": [json.dumps({}) for _ in range(len(gdf))]     # empty JSON for now
     })
 
     return metrics_df_final
+
+def prepare_total_city_metrics_df_for_postgis(city_name: str,
+                                    metric_name: str,
+                                    metrics_config_path: str,
+                                    total_city_score: float,
+                                    city_missing_features: dict) -> pd.DataFrame:
+    """
+    Prepare DataFrame with total city metrics and uncertainty for insertion into PostGIS database (city_metrics SQL table)
+
+    Parameters
+    ----------
+    city_name: str
+        Name of given city (e.g., "oslo).
+    metric_name: str
+        Name of current metrics (eg, cyclability)
+    metrics_config_path: str
+        Path to the YAML configuration file
+    total_city_score: float
+        Total city score as computed from compute_total_city_metrics
+    city_missing_features: dict
+        Percentage missing features as computed from compute_total_city_metrics
+    Returns
+    -------
+    pd.DataFrame
+        Metric DataFrame ready for PostGIS insertion
+    """
+    
+    # Define versioning
+    metric_version = get_config_version(metrics_config_path)
+
+    # Round missing features with max four decimals
+    rounded_missing_features = {key: round(value, 4) for key, value in city_missing_features.items()}
+
+    # Convert metrics into a dataframe
+    df_final = pd.DataFrame({
+        "city_name": [city_name],
+        "metric_name": [metric_name],
+        "metric_version": [metric_version],
+        "total_city_score": [total_city_score],
+        "city_missing_features": [json.dumps(rounded_missing_features)]
+    })
+
+    return df_final

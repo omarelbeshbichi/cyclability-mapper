@@ -7,32 +7,7 @@ import pandas as pd
 import numpy as np
 from cmm.domain.segment import CyclabilitySegment
 from typing import Any
-
-#%% Introduce helper functions to handle both gdf rows from itertuple and iterrows loops 
-# Switched to itertuple loop for computational efficiency
-
-# equivalent to - gdf_row.get("id")
-def row_get(row: Any, 
-            key: str, 
-            default = None):
-    if hasattr(row, "_fields"):  # itertuples namedtuple
-        return getattr(row, key, default)
-    else:  # pd.Series
-        return row.get(key, default)
-
-# equivalent to - gdf_row.items()
-def row_items(row: Any):
-    if hasattr(row, "_fields"):
-        return zip(row._fields, row)
-    else:
-        return row.items()
-
-# equivalent to - "item" in gdf_row
-def row_has(row: Any, key: str) -> bool:
-    if hasattr(row, "_fields"):
-        return hasattr(row, key)
-    else:
-        return key in row
+from cmm.utils.helpers import row_get, row_has, row_items
 
 #%%
 
@@ -347,12 +322,16 @@ def prepare_cyclability_segment(gdf_row: Any) -> CyclabilitySegment:
                                                                                            "seprarate"):
         missing_info["maxspeed"] = True
 
-    ## If data present in gdf, load them instead of parsing
-    # This section is used when loading data from PostGIS (jobs/recompute_metrics)
+    ## This section is used when loading data from PostGIS (jobs/recompute_metrics)
+    # If data present in gdf, load them instead of parsing
     if row_has(gdf_row, "bike_infra") and pd.notna(gdf_row.bike_infra):
         bike_infra = gdf_row.bike_infra
         bike_ways = gdf_row.is_oneway
-    
+    # Reuse missing info details
+    if row_has(gdf_row, "missing_info"):
+        missing_info = row_get(gdf_row, "missing_info")
+
+
     ## Store key information in Segment dataclass
     return CyclabilitySegment(
         osm_id = osm_id,

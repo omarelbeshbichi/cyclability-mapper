@@ -13,12 +13,17 @@ def main(city_name, country_code, south, west, north, east, chunk_size):
     from cmm.services.pipeline import build_network_from_api
     from cmm.utils.misc import get_project_root
     from cmm.data.ingest.overpass_queries import roads_in_bbox, roads_in_polygon
-    from cmm.data.export.postgres import delete_city_rows
     from cmm.data.export.postgres import reference_area_to_postgres
     from cmm.utils.geometry import geom_from_bbox
     from cmm.data.ingest.geocoding import city_to_polygon
+    from cmm.services.metrics.compute import compute_city_metrics_from_postgis
+    from cmm.data.export.postgres import delete_city_rows
 
     timeout = 50
+    root = get_project_root()
+    
+    weights_config_path = root / "src/cmm/metrics/config/weights.yaml"
+    metrics_config_path = root / "src/cmm/metrics/config/cyclability.yaml"
 
     if all(v is not None for v in [south, west, north, east]):
         # Build bbox as prescribed as input
@@ -33,31 +38,27 @@ def main(city_name, country_code, south, west, north, east, chunk_size):
         polygon = city_to_polygon(city_name, country_code)
         query = roads_in_polygon(polygon, timeout)
         ref_polygon = polygon
-
-    # Clear-up database
-    logging.info("CLEAR DATABASE")
-    delete_city_rows("network_segments", city_name)
-    delete_city_rows("refresh_areas", city_name)
-    # segment_metrics is deleted automatically (postgres)
     
     # Create/update reference area in PostGIS database
-    logging.info("SAVE REFERENCE AREA")
+    logging.info("DELETE OLD REFERENCE POLYGON (IF PRESENT)")
+    delete_city_rows("refresh_areas", city_name)
+    logging.info("SAVE REFERENCE POLYGON")
     reference_area_to_postgres(city_name, ref_polygon)
 
     # Run pipeline
-    root = get_project_root()
-
     build_network_from_api(
         city_name = city_name,
         query = query,
-        weights_config_path = root / "src/cmm/metrics/config/weights.yaml",
-        metrics_config_path = root / "src/cmm/metrics/config/cyclability.yaml",
+        weights_config_path = weights_config_path,
+        metrics_config_path = metrics_config_path,
         upload = True,
         chunk_size = chunk_size # maximum data chunk size to process in one go
     )
 
+    # Compute overall city data and store in PostGIS database
+    logging.info("COMPUTE OVERALL CITY METRICS")
+    compute_city_metrics_from_postgis(city_name, metrics_config_path)
     
-
     logging.info("DONE")
 if __name__ == "__main__":
     main()

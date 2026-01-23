@@ -9,7 +9,7 @@ from cmm.data.export.postgres import load_reference_area
 
 def refresh_osm_data(city_name: str,
                         weights_config_path: Path,
-                        cyclability_config_path: Path,
+                        metrics_config_path: Path,
                         upload: bool = True,
                         chunk_size: int = 5000) -> None:
     """
@@ -22,7 +22,7 @@ def refresh_osm_data(city_name: str,
         Name of given city (e.g., "oslo").
     weights_config_path : Path
         Path to the weights configuration file used.
-    cyclability_config_path : Path
+    metrics_config_path : Path
         Path to the cyclability configuration file.
     upload : bool, optional
         If True, upload processed network segments and metrics to PostGIS.
@@ -45,7 +45,7 @@ def refresh_osm_data(city_name: str,
         city_name = city_name,
         query = query,
         weights_config_path = weights_config_path,
-        cyclability_config_path = cyclability_config_path,
+        metrics_config_path = metrics_config_path,
         upload = upload,
         chunk_size = chunk_size
     )

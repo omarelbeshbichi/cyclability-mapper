@@ -2,22 +2,24 @@ import pandas as pd
 import geopandas as gpd
 from ..data.normalize.cleaning import prepare_cyclability_segment
 from ..utils.config_reader import read_config
+from cmm.utils.helpers import row_get, row_has, row_items
 import logging
 from cmm.domain.segment import Segment
+from typing import Any
 
 # Logger setup
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def prepare_segment_for_metrics(gdf_row: pd.Series,
-                                metrics_name: str ) -> Segment:
+def prepare_segment_for_metrics(gdf_row: Any,
+                                metrics_name: str) -> Segment:
     """
     Prepare segment dataclass for a specific metrics type.
 
     Parameters
     ----------
-    gdf_row: pd.Series
+    gdf_row: Any
         Row from a GeoDataFrame representing road segment (OSM data).
     metrics_name: str
         Name of metrics to consider (e.g., "cyclability").
@@ -132,7 +134,7 @@ def compute_metrics_score_from_segment(segment: Segment,
 
     return metrics_score, all_features_scores
 
-def define_segment_with_metrics_score(gdf_row: pd.Series,
+def define_segment_with_metrics_score(gdf_row: Any,
                                     weights_config: dict,
                                     metrics_config: dict,
                                     metrics_name: str) -> tuple[Segment, dict]:
@@ -141,7 +143,7 @@ def define_segment_with_metrics_score(gdf_row: pd.Series,
 
     Parameters
     ----------
-    gdf_row: pd.Series
+    gdf_row: Any
         Row from GeoDataFrame representing a road segment
     weights_config: dict
         Dict from YAML file containing feature weights
@@ -227,3 +229,64 @@ def define_augmented_geodataframe(gdf: gpd.GeoDataFrame,
     gdf_final = gpd.GeoDataFrame(segments_cyclability, crs = gdf.crs)
     
     return gdf_final, metrics_features_scores_cyclability
+
+def compute_total_city_metrics(gdf: gpd.GeoDataFrame) -> tuple[float, dict]:
+    """
+    Compute the overall city score and the percentage of missing features in GeoDataFrame.
+
+    Parameters
+    ----------
+    gdf : gpd.GeoDataFrame
+        GeoDataFrame containing city network segments with at least:
+        - segment_length: length of each segment
+        - total_score: score of each segment
+        - missing_info: dict indicating missing features for the segment
+
+    Returns
+    -------
+    total_city_score : float
+        The weighted average score of the city, normalized by total network length.
+    city_missing_features : dict
+        A dictionary showing the percentage of segments missing each feature 
+        (i.e., 'maxspeed', 'surface', 'lighting').
+    """
+
+    # Initialize variables
+    total_city_score = 0.0
+    city_missing_features = {
+        "maxspeed": 0.0,
+        "surface": 0.0,
+        "lighting": 0.0
+    }
+
+    # Define total network segments length
+    total_network_length = gdf["segment_length"].sum()
+    # Total number of segments
+    n_segments = gdf.shape[0]
+
+    for row in gdf.itertuples(index = False):
+        
+        length = row_get(row, "segment_length")
+        score = row_get(row, "total_score")
+        missing_info = row_get(row, "missing_info")
+
+        # Get partially normalized score
+        total_city_score += score * length
+
+        # Count missing data in dedicated dict
+        for feature in city_missing_features:
+            if missing_info.get(feature):
+                city_missing_features[feature] += 1
+
+    # Divide by total amount of segments
+    city_missing_features = {
+        idx: val / n_segments for  idx, val in city_missing_features.items() 
+    }        
+
+    # Normalize by total network segment length
+    total_city_score = total_city_score / total_network_length
+
+    print(f"total_length: {total_network_length}")
+    print(f"Total rows: {n_segments}")
+
+    return total_city_score, city_missing_features

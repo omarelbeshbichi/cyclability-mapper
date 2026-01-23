@@ -10,6 +10,7 @@ def main(city_name):
     logging.info("CLEAR DATABASE")
     delete_city_rows("network_segments", city_name)
     delete_city_rows("refresh_areas", city_name)
+    delete_city_rows("city_metrics", city_name)
     # segment_metrics is deleted automatically (postgres)
 
     logging.info("DONE")

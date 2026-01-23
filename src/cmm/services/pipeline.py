@@ -13,7 +13,8 @@ from cmm.data.export.postgres import prepare_network_segments_gdf_for_postgis
 from cmm.data.export.postgres import prepare_metrics_df_for_postgis
 from cmm.data.export.postgres import dataframe_to_postgres
 from cmm.utils.geometry import geodesic_length
-from ..utils.config_reader import read_config
+from cmm.utils.config_reader import read_config
+from cmm.data.export.postgres import delete_city_rows
 
 def build_network_from_api(city_name: str,
                             query: str,
@@ -52,8 +53,12 @@ def build_network_from_api(city_name: str,
     metrics_config = read_config("cyclability", "yaml", metrics_config_path)
     metrics_config.pop("version")
 
+    # Clear-up existing database info
+    logging.info("CLEAR DATABASE")
+    delete_city_rows("network_segments", city_name)
+    # segment_metrics is deleted automatically (postgres)
+
     logging.info("API FETCH")
-    
     # Fetch data from API
     data_json = run_overpass_query(query, 200, 50, 2.0)
     data_geojson = overpass_elements_to_geojson(data_json["elements"])
