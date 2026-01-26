@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS segment_metrics (
 
     -- scores of features of the given metric are stored in JSON format
     metric_features_scores JSONB NOT NULL,
-    -- weights used are stored in JSON format
+    -- metadata (for now empty)
     metadata JSONB,
 
     UNIQUE (segment_id, metric_name, metric_version)
@@ -96,7 +96,7 @@ CREATE TABLE IF NOT EXISTS city_metrics (
     -- metric score uncertainty
     total_city_score_uncertainty NUMERIC(5,4) CHECK (total_city_score_uncertainty >= 0 AND total_city_score_uncertainty <= 1),
 
-    -- percentage of missing features of the given metric are stored in JSON format
+    -- metric score uncertainty per feature in JSON format
     feature_uncertainty_contributions JSONB NOT NULL,
 
     created_at TIMESTAMP DEFAULT NOW()
