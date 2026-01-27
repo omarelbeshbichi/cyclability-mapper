@@ -9,8 +9,8 @@ import logging
 @click.option("--north", type = float, required = False)
 @click.option("--east", type = float, required = False)
 @click.option("--chunk", "chunk_size", type = int, default = 5000, required = False)
-@click.option("--timeout", type = int, default = 50, required = False)
-@click.option("--tolerance", type = float, default = 0.0005, required = False)
+@click.option("--tout", "timeout", type = int, default = 50, required = False)
+@click.option("--tol", "--tolerance", "tolerance", type = float, default = 0.0005, required = False)
 def main(city_name, country_code, south, west, north, east, chunk_size, timeout, tolerance):
     from cmm.services.pipeline import build_network_from_api
     from cmm.utils.misc import get_project_root

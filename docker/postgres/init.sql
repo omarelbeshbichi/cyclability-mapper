@@ -107,7 +107,7 @@ CREATE TABLE IF NOT EXISTS city_metrics (
 --- select cyclability indeces from segment_metrics table (for now redundant, only metric available)
 CREATE VIEW v_cyclability_segment_detail AS
 WITH latest_metric AS ( -- define helper table picking up latest metric data (using latest metric_version)
-    SELECT DISTINCT ON (segment_id)
+    SELECT DISTINCT ON (segment_id) -- distinct on: pick first row according to orderint law (i.e., the latest version)
         segment_id,
         total_score,
         missing_features,

@@ -48,11 +48,14 @@ Once the containers are running, data ingestion and network building can be star
 
 For example, to build the road network and compute associated cyclability metrics for Oslo, Norway:
 ```bash
-docker compose exec app python -m cmm.jobs.build_network --c oslo --cc no
+docker compose exec app python -m cmm.jobs.build_network --c oslo --cc no --chunk 5000 --tout 50 --tol 0.0005
 ```
 Where:
 - `--c` is the city name
 - `--cc` is the country code (ISO-2)
+- `--chunk` (optional) is the maximum number of segments per chunk to be processed in one go
+- `--tout` (optional) is the timeout time used during API fetch
+- `--tol` (optional) is the tolerance used to simplify city outline Polygon before fetch
 
 The job will:
 - Define the administrative city boundary
@@ -61,14 +64,14 @@ The job will:
 - Compute cyclability metrics
 - Store results in PostGIS
 
-Multiple cities can be stored in the database.
+Multiple cities can be stored in the database. Missing YAML mapping data are automatically prompted to user in CLI environment and used to update YAML table.
 
-After the pipeline is successfully run, results can be explored in two different ways:
-- **Map**: An interactive map rendering all available data for a city:
+After the pipeline is run, results can be explored in two ways:
+- **Map**: A map rendering all data for a city:
   ```bash
   http://localhost:8000/maps/oslo
   ```
-- **API**: Segment-level data retrieved via OSM IDs:
+- **API**: Segment-level data retrieved via OSM identifier:
   ```bash
   http://localhost:8000/api/segments/oslo/4708813
   ```

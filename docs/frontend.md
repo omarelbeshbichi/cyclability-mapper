@@ -16,5 +16,4 @@ Mouse pointer data provides for each segment:
 - features scores (unweighted)
 
 ## JSON Config
-
-Kepler.gl makes use of a dedicated JSON config file used to define most rendering options. 
+Kepler.gl makes use of a dedicated JSON config file defining most rendering options.

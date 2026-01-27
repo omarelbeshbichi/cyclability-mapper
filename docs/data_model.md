@@ -15,7 +15,7 @@ Authoritative data (from OSM):
 - `geometry`: LineString geometry in EPSG:4326.
 - `maxspeed`: maximum traffic speed. 
 - `surface`: surface quality.
-- `lighting`: light conditions. Assumes values: "yes", "no", and "unknown".
+- `lighting`: light conditions.
 - `highway`: OSM highway type classification.
 
 Derived features:
@@ -34,7 +34,7 @@ Each `CyclabilitySegment` stores the computed segment-level cyclability score in
 
 - `cyclability_metrics`: scalar score in the [0, 1] range
 
-Metric values are computed during the pipeline run and  stored explicitly. Metric versioning is handled separately - see metrics documentation.
+Metric values are computed during the pipeline run and stored in PostGIS. Metric versioning is handled separately - see metrics documentation.
 
 ## Missing data tracking
 

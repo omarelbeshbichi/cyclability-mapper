@@ -1,4 +1,5 @@
 # Database Schema
+
 ## Network Segments
 
 The primary table is `network_segments` and is used as authoritative representation of the city network. It is populated with information from `CyclabilitySegments` objects.
@@ -23,17 +24,17 @@ For each segment, the table stores:
 - missing features
 - `metric_feature_scores`: unweighted cyclability score component from each feature. They are returned unweighted to provide a clear indication of which mapped value [0-1] a given feature possesses. 
 
-Metadata fields are currently unused.
+Metadata field is currently unused.
 
 # Refresh Areas
 
-The `refresh_areas` table stores the Polygon used to retrieve OSM data for each city. One Polygon per city is allowed.
+The `refresh_areas` table stores the Polygon used to retrieve OSM data for each city. Only one Polygon per city is allowed.
 
 A creation timestamp and a GIST index on geometry are defined.
 
 # City Metrics
 
-The `city_metrics` table stores aggregated city-level metrics and uncertainty information. One row per city and metric version is allowed.
+The `city_metrics` table stores aggregated city-level metrics and uncertainty information. Only one row per city and metric version is allowed.
 
 Stored attributes include:
 - total city score
@@ -45,4 +46,4 @@ Stored attributes include:
 
 This virtual view is used by services and the API to retrieve the latest metrics data.
 
-It is defined by first identifying the most recent metric version using a helper table (`latest_metric`) and then joining the corresponding segment and metric data.
+It is defined by first selecting the most recent metric version using a helper table (`latest_metric`) and then joining the corresponding segment and metric data. For now selecting based on version is redundant - only one version is effectively present per city - but may be useful for later.

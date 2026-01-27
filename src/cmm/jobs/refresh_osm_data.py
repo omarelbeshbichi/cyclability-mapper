@@ -4,7 +4,7 @@ import logging
 @click.command()
 @click.option("--c", "--city-name", "city_name", type = str, required = True)
 @click.option("--chunk", "chunk_size", type = int, default = 5000, required = False)
-@click.option("--timeout", type = int, default = 50, required = False)
+@click.option("--tout", "timeout", type = int, default = 50, required = False)
 def main(city_name, chunk_size, timeout):
 
     from cmm.services.refresh import refresh_osm_data

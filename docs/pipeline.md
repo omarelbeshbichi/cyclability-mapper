@@ -9,7 +9,7 @@ Code associated with this section is stored in `src/cmm/data/ingest/geocoding`.
 The pipeline can be initialized using CLI jobs stored in `src/cmm/jobs`. The main job, here described, is called `build_network`. The pipeline can be called in two ways:
 - by providing an explicit bounding box, normally defined with four numbers representing the South Latitude, North Latitude, West Longitude, and East Longitude. For example, for the area of Oslo, Norway - ["59.85", "60.05", "10.60", "10.85"].
 - by providing a city name and associated ISO-2 country code (for example: "oslo", "no"). This is used in the pipeline to resolve an administrative polygon using Nominatim. 
-  NB: I have noted that Nominatim, in some rare instances, resolves the provincial polygon instead of the one relative to the city administrative area.
+  NB: I have noted that Nominatim, in some instances, resolves the provincial polygon instead of the one relative to the city administrative area.
 
 Both ways essentially define a reference Polygon, which is used in the next step of the pipeline.
 
@@ -17,7 +17,7 @@ Both ways essentially define a reference Polygon, which is used in the next step
 
 Code associated with this section is stored in overpass files in `src/cmm/data/ingest/overpass_*.py`.
 
-An overpass API query can be defined using the Polygon just established. The query fetches all data relative to `way` objects of type `highway` - that is, all streets within the Polygon. An Overpass API client is defined using the `requests` module. Connection retries and delay are also included. Raw JSON data fetched from the API service is converted to standard GeoJSON format, and from GeoJSON to a raw GeoPandas GeoDataFrame.
+An overpass API query is defined using the Polygon just established. To improve query size, the Polygon is simplified using a defined tolerance defined with the optional CLI parameter `-tol` (default: 0.0005). The fetch timeout in seconds can also be set using the optional CLI parameter `--tout` (optional: 50 s). The query fetches all data relative to `way` objects of type `highway` - that is, all streets within the Polygon. An Overpass API client is defined using the `requests` module. Connection retries and delay are also included. Missing YAML mapping data are automatically prompted from user in CLI environment and used to update YAML table. Raw JSON data fetched from the API service is converted to standard GeoJSON format, and from GeoJSON to a raw GeoPandas GeoDataFrame.
 
 # Processing in Chunks
 
