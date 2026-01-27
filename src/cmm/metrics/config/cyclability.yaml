@@ -47,6 +47,7 @@ maxspeed:
   - max: 200
     metrics: 0.1
   description: "Maximum traffic speed"
+  fallback: 0.5  # conservative assumption for missing data
 
 surface:
     # Full categorical list: https://wiki.openstreetmap.org/wiki/Key:surface

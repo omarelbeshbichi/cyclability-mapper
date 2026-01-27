@@ -122,7 +122,7 @@ def compute_metrics_score_from_segment(segment: Segment,
                     break
                 # Conservative assumption: assign neutral maxspeed score if maxspeed is not given and segment type is legal
                 elif feature_name == "maxspeed" and is_null:
-                    feature_score = 0.5
+                    feature_score = feature_config["fallback"]
                     break
                 # Assign score
                 elif float(feature_value) <= bin["max"]:
