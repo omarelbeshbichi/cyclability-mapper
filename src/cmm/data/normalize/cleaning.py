@@ -1,15 +1,9 @@
-"""
-Module providing functions to normalize OSM data.
-"""
-
 import geopandas as gpd
 import pandas as pd
-import numpy as np
 from cmm.domain.segment import CyclabilitySegment
 from typing import Any
 from cmm.utils.helpers import row_get, row_has, row_items
 import re
-#%%
 
 def parse_maxspeed_to_kmh(value):
     """
@@ -60,7 +54,7 @@ def normalize_maxspeed_info(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     
     # Convert updated values as strings and use None for NaN - comply with pipeline
     gdf["maxspeed"] = [
-        str(val) if not pd.isna(val) else None 
+        str(int(val)) if not pd.isna(val) else None 
         for val in gdf["maxspeed"]
     ]
 
@@ -213,7 +207,7 @@ def prepare_cyclability_segment(gdf_row: Any, excellent_bike_infra: dict) -> Cyc
     """
 
 
-    #%% INIT 
+    #% INIT 
 
     # Initialize missing info dict
     # assuming that if bike_infrastructure is missing -> no infrastructure at all
@@ -251,7 +245,7 @@ def prepare_cyclability_segment(gdf_row: Any, excellent_bike_infra: dict) -> Cyc
     bike_ways = "both"
     bike_infra = "none"
 
-    #%% PARSE
+    #% PARSE
 
     # Parse oneway information
         # In OSM "oneway=yes" indicates a one-way cycleway

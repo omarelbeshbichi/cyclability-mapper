@@ -1,6 +1,7 @@
 import hashlib
 import yaml
 
+
 def get_config_version(yaml_path: str) -> str:
     """
     Generate a version string for a YAML configuration file.

@@ -1,6 +1,6 @@
 from keplergl import KeplerGl
 from cmm.services.segments import load_segments_for_viz
-from cmm.utils.config_reader import read_config
+from cmm.utils.config_helpers import read_config
 
 def create_map(city_name: str, 
                kepler_config_path: str = None):

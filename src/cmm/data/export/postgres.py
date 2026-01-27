@@ -1,18 +1,15 @@
-"""
-Module for exporting processed data.
-"""
-
 import geopandas as gpd
 import pandas as pd
 import logging 
 from sqlalchemy import create_engine
 from sqlalchemy import text
 from sqlalchemy.sql import quoted_name
-from ...metrics.config.versioning import get_config_version
+from cmm.metrics.config.versioning import get_config_version
 import json
 import os
 from shapely import wkb
 from shapely.geometry import Polygon, base
+
 
 def reference_area_to_postgres(city_name: str, 
                                 geom: Polygon):
@@ -144,36 +141,6 @@ def delete_city_rows(table_name: str, city_name: str):
     except Exception as e:
         logging.error(f"Error deleting rows from '{table_name}': {e}")
         raise
-
-    finally:
-        engine.dispose()
-
-def truncate_table(table_name: str):
-    """
-    Remove all rows from a PostGIS table, reset IDs, and cascade deletes.
-    """
-
-    DATABASE_URL = os.getenv(
-        "DATABASE_URL",
-        "postgresql+psycopg2://user:pass@localhost:5432/db"
-    )
-
-    try:
-        engine = create_engine(DATABASE_URL)
-
-        quoted_table = quoted_name(table_name, quote=True)
-
-        with engine.begin() as conn:
-            conn.execute(text(f"""
-                TRUNCATE TABLE {quoted_table}
-                RESTART IDENTITY
-                CASCADE;
-            """))
-
-        logging.info(f"Table '{table_name}' successfully cleared.")
-
-    except Exception as e:
-        logging.error(f"Error clearing table '{table_name}': {e}")
 
     finally:
         engine.dispose()

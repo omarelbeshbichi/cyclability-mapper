@@ -1,7 +1,7 @@
 import pandas as pd
 import geopandas as gpd
 from cmm.data.normalize.cleaning import prepare_cyclability_segment
-from cmm.utils.config_reader import read_config, add_config_data
+from cmm.utils.config_helpers import read_config, add_config_data
 from cmm.utils.helpers import row_get, row_has, row_items
 import logging
 from cmm.domain.segment import Segment

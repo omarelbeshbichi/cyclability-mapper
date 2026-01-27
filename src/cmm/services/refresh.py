@@ -1,6 +1,5 @@
 from pathlib import Path
 import logging
-
 from cmm.data.ingest.overpass_queries import roads_in_polygon
 from cmm.services.pipeline import build_network_from_api
 from cmm.data.export.postgres import delete_segment_metrics_in_polygon

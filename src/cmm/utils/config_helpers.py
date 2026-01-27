@@ -42,7 +42,6 @@ def read_config(index_name: str,
     else:
         return {}
     
-
 def add_config_data(feature_name: str,
                     feature_value: str,
                     feature_score: float,

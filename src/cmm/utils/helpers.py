@@ -1,6 +1,6 @@
 from typing import Any
 
-#%% Introduce helper functions to handle both gdf rows from itertuple and iterrows loops 
+# Introduce helper functions to handle both gdf rows from itertuple and iterrows loops 
 # Switched to itertuple loop for computational efficiency
 
 # equivalent to - gdf_row.get("id")

@@ -1,7 +1,3 @@
-"""
-Module providing functions to ingest OSM GeoJSON data.
-"""
-
 import pandas as pd
 import geopandas as gpd
 import json
@@ -14,6 +10,8 @@ def load_json_from_path(path: str) -> dict:
     """
     Load JSON file after performing preliminary checks and return it as a dictionary.
     
+    Note: this function is now only used for testing purposes.
+
     Parameters
     ----------
     path: str
@@ -54,6 +52,8 @@ def feature_collection_to_dataframe(data: dict) -> pd.DataFrame:
     """
     Load dictionary containing GeoJSON data and return it normalized as a pandas DataFrame.
     
+    Note: this function is now only used for testing purposes.
+
     Parameters
     ----------
     data: dict
@@ -119,12 +119,13 @@ def geojson_to_gdf(geojson_dict: dict,
     for i in range(0, len(features), chunk_size):
         # Slice features in chunks
         chunk = features[i:i+chunk_size]
+
         # Collect associated geometries and properties
         geometries = [shape(f["geometry"]) for f in chunk]
         props = [f["properties"] for f in chunk]
         
         # Build-up GeoDataFrame for chunk
-        gdf_chunk = gpd.GeoDataFrame(props, geometry=geometries, crs="EPSG:4326")
+        gdf_chunk = gpd.GeoDataFrame(props, geometry = geometries, crs = "EPSG:4326")
         
         # Replace missing values with None
         gdf_chunk = gdf_chunk.where(gdf_chunk.notna(), None)

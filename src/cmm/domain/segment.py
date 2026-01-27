@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Optional, Any, Dict
 
+
 @dataclass
 class Segment:
     osm_id: Any

@@ -67,7 +67,6 @@ def load_segments_for_metrics_recompute(city_name: str) -> gpd.GeoDataFrame:
     finally:
         engine.dispose()
 
-
 def load_data_for_city_metrics_compute(city_name: str) -> gpd.GeoDataFrame:
     """
     Load data of given city from PostGIS for total city metrics computation.

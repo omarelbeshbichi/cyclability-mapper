@@ -4,7 +4,6 @@ import logging
 import json
 import os
 
-
 def load_segments_for_viz(city_name: str) -> gpd.GeoDataFrame:
     """
     Load cyclability segments from PostGIS for visualization use.

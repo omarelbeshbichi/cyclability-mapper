@@ -1,7 +1,6 @@
 
 from pathlib import Path
 import logging
-
 from cmm.data.ingest.geojson_loader import geojson_to_gdf
 from cmm.data.ingest.overpass_client import run_overpass_query
 from cmm.data.ingest.overpass_parser import overpass_elements_to_geojson 
@@ -13,7 +12,7 @@ from cmm.data.export.postgres import prepare_network_segments_gdf_for_postgis
 from cmm.data.export.postgres import prepare_metrics_df_for_postgis
 from cmm.data.export.postgres import dataframe_to_postgres
 from cmm.utils.geometry import geodesic_length
-from cmm.utils.config_reader import read_config
+from cmm.utils.config_helpers import read_config
 from cmm.data.export.postgres import delete_city_rows
 
 def build_network_from_api(city_name: str,

@@ -1,6 +1,5 @@
 import geopandas as gpd
 import pandas as pd
-from pathlib import Path
 from cmm.data.ingest.geojson_loader import load_json_from_path, feature_collection_to_dataframe, geojson_to_gdf_from_path
 from cmm.data.ingest.overpass_parser import overpass_elements_to_geojson
 from cmm.data.ingest.overpass_client import run_overpass_query
@@ -8,14 +7,15 @@ from unittest.mock import Mock, patch
 
 def test_load_json_from_path(dev_geojson_path):
 
-    data = load_json_from_path(dev_geojson_path)
+    data = load_json_from_path(dev_geojson_path) # from fixtures/dev_geojson
 
     assert data["type"] == "FeatureCollection"
-    #assert len(data["features"]) == 1
+    assert len(data["features"]) == 68
+    assert data["features"][0].get("type") == "Feature" # first feature
 
 def test_feature_collection_to_dataframe(dev_geojson_path):
     
-    data = load_json_from_path(dev_geojson_path)
+    data = load_json_from_path(dev_geojson_path) # from fixtures/dev_geojson
 
     df = feature_collection_to_dataframe(data)
     assert isinstance(df, pd.DataFrame)

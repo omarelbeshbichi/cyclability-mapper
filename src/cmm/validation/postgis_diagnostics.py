@@ -8,6 +8,8 @@ def find_invalid_geometries(cur,
     Find invalid geometries in PostGIS database and returns associated ids and reasons
     and boolean for invalid geometry detection.
 
+    Note: not used any longer.
+
     Parameters
     ----------
     cur
@@ -44,6 +46,8 @@ def delete_degenerate_linestrings(cur,
                                   geom_column_name: str) -> int:
     """
     Delete degenerate LineStrings from a PostGIS table.
+
+    Note: not used any longer.
 
     Parameters
     ----------

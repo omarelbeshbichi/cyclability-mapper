@@ -1,6 +1,7 @@
 from shapely.geometry import Polygon
 from typing import Optional
 
+
 def roads_in_bbox(south: float, west: float, north: float, east: float) -> str:
     """
     Build Overpass QL query fetching road geometries within a defined bounding box

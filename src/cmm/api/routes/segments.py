@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
-
 from cmm.api.schemas.segment import SegmentNetworkOut
 from cmm.services.segments import load_segment_from_id
+
 
 router = APIRouter(prefix = "/segments", tags = ["segments"])
 
