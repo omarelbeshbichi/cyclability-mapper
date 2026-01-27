@@ -6,7 +6,7 @@ from sqlalchemy import create_engine, text
 logging.basicConfig(level=logging.INFO)
 
 @click.command()
-def list_cities():
+def main():
     """
     List available cities in the database.
     """
@@ -45,4 +45,4 @@ def list_cities():
 
 
 if __name__ == "__main__":
-    list_cities()
+    main()
