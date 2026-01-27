@@ -12,6 +12,7 @@ class SegmentNetworkOut(BaseModel):
     surface: Optional[str]
     highway: Optional[str]
     total_score: Optional[float]
+    missing_features: Optional[Dict[str, bool]]
     metric_features_scores: Optional[Dict[str, float]]
     metric_version: Optional[str]
 

@@ -108,6 +108,7 @@ def load_segment_from_id(city_name: str,
             surface,
             highway,
             total_score,
+            missing_features,
             metric_features_scores,
             metric_version
         FROM v_cyclability_segment_detail
