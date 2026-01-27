@@ -20,4 +20,4 @@ API endpoints are explicitly scoped by city name (path parameter). Multiple citi
 ```
 GET /api/segments/{city_name}/{osm_id}
 ```
-Returns road segment corresponding to `osm_id`  within the specified city `city_name`.
+Returns data from the road segment corresponding to `osm_id` within the specified city `city_name`.

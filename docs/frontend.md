@@ -9,7 +9,7 @@ GET /maps/{city_name}
 Returns Kepler.gl map of segment-level cyclability metrics of the specified city `city_name`.
 
 ## Mouse Hovering Data
-Mouse pointer data is also providing, for each segment:
+Mouse pointer data provides for each segment:
 - `osm_id`
 - cyclability score
 - segment length

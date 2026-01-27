@@ -1,5 +1,5 @@
 import requests
-from typing import Tuple
+from typing import Tuple, Optional
 import osmnx as ox
 from shapely.geometry import shape, Polygon, MultiPolygon
 
@@ -55,7 +55,9 @@ def city_to_bbox(city_name: str) -> Tuple[float, float, float, float]:
 
     return south, west, north, east
 
-def city_to_polygon(city_name: str, country_code: str = "it"):
+def city_to_polygon(city_name: str, 
+                    country_code: str = "it",
+                    tolerance: Optional[float] = 0.0005):
     """
     Get city boundary polygon from OpenStreetMap (Nominatim).
     Returns a shapely geometry.
@@ -96,5 +98,7 @@ def city_to_polygon(city_name: str, country_code: str = "it"):
 
     if not isinstance(geom, Polygon):
         raise TypeError(f"Expected Polygon, got {type(geom)}")
+
+    geom = geom.simplify(tolerance=tolerance, preserve_topology=True)
 
     return geom

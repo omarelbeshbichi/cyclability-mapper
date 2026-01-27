@@ -21,7 +21,7 @@ For each segment, the table stores:
 - metric name and version
 - cyclability score
 - missing features
-- `metric_feature_scores`: unweighted cyclability score component from each feature. They are returned unweighted so to provide a clear indication of which mapped value [0-1] a given feature possesses. 
+- `metric_feature_scores`: unweighted cyclability score component from each feature. They are returned unweighted to provide a clear indication of which mapped value [0-1] a given feature possesses. 
 
 Metadata fields are currently unused.
 

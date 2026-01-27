@@ -54,6 +54,7 @@ surface:
     # --- Fully paved ---
     paved: 1.0
     asphalt: 1.0
+    tarmac: 1.0
     asfalto_leggero: 1.0
     chipseal: 0.95
     concrete: 1.0
@@ -78,6 +79,7 @@ surface:
     stone: 0.7
     stone:slabs: 0.7
     bricks: 0.75
+    brick: 0.75
     grass_paver: 0.7
     metal_grid: 0.7
     fibre_reinforced_polymer_grate: 0.7

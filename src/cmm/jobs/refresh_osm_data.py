@@ -4,7 +4,8 @@ import logging
 @click.command()
 @click.option("--c", "--city-name", "city_name", type = str, required = True)
 @click.option("--chunk", "chunk_size", type = int, default = 5000, required = False)
-def main(city_name, chunk_size):
+@click.option("--timeout", type = int, default = 50, required = False)
+def main(city_name, chunk_size, timeout):
 
     from cmm.services.refresh import refresh_osm_data
     from cmm.utils.misc import get_project_root
@@ -20,7 +21,8 @@ def main(city_name, chunk_size):
         weights_config_path = weights_config_path,
         metrics_config_path = metrics_config_path,
         upload = True,
-        chunk_size = chunk_size
+        chunk_size = chunk_size,
+        timeout = timeout
     )
 
     # Compute overall city data and store in PostGIS database

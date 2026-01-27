@@ -44,7 +44,7 @@ where:
   - 0: lowest score
 - $\mu_f$ is a penalty value (default: $0.5$) used to account conservatively for missing data. It is defined in the same YAML transformation table. To be noted that the contribution of this assumed value to the score is quantified by the feature uncertainty $C_f$ and, in aggregate, to the total city uncertainty $U$ (see below).
 
-For feature `maxspeed`, if `bike_infrastructure` is available and of high quality (structurally protected), the associated score is automatically considered maximum, 1.0, as it is assumed that traffic is not interfering with cycleway:
+For feature `maxspeed`, if `bike_infrastructure` is available and of high quality (structurally protected), the associated score is automatically considered maximum, 1.0, as it is assumed that traffic is not interfering with the cycleway:
 $$
 \overline{x_{i,maxspeed}} = \begin{cases} 
 1.0 & \text{if protected} \\ 
@@ -53,7 +53,7 @@ N_{maxspeed}({x_{i,{maxspeed}}}) & \text{otherwise}
 \end{cases}
 $$
 
-Normalization of features is at this stage based on domain judgement only.
+Normalization of features is at this stage based on domain judgment only.
 
 
 ## Feature Grouping and Weights
@@ -110,7 +110,7 @@ $$
 L_{tot} =  \displaystyle \sum_{i=1}^{N} L_i
 $$
 
-The city-level cyclability metrics is defined as a length-weighted average of segment scores:
+The city-level cyclability metric is defined as a length-weighted average of segment scores:
 
 $$
 S_{city} = \frac{1}{L_{tot}}\displaystyle \sum_{i=1}^{N}S_i L_i
@@ -127,12 +127,12 @@ $$
 U_f = \frac{1}{L_{tot}}\displaystyle \sum_{i=1}^{N}m_{i,f} L_i
 $$
 
-This quantity quantifies the part of the city network that misses information about feature $f$ (observaility).
+This quantity quantifies the part of the city network that misses information about feature $f$ (observability).
 
 
 ## Feature Uncertainty
 
-To relate the missing data to the metrics itself, $U_f$ is weighted by feature importance (that is, by using weight $W_f$):
+To relate the missing data to the metrics themselves, $U_f$ is weighted by feature importance (that is, by using weight $W_f$):
 
 $$
 C_f = U_f*W_f
@@ -152,7 +152,7 @@ $$
 
 # Reported Outputs
 
-For a city, the model produces and stores in PostGIS the following quantities:
+For a city, the model produces and stores the following quantities in PostGIS:
 
 1) Segment-level cyclability score set, ${S_{i,city}}$
 2) Total cyclability score, $S_{city}$
@@ -173,4 +173,4 @@ Means: $22\%$ of the cyclability score is related to segments where relevant inp
 
 As shown, I have tracked missing data for `maxspeed`, `surface`, and `lighting` - which are used to compute the cyclability index with `bike_infrastructure`. 
 
-Missing data is handled in this project by assuming a default neutral quality score of 0.5 ($\mu_f$). A value of 0.0 may also be assumed depending on the analysis scope, but for now it is not addressed.
+Missing data is handled in this project by assuming a default neutral quality score of 0.5 ($\mu_f$). A value of 0.0 may also be assumed depending on the analysis scope, but for now, it is not addressed.

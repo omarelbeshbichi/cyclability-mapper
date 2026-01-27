@@ -6,12 +6,14 @@ from cmm.services.pipeline import build_network_from_api
 from cmm.data.export.postgres import delete_segment_metrics_in_polygon
 from cmm.data.export.postgres import delete_segments_in_polygon
 from cmm.data.export.postgres import load_reference_area
+from typing import Optional
 
 def refresh_osm_data(city_name: str,
                         weights_config_path: Path,
                         metrics_config_path: Path,
                         upload: bool = True,
-                        chunk_size: int = 5000) -> None:
+                        chunk_size: int = 5000,
+                        timeout: Optional[int] = 50) -> None:
     """
     Refresh network and recompute metrics associated with reference polygon covering segments present 
     in the database. 
@@ -26,6 +28,8 @@ def refresh_osm_data(city_name: str,
         Path to the cyclability configuration file.
     upload : bool, optional
         If True, upload processed network segments and metrics to PostGIS.
+    timeout: Optional[int]
+        Overpass API timeout.
     """
 
     # Retrieve reference polygon from PostGIS database
@@ -33,7 +37,7 @@ def refresh_osm_data(city_name: str,
     ref_polygon = load_reference_area(city_name)
     
     # Define refresh query
-    query = roads_in_polygon(ref_polygon)
+    query = roads_in_polygon(ref_polygon, timeout)
 
     # Clear-up database - segments within refresh polygon
     logging.info(f"CLEAR DATABASE FOR {city_name} METRICS")

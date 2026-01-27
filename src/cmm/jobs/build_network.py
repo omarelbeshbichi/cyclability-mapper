@@ -9,7 +9,9 @@ import logging
 @click.option("--north", type = float, required = False)
 @click.option("--east", type = float, required = False)
 @click.option("--chunk", "chunk_size", type = int, default = 5000, required = False)
-def main(city_name, country_code, south, west, north, east, chunk_size):
+@click.option("--timeout", type = int, default = 50, required = False)
+@click.option("--tolerance", type = float, default = 0.0005, required = False)
+def main(city_name, country_code, south, west, north, east, chunk_size, timeout, tolerance):
     from cmm.services.pipeline import build_network_from_api
     from cmm.utils.misc import get_project_root
     from cmm.data.ingest.overpass_queries import roads_in_bbox, roads_in_polygon
@@ -19,7 +21,6 @@ def main(city_name, country_code, south, west, north, east, chunk_size):
     from cmm.services.metrics.compute import compute_city_metrics_from_postgis
     from cmm.data.export.postgres import delete_city_rows
 
-    timeout = 50
     root = get_project_root()
     
     weights_config_path = root / "src/cmm/metrics/config/weights.yaml"
@@ -35,7 +36,9 @@ def main(city_name, country_code, south, west, north, east, chunk_size):
         ref_polygon = geom_from_bbox(south, west, north, east)
     else:
         # Build polygon based on city_name
-        polygon = city_to_polygon(city_name, country_code)
+        polygon = city_to_polygon(city_name, 
+                                  country_code,
+                                  tolerance)
         query = roads_in_polygon(polygon, timeout)
         ref_polygon = polygon
     
