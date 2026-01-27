@@ -1,4 +1,3 @@
-
 version: "1.0.0"
 
 bike_infrastructure:
@@ -31,108 +30,124 @@ bike_infrastructure:
     none: 0.0
     construction: 0.0
     crossing: 0.5
-    
+
+    # --- Added Recently --- 
+    sidewalk: 0.65
   description: "Bike lane type"
 
 maxspeed:
   type: continuous
   bins:
-    - max: 30
-      metrics: 1.0
-    - max: 50
-      metrics: 0.7
-    - max: 70
-      metrics: 0.4
-    - max: 200
-      metrics: 0.1
+  - max: 30
+    metrics: 1.0
+  - max: 50
+    metrics: 0.7
+  - max: 70
+    metrics: 0.4
+  - max: 200
+    metrics: 0.1
   description: "Maximum traffic speed"
 
 surface:
     # Full categorical list: https://wiki.openstreetmap.org/wiki/Key:surface
   type: categorical
   mapping:
-    # --- Fully paved ---
     paved: 1.0
     asphalt: 1.0
     tarmac: 1.0
     asfalto_leggero: 1.0
-    chipseal: 0.95
     concrete: 1.0
     concrete:lanes: 1.0
+    chipseal: 0.95
     concrete:plates: 0.95
-    concrete:slabs: 0.9
     metal: 0.95
     tiles: 0.95
     acrylic: 0.95
     tartan: 0.95
-
-    # --- Paved but with presence of textures ---
+    concrete:slabs: 0.9
+    rubber: 0.9
+    carpet: 0.85
+    plastic: 0.85
     paving_stones: 0.8
     paving_stones:lanes: 0.8
     sett: 0.75
-    cobblestone: 0.7
-    cobblestone:flattened: 0.65
-    cobblestone:flattened:large_stone: 0.55
-    cobblestone:rounded: 0.55
-    roman_paving;sett: 0.6
-    roman_paving: 0.6
-    stone: 0.7
-    stone:slabs: 0.7
     bricks: 0.75
     brick: 0.75
+    wood: 0.75
+    cobblestone: 0.7
+    stone: 0.7
+    stone:slabs: 0.7
     grass_paver: 0.7
     metal_grid: 0.7
     fibre_reinforced_polymer_grate: 0.7
-    unhewn_cobblestone: 0.65
-    milanese_paving: 0.6
-
-    # --- Unpaved and compacted ---
-    unpaved: 0.5
-    compacted: 0.6
+    cobblestone:flattened: 0.65
     compacted+: 0.65
+    unhewn_cobblestone: 0.65
+    roman_paving;sett: 0.6
+    roman_paving: 0.6
+    milanese_paving: 0.6
+    compacted: 0.6
     fine_gravel: 0.6
+    artificial_turf: 0.6
+    stepping_stones: 0.6
+    unpaved: 0.5
+    vegecol: 0.5
     gravel: 0.45
     gravel;ground: 0.45
-    gravel;grass: 0.4
     shells: 0.45
+    gravel;grass: 0.4
     rock: 0.4
     pebblestone: 0.4
     clay: 0.4
-
-    # --- Natural ground ---
     ground: 0.35
     dirt: 0.35
     earth: 0.35
     grass: 0.3
-    artificial_turf: 0.6
-    vegecol: 0.5
     woodchips: 0.25
     sand: 0.2
+    salt: 0.2
     mud: 0.15
-
-    # --- Special  ---
-    wood: 0.75
-    stepping_stones: 0.6
-    rubber: 0.9
-    carpet: 0.85
-    plastic: 0.85
-
-    # --- Seasonal / extreme ---
     snow: 0.1
     ice: 0.05
-    salt: 0.2
 
-    # --- Unknown ---
+    # --- Missing Data ---
     unknown: 0.5 # conservative assumption
 
+    # --- Added Recently ---
+    asphalt;sett: 0.85
+    hardcore: 0.7
+    slabs: 0.7
+    grit: 0.65
+    dirt;gravel: 0.4
+    hard: 0.7
+    paving_slabs: 0.85
+    all-weather: 0.7
+    dirt/sand: 0.3
+    paving_stones asphalt: 0.9
   description: "Normalized surface quality score"
 
 lighting:
   type: categorical
   mapping:
-    "yes": 1.0
-    "no": 0.5
-    "unknown": 0.5 # conservative assumption
+    'yes': 1.0
+    'no': 0.0
+    yes; no: 0.7
+    yes;no: 0.7
+    u: 0.5
+    both: 0.7
+    '1.6': 1.0
+    automatic: 1.0
+    variable: 0.5
+    truss: 0.7
+    '24.7': 1.0
+    disused: 0.0
+    limited: 0.4
+
+    # --- Missing Data ---
+    unknown: 0.5 # conservative assumption
+
+    # --- Added Recently ---
+    24/7: 1.0
 
 oneway:
   type: categorical

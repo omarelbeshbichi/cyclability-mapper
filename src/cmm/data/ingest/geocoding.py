@@ -1,6 +1,5 @@
 import requests
 from typing import Tuple, Optional
-import osmnx as ox
 from shapely.geometry import shape, Polygon, MultiPolygon
 
 def city_to_bbox(city_name: str) -> Tuple[float, float, float, float]:

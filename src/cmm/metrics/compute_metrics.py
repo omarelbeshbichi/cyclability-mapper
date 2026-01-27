@@ -1,7 +1,7 @@
 import pandas as pd
 import geopandas as gpd
-from ..data.normalize.cleaning import prepare_cyclability_segment
-from ..utils.config_reader import read_config
+from cmm.data.normalize.cleaning import prepare_cyclability_segment
+from cmm.utils.config_reader import read_config, add_config_data
 from cmm.utils.helpers import row_get, row_has, row_items
 import logging
 from cmm.domain.segment import Segment
@@ -14,7 +14,8 @@ logger = logging.getLogger(__name__)
 
 
 def prepare_segment_for_metrics(gdf_row: Any,
-                                metrics_name: str) -> Segment:
+                                metrics_name: str,
+                                excellent_bike_infra: dict) -> Segment:
     """
     Prepare segment dataclass for a specific metrics type.
 
@@ -24,6 +25,8 @@ def prepare_segment_for_metrics(gdf_row: Any,
         Row from a GeoDataFrame representing road segment (OSM data).
     metrics_name: str
         Name of metrics to consider (e.g., "cyclability").
+    excellent_bike_infra: dict
+        Dict from YAML file defining bike_infrastructure metrics features from YAML file for which score is 1.0
     
     Returns
     -------
@@ -34,13 +37,14 @@ def prepare_segment_for_metrics(gdf_row: Any,
 
     # Initiate Segment dataframe for cyclability
     if metrics_name == "cyclability":
-        return prepare_cyclability_segment(gdf_row) # Returns a CyclabilitySegment dataclass
+        return prepare_cyclability_segment(gdf_row, excellent_bike_infra) # Returns a CyclabilitySegment dataclass
     else:
         raise ValueError(f"Metrics not available: {metrics_name}")
 
 def compute_metrics_score_from_segment(segment: Segment,
                                         weights_config: dict,
                                         metrics_config: dict,
+                                        metrics_config_path: str,
                                         metrics_name: str) -> tuple[float, dict]:
     """
     Compute metrics score for a single road segment based on YAML configurations
@@ -53,6 +57,8 @@ def compute_metrics_score_from_segment(segment: Segment,
         Dict from YAML file containing feature weights
     metrics_config: dict
         Dict from YAML file defining metrics feature configurations
+    metrics_config_path: str
+        Path of YAML file defining metrics feature configurations
     metrics_name: str
         Name of metrics (e.g., cyclability) - must comply with YAML definitions
         
@@ -85,12 +91,21 @@ def compute_metrics_score_from_segment(segment: Segment,
             feature_value = str(feature_value).lower()
             feature_score = feature_config["mapping"].get(feature_value)    
             if feature_score is None:
-                raise ValueError(
-                    f"The value {repr(feature_value)} for feature '{feature_name}' "
+                
+                logging.warning(f"The value {repr(feature_value)} for feature '{feature_name}' "
                     f"is missing from the YAML mapping. Please add it to the 'categorical' mapping.\n"
-                    f"Segment for which mapping is missing: '{segment.osm_id}'"
-                )
-        
+                    f"Segment for which mapping is missing: '{segment.osm_id}'")
+                
+                feature_score = float(input(
+                    f"Enter score for {repr(feature_value)} for feature '{feature_name}': "
+                    ))
+                
+                # Save to YAML
+                add_config_data(feature_name, feature_value, feature_score, metrics_config_path)
+                
+                # Update feature_config dict for current loop
+                feature_config["mapping"][feature_value] = feature_score       
+
         # If continuous parameter type in YAML file, get bin for which feature_value is less 
         # or equal than threshold
         elif feature_config["type"] == "continuous":
@@ -138,6 +153,8 @@ def compute_metrics_score_from_segment(segment: Segment,
 def define_segment_with_metrics_score(gdf_row: Any,
                                     weights_config: dict,
                                     metrics_config: dict,
+                                    metrics_config_path: str,
+                                    excellent_bike_infra: dict,
                                     metrics_name: str) -> tuple[Segment, dict]:
     """
     Return segment augmented with selected metrics score
@@ -150,6 +167,10 @@ def define_segment_with_metrics_score(gdf_row: Any,
         Dict from YAML file containing feature weights
     metrics_config: dict
         Dict from YAML file defining metrics feature configurations
+    metrics_config_path: str
+        Path of YAML file defining metrics feature configurations
+    excellent_bike_infra: dict
+        Dict from YAML file defining bike_infrastructure metrics features from YAML file for which score is 1.0
     metrics_name: str
         Name of metrics (e.g., cyclability) - must comply with YAML definitions
 
@@ -163,10 +184,14 @@ def define_segment_with_metrics_score(gdf_row: Any,
 
     # Initiate Segment dataclass for given gdf row and specific metric
     # (for metrics_name = "cyclability" -> CyclabilitySegment dataclass -- see dataclass structure in cmm/domain/segment)
-    segment = prepare_segment_for_metrics(gdf_row, metrics_name)
+    segment = prepare_segment_for_metrics(gdf_row, metrics_name, excellent_bike_infra)
 
     # Compute metrics score based on YAML configs
-    metrics_score, metrics_features_scores = compute_metrics_score_from_segment(segment, weights_config, metrics_config, metrics_name)
+    metrics_score, metrics_features_scores = compute_metrics_score_from_segment(segment, 
+                                                                                weights_config, 
+                                                                                metrics_config,
+                                                                                metrics_config_path,
+                                                                                metrics_name)
     
     # Augment segment dataclass with metrics score (use dataclass method set_metrics)
     segment.set_metrics(metrics_name, metrics_score)
@@ -175,7 +200,9 @@ def define_segment_with_metrics_score(gdf_row: Any,
 
 def define_augmented_geodataframe(gdf: gpd.GeoDataFrame,
                                 weights_config: dict,
-                                metrics_config: dict) -> tuple[gpd.GeoDataFrame, list]:
+                                metrics_config: dict,
+                                metrics_config_path: str,
+                                excellent_bike_infra: dict) -> tuple[gpd.GeoDataFrame, list]:
     """
     Return GeoDataFrame augmented with metrics scores for all segments and list of metrics features scores.
 
@@ -189,7 +216,11 @@ def define_augmented_geodataframe(gdf: gpd.GeoDataFrame,
         Dict from YAML file containing feature weights
     metrics_config: dict
         Dict from YAML file defining metrics feature configurations
-        
+    metrics_config_path: str
+        Path of YAML file defining metrics feature configurations 
+    excellent_bike_infra: dict
+        Dict from YAML file defining bike_infrastructure metrics features from YAML file for which score is 1.0
+
     Returns
     -------
     gpd.GeoDataFrame
@@ -208,7 +239,12 @@ def define_augmented_geodataframe(gdf: gpd.GeoDataFrame,
         
         # Compute segment augmented with metrics (and metric components) for this row
         segments_with_components_cyclability.append(
-            define_segment_with_metrics_score(gdf_row, weights_config, metrics_config, "cyclability")
+            define_segment_with_metrics_score(gdf_row, 
+                                              weights_config, 
+                                              metrics_config,
+                                              metrics_config_path,
+                                              excellent_bike_infra, 
+                                              "cyclability")
         )
 
         # Logging of progress every 100 rows or last row

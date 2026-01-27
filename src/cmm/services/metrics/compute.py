@@ -37,6 +37,13 @@ def recompute_metrics_from_postgis(city_name: str,
     metrics_config = read_config("cyclability", "yaml", metrics_config_path)
     metrics_config.pop("version")
 
+    # Init bike_infra values for which score is 1.0 (track, etc.)
+    # Dict used in prepare_cyclability_segment for maxspeed missing info definition
+    # Defined here to avoid definition at each gdf row and at each chunk 
+    bike_infra_mapping = metrics_config["bike_infrastructure"]["mapping"]
+    excellent_bike_infra = {k for k, v in bike_infra_mapping.items() if v == 1.0}
+
+
     # Retrieve segments from PostGIS
     logging.info("LOAD SEGMENTS")
     gdf = load_segments_for_metrics_recompute(city_name)
@@ -45,7 +52,9 @@ def recompute_metrics_from_postgis(city_name: str,
     logging.info("COMPUTE METRICS")
     gdf_proc, metrics_features_scores = define_augmented_geodataframe(gdf, 
                                                                     weights_config, 
-                                                                    metrics_config)
+                                                                    metrics_config,
+                                                                    metrics_config_path,
+                                                                    excellent_bike_infra)
         
     if upload == True:
 

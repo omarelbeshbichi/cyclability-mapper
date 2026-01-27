@@ -1,7 +1,8 @@
 import yaml
 import json
 from pathlib import Path
-
+from typing import Any
+from ruamel.yaml import YAML
 
 def read_config(index_name: str,
                 file_type: str,
@@ -40,3 +41,41 @@ def read_config(index_name: str,
             return json.load(f)
     else:
         return {}
+    
+
+def add_config_data(feature_name: str,
+                    feature_value: str,
+                    feature_score: float,
+                    metrics_config_path: str) -> None:
+    """
+    Add feature line (feature_name: feature_score) in config YAML file.
+
+    Categorical feature is assumed.
+    """
+
+    # Using here ruamel.yaml package to preserve YAML layout
+    yaml = YAML()
+    yaml.preserve_quotes = True
+
+    # Read YAML file and save content in dict
+    with open(metrics_config_path, "r", encoding="utf-8") as f:
+        config = yaml.load(f)
+
+    # Check if feature_name is legal
+    if feature_name not in config:
+        raise KeyError(f"Index '{feature_name}' not found in config")
+    
+    # Define YAML part related to feature_name in dedicated cfg
+    # It's not a copy! It's a reference -> you can later save directly config back to YAML
+    feature_cfg = config[feature_name]
+
+    # Check if type is categorical
+    if feature_cfg.get("type") != "categorical":
+        raise ValueError(f"Index '{feature_cfg}' is not categorical")
+    
+    # Add new line to mapping 
+    feature_cfg["mapping"][feature_value] = float(feature_score)
+
+    # Save
+    with open(metrics_config_path, "w", encoding="utf-8") as f:
+        yaml.dump(config, f)

@@ -53,6 +53,12 @@ def build_network_from_api(city_name: str,
     metrics_config = read_config("cyclability", "yaml", metrics_config_path)
     metrics_config.pop("version")
 
+    # Init bike_infra values for which score is 1.0 (track, etc.)
+    # Dict used in prepare_cyclability_segment for maxspeed missing info definition
+    # Defined here to avoid definition at each gdf row and at each chunk 
+    bike_infra_mapping = metrics_config["bike_infrastructure"]["mapping"]
+    excellent_bike_infra = {k for k, v in bike_infra_mapping.items() if v == 1.0}
+
     # Clear-up existing database info
     logging.info("CLEAR DATABASE")
     delete_city_rows("network_segments", city_name)
@@ -92,7 +98,9 @@ def build_network_from_api(city_name: str,
         logging.info(f"Compute metrics for gdf chunk: {idx}")
         gdf_chunk, metrics_features_scores = define_augmented_geodataframe(gdf_chunk, 
                                                                         weights_config, 
-                                                                        metrics_config)
+                                                                        metrics_config,
+                                                                        metrics_config_path,
+                                                                        excellent_bike_infra)
             
         if upload == True:
             logging.info(f"Save gdf chunk {idx} to database")

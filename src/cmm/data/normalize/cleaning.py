@@ -8,7 +8,7 @@ import numpy as np
 from cmm.domain.segment import CyclabilitySegment
 from typing import Any
 from cmm.utils.helpers import row_get, row_has, row_items
-
+import re
 #%%
 
 def parse_maxspeed_to_kmh(value):
@@ -31,13 +31,15 @@ def parse_maxspeed_to_kmh(value):
 
     # Convert mph to km/h
     if "mph" in value:
-        maxspeed_mph = value.split()[0]
-        return int( int(maxspeed_mph) * 1.60934 )
+        # Strip only numerical value
+        maxspeed_mph = re.findall(r"\d+", value)
+        return int( int(maxspeed_mph[0]) * 1.60934 )
     
     # Convert knots to km/h (irrelevant but added nonetheless)
     if "knots" in value:
-        maxspeed_knots = value.split()[0]
-        return int( float(maxspeed_knots) * 1.852 )
+        # Strip only numerical value
+        maxspeed_knots = re.findall(r"\d+", value)
+        return int( float(maxspeed_knots[0]) * 1.852 )
 
     # If digit return value itself
     if value.isdigit():
@@ -184,7 +186,7 @@ def normalize_cycleway_info(tags: dict) -> dict:
     
     return cycleway_dict
 
-def prepare_cyclability_segment(gdf_row: Any) -> CyclabilitySegment:
+def prepare_cyclability_segment(gdf_row: Any, excellent_bike_infra: dict) -> CyclabilitySegment:
     """
     Prepare dictionary of cyclability features from a single GeoDataFrame row.
 
@@ -193,7 +195,8 @@ def prepare_cyclability_segment(gdf_row: Any) -> CyclabilitySegment:
     gdf_row: Any
         Row from GeoDataFrame representing a road segment, containing 
         required attributes.
-
+    excellent_bike_infra: dict
+        Dict from YAML file defining bike_infrastructure metrics features from YAML file for which score is 1.0
     Returns
     -------
     CyclabilitySegment
@@ -239,18 +242,10 @@ def prepare_cyclability_segment(gdf_row: Any) -> CyclabilitySegment:
     # Gather oneway info
     oneway_dict = extract_all_oneway_tags(gdf_row)
 
-    ## Handle lighting information
+    ## Handle missing lighting information
     if pd.isna(lit):
         lit = "unknown"
         missing_info["lighting"] = True
-    if lit == "24/7":
-        lit = "yes"
-    if lit == "disused":
-        lit = "no"
-    if lit == "yes;no": # Assumption
-        lit = "yes"
-    if lit == "limited": # Assumption
-        lit = "yes"
    
     # Initialize parameters
     bike_ways = "both"
@@ -313,13 +308,8 @@ def prepare_cyclability_segment(gdf_row: Any) -> CyclabilitySegment:
 
     # Missing maxspeed info: 
     # If normal roads (no footways and cycleways) and excellent cycleway infrastructures not available, trigger missing data
-    if pd.isna(maxspeed) and highway not in ("footway", "cycleway") and bike_infra not in ("cycleway", 
-                                                                                           "track", 
-                                                                                           "track;lane", 
-                                                                                           "traffic_island", 
-                                                                                           "link", 
-                                                                                           "separate", 
-                                                                                           "seprarate"):
+    # For now hardcode excellent bike_infra values (cycleway, track, etc.) 
+    if pd.isna(maxspeed) and highway not in ("footway", "cycleway") and bike_infra not in excellent_bike_infra:
         missing_info["maxspeed"] = True
 
     ## This section is used when loading data from PostGIS (jobs/recompute_metrics)
