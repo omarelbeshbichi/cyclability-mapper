@@ -125,6 +125,8 @@ surface:
     all-weather: 0.7
     dirt/sand: 0.3
     paving_stones asphalt: 0.9
+    compacted;grass: 0.4
+    shale: 0.4
   description: "Normalized surface quality score"
 
 lighting:
@@ -150,6 +152,8 @@ lighting:
     # --- Added Recently ---
     24/7: 1.0
 
+    dusk-dawn: 0.8
+    yes/automatic/24/7: 1.0
 oneway:
   type: categorical
   mapping:
