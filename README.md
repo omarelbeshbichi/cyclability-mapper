@@ -1,6 +1,6 @@
 ![Alt text](media/heading.png)
 
-![Version](https://img.shields.io/badge/version-0.1-blue)
+![Version](https://img.shields.io/badge/version-0.1.0-blue)
 ![Python](https://img.shields.io/badge/python-%3E%3D3.10-blue)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 ![Docker](https://img.shields.io/badge/docker-ready-blue)
