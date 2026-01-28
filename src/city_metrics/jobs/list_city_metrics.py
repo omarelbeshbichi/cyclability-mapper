@@ -30,7 +30,7 @@ def main():
                 feature_uncertainty_contributions,
                 created_at
             FROM city_metrics
-            ORDER BY city_name;
+            ORDER BY total_city_score DESC;
         """)
 
         with engine.connect() as conn:

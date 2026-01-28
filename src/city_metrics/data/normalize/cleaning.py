@@ -49,6 +49,10 @@ def normalize_maxspeed_info(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     
     gdf = gdf.copy()
 
+    # Ensure the column exists
+    if "maxspeed" not in gdf.columns:
+        gdf["maxspeed"] = None
+
     # Update maxspeed info with normalized data (replace for now)
     gdf["maxspeed"] = gdf["maxspeed"].apply(parse_maxspeed_to_kmh)
     
@@ -75,6 +79,12 @@ def restrict_gdf(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     data_filtered: gpd.GeoDataFrame
         GeoPandas GeoDataFrame storing filtered GeoJSON FeatureCollection to be used in package pipeline.
     """
+
+    gdf = gdf.copy()
+
+    # Ensure 'bicycle' column exists
+    if "bicycle" not in gdf.columns:
+        gdf["bicycle"] = None  # default to None for rows without info
 
     # Filter out all segments with bicycle restriction
     # ~ -> keep all rows not complying with the mask

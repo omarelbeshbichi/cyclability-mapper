@@ -64,7 +64,7 @@ The job will:
 
 Multiple cities can be stored in the database. Missing YAML mapping data are prompted during execution to the user in CLI environment and used to update the YAML table.
 
-After the pipeline is run, results can be explored in two ways:
+After the pipeline is run, results can be explored in three ways:
 - **Map**: A map rendering metrics for the city:
   ```bash
   http://localhost:8000/maps/oslo
@@ -73,8 +73,12 @@ After the pipeline is run, results can be explored in two ways:
   ```bash
   http://localhost:8000/api/segments/oslo/4708813
   ```
+- **Figures**: A few key figures are also returned: 
+  ```bash
+  http://localhost:8000/api/figures/{figure_name}
+  ```
 
-Additional endpoints and CLI jobs are described in the project documentation.
+Endpoint details and CLI jobs are described in the project documentation.
 
 ## Project Structure
 - `docker/`: Database schema initialization (init.sql).

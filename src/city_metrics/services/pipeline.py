@@ -84,11 +84,10 @@ def build_network_from_api(city_name: str,
         gdf_chunk = restrict_gdf(gdf_chunk) # Restrict data
         gdf_chunk = normalize_maxspeed_info(gdf_chunk) # Normalize maxspeed info to km/h
 
-        # Ensure every segment has ID
-        #if 'id' not in gdf_chunk.columns or gdf_chunk['id'].isna().any():
-        #    logging.warning(f"Chunk {idx} has missing segment IDs. Generating temporary IDs.")
-        #    gdf_chunk = gdf_chunk.reset_index(drop=True)
-        #    gdf_chunk['id'] = gdf_chunk.index.astype(str)  # simple string ID
+        # Skip chunk if empty or has no geometry
+        if gdf_chunk.empty or gdf_chunk.geometry.isnull().all():
+            logging.warning(f"Chunk {idx} has no valid geometries after normalization. Skipping.")
+            continue
 
         # ---- length-only computation (meters) ----
         gdf_chunk["segment_length"] = gdf_chunk.geometry.apply(geodesic_length) 

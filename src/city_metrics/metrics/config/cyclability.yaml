@@ -9,30 +9,47 @@ bike_infrastructure:
     traffic_island: 1.0
     link: 1.0
     separate: 1.0
-    seprarate: 1.0 # source data typo
+    seprarate: 1.0
+    sidepath: 1.0
+    truck: 1.0
+    use_sidepath: 1.0
+    segregated: 1.0
     opposite: 0.8
+    bo: 0.8
+    both: 0.75
+    buffered_lane: 0.75
     lane: 0.7
-    laness: 0.7 # source data typo
+    laness: 0.7
     shoulder: 0.7
     opposite_track: 0.7
-    opposite_share_busway: 0.6
+    use: 0.7
+    soft_lane: 0.7
+    private: 0.7
+    asl: 0.7
+    no|lane|no: 0.7
+    shared_lane;lane: 0.7
+    route: 0.7
+    both=lane: 0.7
+    right=lane: 0.7
     piste_double_sens_cyclable: 0.65
     shared_lane: 0.65
     opposite_lane: 0.65
     opposite:lane: 0.65
+    sidewalk: 0.65
+    opposite_share_busway: 0.6
     footway: 0.6
-    share_busway: 0.4
     shared: 0.5
+    crossing: 0.5
+    share_busway: 0.4
     share_lane: 0.4
     road: 0.2
     highway: 0.2
     proposed: 0.0
     none: 0.0
     construction: 0.0
-    crossing: 0.5
 
     # --- Added Recently --- 
-    sidewalk: 0.65
+
   description: "Bike lane type"
 
 maxspeed:
@@ -44,8 +61,12 @@ maxspeed:
     metrics: 0.7
   - max: 70
     metrics: 0.4
-  - max: 200
+  - max: 90
+    metrics: 0.2
+  - max: 130
     metrics: 0.1
+  - max: 200
+    metrics: 0.05
   description: "Maximum traffic speed"
   fallback: 0.5  # conservative assumption for missing data
 
@@ -59,6 +80,10 @@ surface:
     asfalto_leggero: 1.0
     concrete: 1.0
     concrete:lanes: 1.0
+    casphalt: 1.0
+    asphalt;concrete: 1.0
+    coma: 1.0
+    pla: 1.0
     chipseal: 0.95
     concrete:plates: 0.95
     metal: 0.95
@@ -67,10 +92,24 @@ surface:
     tartan: 0.95
     concrete:slabs: 0.9
     rubber: 0.9
+    paving_stones asphalt: 0.9
+    concrete:tiles: 0.9
+    '[avin': 0.9
+    concrete:blocks: 0.9
     carpet: 0.85
     plastic: 0.85
+    asphalt;sett: 0.85
+    paving_slabs: 0.85
+    concrete;sett: 0.85
+    concrete:plates;paving_stones: 0.85
+    sett;asphalt: 0.85
+    asphalt;unhewn_cobblestone: 0.85
+    paving_stones;asphalt: 0.85
     paving_stones: 0.8
     paving_stones:lanes: 0.8
+    paving_stones:20: 0.8
+    fiberglas: 0.8
+    anti-slip: 0.8
     sett: 0.75
     bricks: 0.75
     brick: 0.75
@@ -81,9 +120,19 @@ surface:
     grass_paver: 0.7
     metal_grid: 0.7
     fibre_reinforced_polymer_grate: 0.7
+    hardcore: 0.7
+    slabs: 0.7
+    hard: 0.7
+    all-weather: 0.7
+    fine_gravel;asphalt: 0.7
+    plastic_grid: 0.7
     cobblestone:flattened: 0.65
     compacted+: 0.65
     unhewn_cobblestone: 0.65
+    grit: 0.65
+    cobblestone:flattened:large_stone: 0.65
+    cobblestone:rounded: 0.65
+    round_stones: 0.65
     roman_paving;sett: 0.6
     roman_paving: 0.6
     milanese_paving: 0.6
@@ -93,6 +142,7 @@ surface:
     stepping_stones: 0.6
     unpaved: 0.5
     vegecol: 0.5
+    mixed: 0.5
     gravel: 0.45
     gravel;ground: 0.45
     shells: 0.45
@@ -100,13 +150,23 @@ surface:
     rock: 0.4
     pebblestone: 0.4
     clay: 0.4
+    dirt;gravel: 0.4
+    compacted;grass: 0.4
+    shale: 0.4
+    bedrock: 0.4
+    w: 0.4
+    bing: 0.4
     ground: 0.35
     dirt: 0.35
     earth: 0.35
+    soil: 0.35
     grass: 0.3
+    dirt/sand: 0.3
     woodchips: 0.25
     sand: 0.2
     salt: 0.2
+    sawdust: 0.2
+    none: 0.2
     mud: 0.15
     snow: 0.1
     ice: 0.05
@@ -115,47 +175,40 @@ surface:
     unknown: 0.5 # conservative assumption
 
     # --- Added Recently ---
-    asphalt;sett: 0.85
-    hardcore: 0.7
-    slabs: 0.7
-    grit: 0.65
-    dirt;gravel: 0.4
-    hard: 0.7
-    paving_slabs: 0.85
-    all-weather: 0.7
-    dirt/sand: 0.3
-    paving_stones asphalt: 0.9
-    compacted;grass: 0.4
-    shale: 0.4
-    cobblestone:flattened:large_stone: 0.65
-    cobblestone:rounded: 0.65
+
   description: "Normalized surface quality score"
 
 lighting:
   type: categorical
   mapping:
     'yes': 1.0
-    'no': 0.0
-    yes; no: 0.7
-    yes;no: 0.7
-    u: 0.5
-    both: 0.7
     '1.6': 1.0
     automatic: 1.0
-    variable: 0.5
-    truss: 0.7
     '24.7': 1.0
-    disused: 0.0
+    24/7: 1.0
+    yes/automatic/24/7: 1.0
+    '1': 1.0
+    residential: 1.0
+    dusk-dawn: 0.8
+    yes; no: 0.7
+    yes;no: 0.7
+    both: 0.7
+    truss: 0.7
+    left: 0.7
+    u: 0.5
+    variable: 0.5
+    random: 0.5
+    asphalt: 0.5
     limited: 0.4
+    construction: 0.3
+    'no': 0.0
+    disused: 0.0
 
     # --- Missing Data ---
     unknown: 0.5 # conservative assumption
 
     # --- Added Recently ---
-    24/7: 1.0
 
-    dusk-dawn: 0.8
-    yes/automatic/24/7: 1.0
 oneway:
   type: categorical
   mapping:

@@ -1,6 +1,8 @@
 import requests
 from typing import Tuple, Optional
-from shapely.geometry import shape, Polygon, MultiPolygon
+from shapely.geometry import shape, Polygon, MultiPolygon, Point
+import logging
+from math import cos, radians
 
 def city_to_bbox(city_name: str) -> Tuple[float, float, float, float]:
     """
@@ -86,18 +88,51 @@ def city_to_polygon(city_name: str,
         r.raise_for_status()
         data = r.json()
 
-    if not data or "geojson" not in data[0]:
-        raise ValueError(f"No boundary polygon found for {city_name}")
+    if not data:
+        raise ValueError(f"No results found for city {city_name}")
+    
+    # Convert geojson to shapely geometry
+    # if not geojson, fallback to Point with given coordinates
+    geom = shape(data[0].get("geojson", {"type": "Point", "coordinates": [float(data[0]['lon']), float(data[0]['lat'])]}))
 
-    geom = shape(data[0]["geojson"])
 
     if isinstance(geom, MultiPolygon):
         # take the largest polygon by area
         geom = max(geom.geoms, key=lambda p: p.area)
 
+    # If Point, convert to small box buffer (Polygon)
+    if isinstance(geom, Point):
+        lon, lat = geom.x, geom.y # [deg]
+        box_half_km = 5  # 10 km box size 
+        
+        # Get delta degrees of latitude for 5 km distance
+        # (kilometer shift per degree latitude is: 110.574 [km/deg] - everywhere)
+        delta_lat = box_half_km / 110.574 # [deg]
+        
+        # Get longitude shift as function of latitude
+        # At equator maximum change, 111.32 [km/deg] - at poles no change (longitude lines converge to poles)
+        # It can be shown that circumference arc (d) due to given longitude shift (alpha) is -- d = alpha R cos(phi) [km]
+        #   - alpha: longitude shift [rad]
+        #   - R: earth radius [km]
+        #   - phi: latitude [rad]
+        
+        # For single longitude degree, the distance in km is: d = 2(pi)/360 * R * cos(phi) = 111.32 * cos (phi) [km/deg]
+        # It can be used to determine delta degrees of longitude for 5 km distance (box_half_km)
+        delta_lon = box_half_km / (111.320 * cos(radians(lat))) # [deg]
+
+        geom = Polygon([
+            (lon - delta_lon, lat - delta_lat),
+            (lon - delta_lon, lat + delta_lat),
+            (lon + delta_lon, lat + delta_lat),
+            (lon + delta_lon, lat - delta_lat),
+            (lon - delta_lon, lat - delta_lat)
+        ])
+        logging.warning(f"Using buffer bounding box (10 km) around city center - no GeoJSON available from Nominatism for {city_name}")
+
     if not isinstance(geom, Polygon):
         raise TypeError(f"Expected Polygon, got {type(geom)}")
 
+    # Simplify Polygon for easier API fetch
     geom = geom.simplify(tolerance=tolerance, preserve_topology=True)
 
     return geom

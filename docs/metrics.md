@@ -165,7 +165,7 @@ Cyclability: 0.58
 Cyclability uncertainty: 0.22
 ```
 
-Means: $22\%$ of the cyclability score is related to segments where relevant input data is missing, given the currently used model weights.
+Means: 22% of the cyclability score is related to segments where relevant input data is missing, given the currently used model weights.
 
 
 

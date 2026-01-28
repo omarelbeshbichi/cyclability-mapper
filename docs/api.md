@@ -4,13 +4,15 @@ The public HTTP API exposed by the system is here briefly described. The API pro
 
 ## API structure
 
-The application exposes two top-level services:
+The application exposes three top-level services:
 
 - `/api`: access to computed data (described below).
 
 - `/maps`: interactive exploration of results via maps rendered in Kepler.gl.
 
-Only the `/api` service is considered part of the stable API interface, while `/maps` is considered as a simple frontend - see `frontend` documentation.
+- `/figures`: key result figures.
+
+Only the `/api` service is considered part of the stable API interface, while `/maps` and `/figures` are considered as a simple frontend - see `frontend` documentation.
 
 ## City Name
 
