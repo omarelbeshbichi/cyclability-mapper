@@ -9,19 +9,19 @@ The project is structured as a complete pipeline: from geospatial data ingestion
 
 The system is organized as follows:
 - **Input**: OpenStreetMap road network data retrieval from Overpass API.
-- **Processing** Normalization of OSM tags, segmentation and derivation of city network, computation of metrics per segment, and aggregation into city-level metrics. Missing data is tracked as qualitative uncertainty.
-- **Storage** PostgreSQL with PostGIS is used as authoritative storage system for geometries, features, and computed metrics.
-- **Orchestration** Application services and databases are coordinated using Docker Compose.
-- **Output**
+- **Processing**: Normalization of OSM tags, segmentation and derivation of city network, computation of metrics per segment, and aggregation into city-level metrics. Missing data is tracked as qualitative uncertainty.
+- **Storage**: PostgreSQL with PostGIS is used as authoritative storage system for geometries, features, and computed metrics.
+- **Orchestration**: Application services and databases are coordinated using Docker Compose.
+- **Output**:
   - Cyclability metrics per segment
   - City-level aggregated metrics with uncertainty indicators
   - FastAPI-based data access and Kepler.gl-based maps for results exploration
 
 ## Resources
 
-- **Documentation (link later)**: Detailed description of data model, process pipeline, metrics definition, database schema, jobs, and API structure.
+- [**Documentation**](docs/): Detailed description of data model, process pipeline, metrics definition, database schema, jobs, and API structure.
 
-## Quick start
+## Quick Start
 
 To run the project, it is recommended to use Docker. The instructions below assume a macOS environment using Colima VM, but the same Docker Compose setup may be adjusted for use with other systems.
 
@@ -65,7 +65,7 @@ The job will:
 Multiple cities can be stored in the database. Missing YAML mapping data are prompted during execution to the user in CLI environment and used to update the YAML table.
 
 After the pipeline is run, results can be explored in two ways:
-- **Map**: A map rendering all data for a city:
+- **Map**: A map rendering metrics for the city:
   ```bash
   http://localhost:8000/maps/oslo
   ```

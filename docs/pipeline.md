@@ -21,7 +21,7 @@ An overpass API query is defined using the Polygon just established. To improve 
 
 # Processing in Chunks
 
-Note that the normalization, computation, and database processes are divided in ´chunks´ to improve memory usage. Default chunk size is 5000 (segments per chunk), and it can be set with the optional CLI parameter `--chunk` in `build_network` and `refresh_osm_data` jobs - see JOBS documentation.
+Note that the normalization, computation, and database processes are divided in ´chunks´ to improve memory usage. Default chunk size is 5000 (segments per chunk), and it can be set with the optional CLI parameter `--chunk` in `build_network` and `refresh_osm_data` jobs - see `jobs` documentation.
 
 # Data Normalization
 
@@ -37,12 +37,12 @@ The segment is then used to compute the cyclability index as explained in the ne
 
 Code associated with this section is stored in `src/city_metrics/metrics/compute_metrics`.
 
-The segment-level cyclability metrics is computed starting from `CyclabilitySegment` by using data of `bike_infrastructure`, `surface`, `maxspeed`, and `lighting`. Data is scaled to [0-1] domain using a min-max scaling table defined in a dedicated YAML. Weighting information for each feature is also collected from a dedicated YAML file. More info in metrics documentation.  
+The segment-level cyclability metrics is computed starting from `CyclabilitySegment` by using data of `bike_infrastructure`, `surface`, `maxspeed`, and `lighting`. Data is scaled to [0-1] domain using a min-max scaling table defined in a dedicated YAML. Weighting information for each feature is also collected from a dedicated YAML file. More info in `metrics` documentation.  
 
 An aggregated cyclability metric for the entirety of the city network is computed by performing a length-weighted average of the segment-level metrics.
 
-Aggregated uncertainty information of the city for each feature is also computed by using a length-weighted average of `missing_info` multiplied for the relative feature weight. A global city uncertainty parameter is defined as the sum of all feature uncertainties. More info in metrics documentation.
+Aggregated uncertainty information of the city for each feature is also computed by using a length-weighted average of `missing_info` multiplied for the relative feature weight. A global city uncertainty parameter is defined as the sum of all feature uncertainties. More info in `metrics` documentation.
 
 # Data Storage
 
-Segments, metrics, and reference areas are stored in a PostGIS database defined by a `network_segments` primary table, a `segment_metrics` table storing metrics data, a `refresh_areas` table to store associated Polygons, and a `city_metrics` table to store aggregated city metrics and associated uncertainty. More info in the database documentation.
+Segments, metrics, and reference areas are stored in a PostGIS database defined by a `network_segments` primary table, a `segment_metrics` table storing metrics data, a `refresh_areas` table to store associated Polygons, and a `city_metrics` table to store aggregated city metrics and associated uncertainty. More info in the `database` documentation.
