@@ -1,8 +1,8 @@
 import geopandas as gpd
 import pandas as pd
-from cmm.data.ingest.geojson_loader import load_json_from_path, feature_collection_to_dataframe, geojson_to_gdf_from_path
-from cmm.data.ingest.overpass_parser import overpass_elements_to_geojson
-from cmm.data.ingest.overpass_client import run_overpass_query
+from city_metrics.data.ingest.geojson_loader import load_json_from_path, feature_collection_to_dataframe, geojson_to_gdf_from_path
+from city_metrics.data.ingest.overpass_parser import overpass_elements_to_geojson
+from city_metrics.data.ingest.overpass_client import run_overpass_query
 from unittest.mock import Mock, patch
 
 def test_load_json_from_path(dev_geojson_path):

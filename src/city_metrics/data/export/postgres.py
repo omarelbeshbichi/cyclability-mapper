@@ -4,7 +4,7 @@ import logging
 from sqlalchemy import create_engine
 from sqlalchemy import text
 from sqlalchemy.sql import quoted_name
-from cmm.metrics.config.versioning import get_config_version
+from city_metrics.metrics.config.versioning import get_config_version
 import json
 import os
 from shapely import wkb

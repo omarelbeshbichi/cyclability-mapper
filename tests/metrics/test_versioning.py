@@ -1,5 +1,5 @@
-from cmm.metrics.config.versioning import get_config_version
-from cmm.utils.misc import get_project_root
+from city_metrics.metrics.config.versioning import get_config_version
+from city_metrics.utils.misc import get_project_root
 
 
 def test_get_config_version():

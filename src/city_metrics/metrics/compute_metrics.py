@@ -1,10 +1,10 @@
 import pandas as pd
 import geopandas as gpd
-from cmm.data.normalize.cleaning import prepare_cyclability_segment
-from cmm.utils.config_helpers import read_config, add_config_data
-from cmm.utils.helpers import row_get, row_has, row_items
+from city_metrics.data.normalize.cleaning import prepare_cyclability_segment
+from city_metrics.utils.config_helpers import read_config, add_config_data
+from city_metrics.utils.helpers import row_get, row_has, row_items
 import logging
-from cmm.domain.segment import Segment
+from city_metrics.domain.segment import Segment
 from typing import Any
 from pathlib import Path
 
@@ -183,7 +183,7 @@ def define_segment_with_metrics_score(gdf_row: Any,
     """
 
     # Initiate Segment dataclass for given gdf row and specific metric
-    # (for metrics_name = "cyclability" -> CyclabilitySegment dataclass -- see dataclass structure in cmm/domain/segment)
+    # (for metrics_name = "cyclability" -> CyclabilitySegment dataclass -- see dataclass structure in city_metrics/domain/segment)
     segment = prepare_segment_for_metrics(gdf_row, metrics_name, excellent_bike_infra)
 
     # Compute metrics score based on YAML configs

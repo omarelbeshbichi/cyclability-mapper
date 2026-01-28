@@ -3,7 +3,7 @@ requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "cmm"
+name = "city_metrics"
 version = "0.1.0"
 description = "City Metrics Mapper (placeholder project)"
 readme = "README.md"

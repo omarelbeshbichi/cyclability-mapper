@@ -1,19 +1,19 @@
 
 from pathlib import Path
 import logging
-from cmm.data.ingest.geojson_loader import geojson_to_gdf
-from cmm.data.ingest.overpass_client import run_overpass_query
-from cmm.data.ingest.overpass_parser import overpass_elements_to_geojson 
-from cmm.validation.geometry import validate_gdf_linestrings
-from cmm.data.normalize.cleaning import restrict_gdf
-from cmm.data.normalize.cleaning import normalize_maxspeed_info
-from cmm.metrics.compute_metrics import define_augmented_geodataframe
-from cmm.data.export.postgres import prepare_network_segments_gdf_for_postgis
-from cmm.data.export.postgres import prepare_metrics_df_for_postgis
-from cmm.data.export.postgres import dataframe_to_postgres
-from cmm.utils.geometry import geodesic_length
-from cmm.utils.config_helpers import read_config
-from cmm.data.export.postgres import delete_city_rows
+from city_metrics.data.ingest.geojson_loader import geojson_to_gdf
+from city_metrics.data.ingest.overpass_client import run_overpass_query
+from city_metrics.data.ingest.overpass_parser import overpass_elements_to_geojson 
+from city_metrics.validation.geometry import validate_gdf_linestrings
+from city_metrics.data.normalize.cleaning import restrict_gdf
+from city_metrics.data.normalize.cleaning import normalize_maxspeed_info
+from city_metrics.metrics.compute_metrics import define_augmented_geodataframe
+from city_metrics.data.export.postgres import prepare_network_segments_gdf_for_postgis
+from city_metrics.data.export.postgres import prepare_metrics_df_for_postgis
+from city_metrics.data.export.postgres import dataframe_to_postgres
+from city_metrics.utils.geometry import geodesic_length
+from city_metrics.utils.config_helpers import read_config
+from city_metrics.data.export.postgres import delete_city_rows
 
 def build_network_from_api(city_name: str,
                             query: str,

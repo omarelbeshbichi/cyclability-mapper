@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from .map import create_map
-from cmm.utils.misc import get_project_root
+from city_metrics.utils.misc import get_project_root
 import tempfile
 
 app = FastAPI()

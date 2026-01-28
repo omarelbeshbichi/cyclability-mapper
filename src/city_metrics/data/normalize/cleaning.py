@@ -1,8 +1,8 @@
 import geopandas as gpd
 import pandas as pd
-from cmm.domain.segment import CyclabilitySegment
+from city_metrics.domain.segment import CyclabilitySegment
 from typing import Any
-from cmm.utils.helpers import row_get, row_has, row_items
+from city_metrics.utils.helpers import row_get, row_has, row_items
 import re
 
 def parse_maxspeed_to_kmh(value):

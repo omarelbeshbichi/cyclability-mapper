@@ -1,8 +1,8 @@
 from shapely import LineString, Point
-from cmm.validation.geometry import validate_gdf_linestrings
+from city_metrics.validation.geometry import validate_gdf_linestrings
 import geopandas as gpd
 
-from cmm.utils.geometry import bbox_from_geom, get_length, midpoint, distance, is_valid, fix_invalid, buffer_zone, coords
+from city_metrics.utils.geometry import bbox_from_geom, get_length, midpoint, distance, is_valid, fix_invalid, buffer_zone, coords
 
 # Create simple Shapely object to perform test with
 line = LineString([(0, 0), (1, 0), (1, 1)])

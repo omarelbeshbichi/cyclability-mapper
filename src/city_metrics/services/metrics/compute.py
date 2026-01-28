@@ -1,12 +1,12 @@
 
 from pathlib import Path
 import logging 
-from cmm.services.metrics.loader import load_segments_for_metrics_recompute, load_data_for_city_metrics_compute
-from cmm.metrics.compute_metrics import define_augmented_geodataframe, compute_total_city_metrics
-from cmm.data.export.postgres import prepare_metrics_df_for_postgis, prepare_total_city_metrics_df_for_postgis
-from cmm.data.export.postgres import delete_city_rows
-from cmm.data.export.postgres import dataframe_to_postgres
-from cmm.utils.config_helpers import read_config
+from city_metrics.services.metrics.loader import load_segments_for_metrics_recompute, load_data_for_city_metrics_compute
+from city_metrics.metrics.compute_metrics import define_augmented_geodataframe, compute_total_city_metrics
+from city_metrics.data.export.postgres import prepare_metrics_df_for_postgis, prepare_total_city_metrics_df_for_postgis
+from city_metrics.data.export.postgres import delete_city_rows
+from city_metrics.data.export.postgres import dataframe_to_postgres
+from city_metrics.utils.config_helpers import read_config
 
 def recompute_metrics_from_postgis(city_name: str,
                                     weights_config_path: Path,

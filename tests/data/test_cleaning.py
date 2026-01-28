@@ -1,9 +1,9 @@
 import geopandas as gpd
 from shapely.geometry import LineString
-from cmm.data.normalize.cleaning import restrict_gdf, parse_maxspeed_to_kmh, normalize_maxspeed_info, prepare_cyclability_segment
+from city_metrics.data.normalize.cleaning import restrict_gdf, parse_maxspeed_to_kmh, normalize_maxspeed_info, prepare_cyclability_segment
 from pathlib import Path
 import math
-from cmm.domain.segment import CyclabilitySegment
+from city_metrics.domain.segment import CyclabilitySegment
 
 # Used to generate a test GeoDataFrame
 def make_test_gdf():

@@ -5,13 +5,13 @@ import logging
 @click.option("--c", "--city-name", "city_name", type = str, required = True)
 def main(city_name):
 
-    from cmm.services.metrics.compute import recompute_metrics_from_postgis, compute_city_metrics_from_postgis
-    from cmm.utils.misc import get_project_root
+    from city_metrics.services.metrics.compute import recompute_metrics_from_postgis, compute_city_metrics_from_postgis
+    from city_metrics.utils.misc import get_project_root
 
     root = get_project_root()
 
-    weights_config_path = root / "src/cmm/metrics/config/weights.yaml"
-    metrics_config_path = root / "src/cmm/metrics/config/cyclability.yaml"
+    weights_config_path = root / "src/city_metrics/metrics/config/weights.yaml"
+    metrics_config_path = root / "src/city_metrics/metrics/config/cyclability.yaml"
 
     recompute_metrics_from_postgis(
         city_name = city_name,

@@ -12,19 +12,19 @@ import logging
 @click.option("--tout", "timeout", type = int, default = 50, required = False)
 @click.option("--tol", "--tolerance", "tolerance", type = float, default = 0.0005, required = False)
 def main(city_name, country_code, south, west, north, east, chunk_size, timeout, tolerance):
-    from cmm.services.pipeline import build_network_from_api
-    from cmm.utils.misc import get_project_root
-    from cmm.data.ingest.overpass_queries import roads_in_bbox, roads_in_polygon
-    from cmm.data.export.postgres import reference_area_to_postgres
-    from cmm.utils.geometry import geom_from_bbox
-    from cmm.data.ingest.geocoding import city_to_polygon
-    from cmm.services.metrics.compute import compute_city_metrics_from_postgis
-    from cmm.data.export.postgres import delete_city_rows
+    from city_metrics.services.pipeline import build_network_from_api
+    from city_metrics.utils.misc import get_project_root
+    from city_metrics.data.ingest.overpass_queries import roads_in_bbox, roads_in_polygon
+    from city_metrics.data.export.postgres import reference_area_to_postgres
+    from city_metrics.utils.geometry import geom_from_bbox
+    from city_metrics.data.ingest.geocoding import city_to_polygon
+    from city_metrics.services.metrics.compute import compute_city_metrics_from_postgis
+    from city_metrics.data.export.postgres import delete_city_rows
 
     root = get_project_root()
     
-    weights_config_path = root / "src/cmm/metrics/config/weights.yaml"
-    metrics_config_path = root / "src/cmm/metrics/config/cyclability.yaml"
+    weights_config_path = root / "src/city_metrics/metrics/config/weights.yaml"
+    metrics_config_path = root / "src/city_metrics/metrics/config/cyclability.yaml"
 
     if all(v is not None for v in [south, west, north, east]):
         # Build bbox as prescribed as input

@@ -1,6 +1,6 @@
 # Network Segments
 
-Each road in a city network is represented as a segment. The project defines a base dataclass `Segment` and a derived dataclass `CyclabilitySegment`, located in `src/cmm/domain/segment`. 
+Each road in a city network is represented as a segment. The project defines a base dataclass `Segment` and a derived dataclass `CyclabilitySegment`, located in `src/city_metrics/domain/segment`. 
 
 A segment stores all (and only) the information necessary for cyclability metrics computation. All features are normalized to a standard internal representation and prepared for min-max scaling to the [0-1] range using transformation tables defined in dedicated `YAML` files.
 

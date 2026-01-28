@@ -7,14 +7,14 @@ import logging
 @click.option("--tout", "timeout", type = int, default = 50, required = False)
 def main(city_name, chunk_size, timeout):
 
-    from cmm.services.refresh import refresh_osm_data
-    from cmm.utils.misc import get_project_root
-    from cmm.services.metrics.compute import compute_city_metrics_from_postgis
+    from city_metrics.services.refresh import refresh_osm_data
+    from city_metrics.utils.misc import get_project_root
+    from city_metrics.services.metrics.compute import compute_city_metrics_from_postgis
 
     root = get_project_root()
 
-    weights_config_path = root / "src/cmm/metrics/config/weights.yaml"
-    metrics_config_path = root / "src/cmm/metrics/config/cyclability.yaml"
+    weights_config_path = root / "src/city_metrics/metrics/config/weights.yaml"
+    metrics_config_path = root / "src/city_metrics/metrics/config/cyclability.yaml"
 
     refresh_osm_data(
         city_name = city_name,

@@ -1,9 +1,9 @@
 import geopandas as gpd
 from shapely.geometry import LineString
-from cmm.metrics.compute_metrics import define_augmented_geodataframe, compute_metrics_score_from_segment, compute_total_city_metrics
-from cmm.utils.config_helpers import read_config
-from cmm.domain.segment import CyclabilitySegment
-from cmm.utils.geometry import geodesic_length
+from city_metrics.metrics.compute_metrics import define_augmented_geodataframe, compute_metrics_score_from_segment, compute_total_city_metrics
+from city_metrics.utils.config_helpers import read_config
+from city_metrics.domain.segment import CyclabilitySegment
+from city_metrics.utils.geometry import geodesic_length
 
 
 def test_define_augmented_geodataframe():
@@ -19,8 +19,8 @@ def test_define_augmented_geodataframe():
     })
     
     # Paths to YAML configs
-    weights_path = "src/cmm/metrics/config/weights.yaml"
-    cyclability_path = "src/cmm/metrics/config/cyclability.yaml"
+    weights_path = "src/city_metrics/metrics/config/weights.yaml"
+    cyclability_path = "src/city_metrics/metrics/config/cyclability.yaml"
 
     # Get config info
     #(remove version info from resulting dict)
@@ -63,8 +63,8 @@ def test_compute_metrics_score_from_segment():
     )
     
     # Paths to YAML configs
-    weights_path = "src/cmm/metrics/config/weights.yaml"
-    cyclability_path = "src/cmm/metrics/config/cyclability.yaml"
+    weights_path = "src/city_metrics/metrics/config/weights.yaml"
+    cyclability_path = "src/city_metrics/metrics/config/cyclability.yaml"
 
     # Get config info
     #(remove version info from resulting dict)
@@ -106,7 +106,7 @@ def test_compute_total_city_metrics():
 
     metrics_name = "cyclability"
 
-    weights_path = "src/cmm/metrics/config/weights.yaml"
+    weights_path = "src/city_metrics/metrics/config/weights.yaml"
 
     city_score, feature_uncertainty, city_score_uncertainty = compute_total_city_metrics(gdf, metrics_name, weights_path)
 

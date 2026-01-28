@@ -36,7 +36,7 @@ def city_to_bbox(city_name: str) -> Tuple[float, float, float, float]:
         "limit": 1
     }
     
-    headers = {"User-Agent": "cmm-pipeline"}
+    headers = {"User-Agent": "city_metrics-pipeline"}
 
     r = requests.get(url, 
                      params = params, 

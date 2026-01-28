@@ -1,30 +1,29 @@
 ![Alt text](media/demo_image.png)
 
-# City Metrics Mapper 
-(City metrics mapper - maybe new name later on) is a Python-based system for computing segment-level and city-level cyclability metrics from OpenStreetMap (OSM) road data. The system ingests raw OSM data, normalizes and segments the road network, computes a simplified cyclability metric, and stores results in a spatial relational database (PostGIS) for analysis, API access, and map-based access using kepler.gl.
+# Cyclability Mapper
+Cyclability Mapper is a Python-based system for computing segment-level and city-level cyclability metrics from OpenStreetMap (OSM) road data. The system ingests raw OSM data, normalizes and segments the road network, computes a simplified cyclability metric, and stores results in a spatial relational database (PostGIS) for analysis, API access, and map-based access using Kepler.gl.
 
 The project is structured as a complete pipeline: from geospatial data ingestion to quality metrics computation and visualization. While the current focus is on cyclability, the architecture may be applied to other quality indices.
 
 ## System Structure
 
-The system is organized into the following logical steps:
-- **Input**: OpenStreetMap road network data retrieved from Overpass API.
-- **Processing** Normalization of OSM tags, segmentation and derivation of city-scale network, computation of segment-level metrics, and aggregation into city-level metrics. Missing data is explicitly tracked as qualitative uncertainty.
-- **Storage** PostgreSQL with PostGIS is used as the authoritative storage system for geometries, features, and computed metrics.
+The system is organized as follows:
+- **Input**: OpenStreetMap road network data retrieval from Overpass API.
+- **Processing** Normalization of OSM tags, segmentation and derivation of city network, computation of metrics per segment, and aggregation into city-level metrics. Missing data is tracked as qualitative uncertainty.
+- **Storage** PostgreSQL with PostGIS is used as authoritative storage system for geometries, features, and computed metrics.
 - **Orchestration** Application services and databases are coordinated using Docker Compose.
 - **Output**
-  - Segment-level cyclability metrics
+  - Cyclability metrics per segment
   - City-level aggregated metrics with uncertainty indicators
-  - FastAPI-based data access and Kepler-based frontend for results exploration
+  - FastAPI-based data access and Kepler.gl-based maps for results exploration
 
 ## Resources
 
-- **Documentation (link later)**: Detailed descriptions of data model, process pipeline, metrics definition, database schema, jobs, and API structure.
-- **Example notebooks (link later)**:  Jupyter notebooks with practical examples.
+- **Documentation (link later)**: Detailed description of data model, process pipeline, metrics definition, database schema, jobs, and API structure.
 
 ## Quick start
 
-To run the project, it is recommended to use Docker. The instructions below assume a macOS environment using Colima, but the same Docker Compose setup may be adjusted for use with other systems.
+To run the project, it is recommended to use Docker. The instructions below assume a macOS environment using Colima VM, but the same Docker Compose setup may be adjusted for use with other systems.
 
 Install the required tools:
 ```bash
@@ -33,24 +32,23 @@ brew install docker
 brew install docker-compose
 ```
 
-Start Colima with enough dedicated resources for PostGIS and data processing, for example:
+Start Colima VM with enough resources for PostGIS and data processing, for example:
 ```bash
 colima start --cpu 4 --memory 8
 ```
-CPU and memory values can be adjusted depending on available hardware and the application.
 
-To run the repository and start services:
+Start all services:
 ```bash
-docker compose up -d
+docker compose up --build
 ```
 
-Once the containers are running, data ingestion and network building can be started by using the CLI jobs provided.
+Data ingestion and network building can then be executed by using the CLI jobs provided.
 
-For example, to build the road network and compute associated cyclability metrics for Oslo, Norway:
+For example, to build the road network and compute cyclability metrics for Oslo, Norway:
 ```bash
-docker compose exec app python -m cmm.jobs.build_network --c oslo --cc no --chunk 5000 --tout 50 --tol 0.0005
+docker compose exec app python -m city_metrics.jobs.build_network --c oslo --cc no --chunk 5000 --tout 50 --tol 0.0005
 ```
-Where:
+where:
 - `--c` is the city name
 - `--cc` is the country code (ISO-2)
 - `--chunk` (optional) is the maximum number of segments per chunk to be processed in one go
@@ -64,14 +62,14 @@ The job will:
 - Compute cyclability metrics
 - Store results in PostGIS
 
-Multiple cities can be stored in the database. Missing YAML mapping data are automatically prompted to user in CLI environment and used to update YAML table.
+Multiple cities can be stored in the database. Missing YAML mapping data are prompted during execution to the user in CLI environment and used to update the YAML table.
 
 After the pipeline is run, results can be explored in two ways:
 - **Map**: A map rendering all data for a city:
   ```bash
   http://localhost:8000/maps/oslo
   ```
-- **API**: Segment-level data retrieved via OSM identifier:
+- **API**: Data per segment retrieved via OSM ID:
   ```bash
   http://localhost:8000/api/segments/oslo/4708813
   ```
@@ -82,7 +80,7 @@ Additional endpoints and CLI jobs are described in the project documentation.
 - `docker/`: Database schema initialization (init.sql).
 - `docs/`: Technical documentation.
 - `frontend/`: Frontend-related code (for now, it includes Kepler.gl visualization).
-- `src/cmm/`: Source code: ingestion, normalization, metrics computation, database services, API, and CLI jobs.
+- `src/city_metrics/`: Source code: ingestion, normalization, metrics computation, database services, API, and CLI jobs.
 
 ## Status
 The project is currently under development.

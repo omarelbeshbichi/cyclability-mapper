@@ -1,10 +1,10 @@
 from pathlib import Path
 import logging
-from cmm.data.ingest.overpass_queries import roads_in_polygon
-from cmm.services.pipeline import build_network_from_api
-from cmm.data.export.postgres import delete_segment_metrics_in_polygon
-from cmm.data.export.postgres import delete_segments_in_polygon
-from cmm.data.export.postgres import load_reference_area
+from city_metrics.data.ingest.overpass_queries import roads_in_polygon
+from city_metrics.services.pipeline import build_network_from_api
+from city_metrics.data.export.postgres import delete_segment_metrics_in_polygon
+from city_metrics.data.export.postgres import delete_segments_in_polygon
+from city_metrics.data.export.postgres import load_reference_area
 from typing import Optional
 
 def refresh_osm_data(city_name: str,

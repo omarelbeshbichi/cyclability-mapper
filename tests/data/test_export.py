@@ -1,19 +1,19 @@
 from unittest.mock import patch, ANY
 from pathlib import Path
-from cmm.data.export.postgres import dataframe_to_postgres
-from cmm.data.ingest.geojson_loader import geojson_to_gdf_from_path
-from cmm.validation.geometry import validate_gdf_linestrings
-from cmm.utils.misc import get_project_root
-from cmm.data.normalize.cleaning import restrict_gdf
-from cmm.metrics.compute_metrics import define_augmented_geodataframe
-from cmm.data.export.postgres import prepare_network_segments_gdf_for_postgis
-from cmm.utils.config_helpers import read_config
+from city_metrics.data.export.postgres import dataframe_to_postgres
+from city_metrics.data.ingest.geojson_loader import geojson_to_gdf_from_path
+from city_metrics.validation.geometry import validate_gdf_linestrings
+from city_metrics.utils.misc import get_project_root
+from city_metrics.data.normalize.cleaning import restrict_gdf
+from city_metrics.metrics.compute_metrics import define_augmented_geodataframe
+from city_metrics.data.export.postgres import prepare_network_segments_gdf_for_postgis
+from city_metrics.utils.config_helpers import read_config
 
 # Fixture paths
 dev_geojson_path = Path(__file__).parent.parent.parent / "tests" / "_fixtures" / "dev_geojson.geojson"
 root_path = get_project_root()
-weights_config_path = root_path / "src" / "cmm" / "metrics" / "config" / "weights.yaml"
-cyclability_config_path = root_path / "src" / "cmm" / "metrics" / "config" / "cyclability.yaml"
+weights_config_path = root_path / "src" / "city_metrics" / "metrics" / "config" / "weights.yaml"
+cyclability_config_path = root_path / "src" / "city_metrics" / "metrics" / "config" / "cyclability.yaml"
 
 # Get config info
 #(remove version info from resulting dict)
