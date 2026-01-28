@@ -92,4 +92,15 @@ Endpoint details and CLI jobs are described in the project documentation.
 - `src/city_metrics/`: Source code: ingestion, normalization, metrics computation, database services, API, and CLI jobs.
 
 ## Status
+
 The project is currently under development.
+
+## Contributing
+
+Contributions, bug reports, and suggestions are welcome.
+
+If you plan to contribute code, please open an issue first to discuss scope and design. Small fixes and improvements can be submitted directly via pull request.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
