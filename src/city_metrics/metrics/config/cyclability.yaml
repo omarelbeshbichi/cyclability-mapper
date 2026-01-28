@@ -127,6 +127,8 @@ surface:
     paving_stones asphalt: 0.9
     compacted;grass: 0.4
     shale: 0.4
+    cobblestone:flattened:large_stone: 0.65
+    cobblestone:rounded: 0.65
   description: "Normalized surface quality score"
 
 lighting:
