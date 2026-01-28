@@ -75,7 +75,7 @@ After the pipeline is run, results can be explored in three ways:
   ```
 - **Figures**: A few key figures are also returned: 
   ```bash
-  http://localhost:8000/api/figures/{figure_name}
+  http://localhost:8000/figures/{figure_name}
   ```
 
 Endpoint details and CLI jobs are described in the project documentation.
