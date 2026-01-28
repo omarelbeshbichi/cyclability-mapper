@@ -1,5 +1,10 @@
 ![Alt text](media/heading.png)
 
+![Version](https://img.shields.io/badge/version-0.1-blue)
+![Python](https://img.shields.io/badge/python-%3E%3D3.10-blue)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+![Docker](https://img.shields.io/badge/docker-ready-blue)
+
 # Cyclability Mapper
 Cyclability Mapper is a Python-based system for computing segment-level and city-level cyclability metrics from OpenStreetMap (OSM) road data. The system ingests raw OSM data, normalizes and segments the road network, computes a simplified cyclability metric, and stores results in a spatial relational database (PostGIS) for analysis, API access, and map-based access using Kepler.gl.
 

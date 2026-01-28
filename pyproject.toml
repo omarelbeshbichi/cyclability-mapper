@@ -5,12 +5,13 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "city_metrics"
 version = "0.1.0"
-description = "City Metrics Mapper (placeholder project)"
+description = "Cyclability Mapper"
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [
   { name = "Omar El Beshbichi" }
 ]
+license = { text = "MIT" }
 
 # For now, keep dependencies minimal – will add them in due time
 dependencies = [
