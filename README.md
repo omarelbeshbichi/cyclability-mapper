@@ -15,7 +15,7 @@ The system is organized as follows:
 - **Output**:
   - Cyclability metrics per segment
   - City-level aggregated metrics with uncertainty indicators
-  - FastAPI-based data access and Kepler.gl-based maps for results exploration
+  - FastAPI-based data access and Kepler.gl-based maps and figures for results exploration
 
 ## Resources
 
@@ -73,7 +73,7 @@ After the pipeline is run, results can be explored in three ways:
   ```bash
   http://localhost:8000/api/segments/oslo/4708813
   ```
-- **Figures**: A few key figures are also returned: 
+- **Figures**: A few key results figures: 
   ```bash
   http://localhost:8000/figures/{figure_name}
   ```
