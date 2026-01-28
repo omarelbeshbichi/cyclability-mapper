@@ -73,7 +73,7 @@ After the pipeline is run, results can be explored in three ways:
   ```bash
   http://localhost:8000/api/segments/oslo/4708813
   ```
-- **Figures**: A few key results figures: 
+- **Figures**: Figures of key results: 
   ```bash
   http://localhost:8000/figures/{figure_name}
   ```
