@@ -67,7 +67,9 @@ The job will:
 - Compute cyclability metrics
 - Store results in PostGIS
 
-Multiple cities can be stored in the database. Missing YAML mapping data are prompted during execution to the user in CLI environment and used to update the YAML table.
+Multiple cities can be stored in the database. Large cities may need increased memory limits in Colima and smaller chunk sizes.
+
+Note: OSM data quality and availability varies by city. Missing or ambiguous tags will trigger interactive prompts during the ingestion stage. These mappings are stored and reused.
 
 After the pipeline is run, results can be explored in three ways:
 - **Map**: A map rendering metrics for the city:
@@ -84,6 +86,16 @@ After the pipeline is run, results can be explored in three ways:
   ```
 
 Endpoint details and CLI jobs are described in the project documentation.
+
+## Local development (optional)
+
+For development of pure Python logic and tests:
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -e '.[dev]'
+pytest
+```
 
 ## Project Structure
 - `docker/`: Database schema initialization (init.sql).
