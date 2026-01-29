@@ -1,4 +1,5 @@
 import geopandas as gpd
+import pandas as pd
 from shapely.geometry import LineString
 from city_metrics.data.normalize.cleaning import restrict_gdf, parse_maxspeed_to_kmh, normalize_maxspeed_info, prepare_cyclability_segment
 from pathlib import Path
@@ -12,17 +13,17 @@ def make_test_gdf():
     """
     
     return gpd.GeoDataFrame({
-        "highway": ["footway", "primary", "motorway", "residential"],
-        "bicycle": [None, "yes", "yes", "yes"],
-        "geometry": [LineString([(0,0),(1,0)])]*4,
-        "osm_id":[1,2,3,4],
-        "wikidata":[None]*4,
-        "smoothness":[None]*4,
-        "crossing":[None]*4,
-        "lit": ["yes", "no", "yes;no", "limited"],
-        "cycleway": [None, "lane", "lane", None],
-        "cycleway:left": [None, None, None, "track"],
-        "oneway": [None, "yes", None, None]
+        "highway": ["footway", "primary", "motorway", "residential", "footway"],
+        "bicycle": [None, "yes", "yes", "yes", None],
+        "geometry": [LineString([(0,0),(1,0)])]*5,
+        "osm_id":[1,2,3,4, 5],
+        "wikidata":[None]*5,
+        "smoothness":[None]*5,
+        "crossing":[None]*5,
+        "lit": ["yes", "no", "yes;no", "limited", "yes"],
+        "cycleway": [None, "lane", "lane", None, None],
+        "cycleway:left": [None, None, None, "track", "lane"],
+        "oneway": [None, "yes", None, None, None]
     })
 
 def test_restrict_gdf():
@@ -46,13 +47,18 @@ def test_parse_maxspeed_to_kmh():
 def test_normalize_maxspeed_info():
     
     gdf = make_test_gdf()
-    gdf["maxspeed"] = ["20", "20 mph", "20 knots", None]
+    gdf["maxspeed"] = ["20", "20 mph", "20 knots", None, pd.NA]
+
+    expected = ["20", "32", "37", None, None]
 
     normalized_gdf = normalize_maxspeed_info(gdf)
-
     normalized_maxspeed = normalized_gdf["maxspeed"].tolist()
 
-    assert normalized_maxspeed == ["20", "32", "37", None]
+    for a, b in zip(normalized_maxspeed, expected):
+        if b is None:
+            assert pd.isna(a)
+        else:
+            assert a == b
 
 def test_prepare_cyclability_segment():
 
