@@ -23,3 +23,6 @@ dist/
 
 #Notebooks
 notebooks/
+
+# Static maps generated
+static_maps/

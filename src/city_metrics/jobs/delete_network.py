@@ -2,7 +2,7 @@ import click
 import logging 
 
 @click.command()
-@click.option("--c", "--city-name", "city_name", type = str, required = True)
+@click.option("--city", "--city-name", "city_name", type = str, required = True)
 def main(city_name):
     from city_metrics.data.export.postgres import delete_city_rows
 

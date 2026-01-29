@@ -2,7 +2,7 @@ import click
 import logging
 
 @click.command()
-@click.option("--c", "--city-name", "city_name", type = str, required = True)
+@click.option("--city", "--city-name", "city_name", type = str, required = True)
 def main(city_name):
 
     from city_metrics.services.metrics.compute import recompute_metrics_from_postgis, compute_city_metrics_from_postgis

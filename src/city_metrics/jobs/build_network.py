@@ -2,7 +2,7 @@ import click
 import logging 
 
 @click.command()
-@click.option("--c", "--city-name", "city_name", type = str, required = True)
+@click.option("--city", "--city-name", "city_name", type = str, required = True)
 @click.option("--cc", "--country-code", "country_code", type = str, required = True)
 @click.option("--south", type = float, required = False)
 @click.option("--west", type = float, required = False)

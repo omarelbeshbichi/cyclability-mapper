@@ -51,10 +51,10 @@ Data ingestion and network building can then be executed by using the CLI jobs p
 
 For example, to build the road network and compute cyclability metrics for Oslo, Norway:
 ```bash
-docker compose exec app python -m city_metrics.jobs.build_network --c oslo --cc no --chunk 5000 --tout 50 --tol 0.0005
+docker compose exec app python -m city_metrics.jobs.build_network --city oslo --cc no --chunk 5000 --tout 50 --tol 0.0005
 ```
 where:
-- `--c` is the city name
+- `--city` is the city name
 - `--cc` is the country code (ISO-2)
 - `--chunk` (optional) is the maximum number of segments per chunk to be processed in one go
 - `--tout` (optional) is the timeout time used during API fetch
