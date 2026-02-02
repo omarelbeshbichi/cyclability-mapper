@@ -77,7 +77,7 @@ def recompute_metrics_from_postgis(city_name: str,
 
 def compute_city_metrics_from_postgis(city_name: str,
                                         metrics_config_path: Path,
-                                        weights_config_path: Path,
+                                        weights_config: dict,
                                         upload: bool = True) -> None:
     """
     Compute overall cyclability metrics (and percentage missing data) for given city stored in PostGIS.
@@ -89,8 +89,8 @@ def compute_city_metrics_from_postgis(city_name: str,
         Name of given city (e.g., "oslo").
     cyclability_config_path : Path
         Path to the cyclability configuration file.
-    weights_config_path: Path
-        Path to the weights configuration file.
+    weights_config: dict
+        Dict of weights configuration file.
     upload : bool, optional
         If True, upload processed network segments and metrics to PostGIS.
     """
@@ -107,7 +107,7 @@ def compute_city_metrics_from_postgis(city_name: str,
     logging.info("COMPUTE CITY METRICS")
     total_city_score, feature_uncertainty_contributions, total_city_score_uncertainty = compute_total_city_metrics(gdf, 
                                                                                    "cyclability", 
-                                                                                   weights_config_path)
+                                                                                   weights_config)
 
     if upload == True:
 

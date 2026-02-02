@@ -9,7 +9,8 @@ import json
 import os
 from shapely import wkb
 from shapely.geometry import Polygon, base
-
+import numpy as np
+from typing import Optional
 
 def reference_area_to_postgres(city_name: str, 
                                 geom: Polygon):
@@ -96,7 +97,7 @@ def load_reference_area(city_name: str):
     finally:
         engine.dispose()
 
-def delete_city_rows(table_name: str, city_name: str):
+def delete_city_rows(table_name: str, city_name: str, target_group: Optional[str] = None):
     """
     Remove all rows associated with a given city from PostGIS table.
     """
@@ -123,6 +124,16 @@ def delete_city_rows(table_name: str, city_name: str):
                           AND ns.city_name = :city_name
                     """),
                     {"city_name": city_name}
+                )
+            elif table_name == "group_sensitivity":
+                conn.execute(
+                    text(f"""
+                        DELETE FROM {quoted_table} 
+                          WHERE city_name = :city_name
+                          AND target_group = :target_group;
+                    """),
+                    {"city_name": city_name,
+                     "target_group": target_group}
                 )
             else:
                 # Retrieve city_name directly (network_segments and refresh areas have it)
@@ -469,6 +480,58 @@ def prepare_total_city_metrics_df_for_postgis(city_name: str,
         "total_city_score": [total_city_score],
         "total_city_score_uncertainty": [total_city_score_uncertainty],
         "feature_uncertainty_contributions": [json.dumps(rounded_missing_features)]
+    })
+
+    return df_final
+
+def prepare_group_sweep_city_metrics_df_for_postgis(city_name: str,
+                                    metric_name: str,
+                                    metrics_config_path: str,
+                                    target_group: str,
+                                    delta_group_weight: list,
+                                    sweep_city_score_result: list,
+                                    sensitivity: float) -> pd.DataFrame:
+    """
+    Prepare DataFrame with total city metrics and uncertainty for insertion into PostGIS database (city_metrics SQL table)
+
+    Parameters
+    ----------
+    city_name: str
+        Name of given city (e.g., "oslo).
+    metric_name: str
+        Name of current metrics (eg, cyclability)
+    metrics_config_path: str
+        Path to the YAML configuration file
+    target_group: str
+        Group to be swept
+    delta_group_weight: list
+        List storing sweeing group weights
+    sweep_city_score_result: list
+        List storing city metrics associated with given delta weight
+    sensitivity: float
+        Local sensitivity slope at baseline weight w_0 - ∂S / ∂w_group  | at w = w_0
+    Returns
+    -------
+    pd.DataFrame
+        Metric DataFrame ready for PostGIS insertion
+    """
+    
+    # Define versioning
+    metric_version = get_config_version(metrics_config_path)
+
+    # Assure float usage
+    delta_group_weight = [float(x) for x in delta_group_weight]
+    sweep_city_score_result = [float(x) for x in sweep_city_score_result]
+
+    # Convert metrics into a dataframe
+    df_final = pd.DataFrame({
+        "city_name": [city_name],
+        "metric_name": [metric_name],
+        "metric_version": [metric_version],
+        "target_group": [target_group],
+        "delta_group_weight": [delta_group_weight],
+        "sensitivity": [sensitivity],
+        "sweep_city_score_result": [sweep_city_score_result]
     })
 
     return df_final

@@ -269,7 +269,7 @@ def define_augmented_geodataframe(gdf: gpd.GeoDataFrame,
 
 def compute_total_city_metrics(gdf: gpd.GeoDataFrame,
                                metrics_name: str,
-                               weights_config_path: Path) -> tuple[float, dict, float]:
+                               weights_config: dict) -> tuple[float, dict, float]:
     """
     Compute the overall city score and the percentage of missing features in GeoDataFrame.
 
@@ -282,8 +282,8 @@ def compute_total_city_metrics(gdf: gpd.GeoDataFrame,
         - missing_info: dict indicating missing features for the segment
     metrics_name: str
         Metrics name (e.g., "cyclability")
-    weights_config_path: Path
-        Path of weights configuration file.
+    weights_config: dict
+        Dict of weights configuration file.
     Returns
     -------
     total_city_score : float
@@ -294,10 +294,7 @@ def compute_total_city_metrics(gdf: gpd.GeoDataFrame,
         Total metric uncertainty
     """
 
-    # Get config info
-    #(remove version info from resulting dict)
-    weights_config = read_config("weights", "yaml", weights_config_path)
-    weights_config.pop("version")
+    # Get weights from config 
     weights_metrics = weights_config[metrics_name]
 
     # Initialize variables
@@ -316,6 +313,17 @@ def compute_total_city_metrics(gdf: gpd.GeoDataFrame,
         length = row_get(row, "segment_length")
         score = row_get(row, "total_score")
         missing_info = row_get(row, "missing_info")
+
+        # Skip invalid segments
+        if length is None:
+            logging.warning(
+                f"LENGTH ZERO"
+            )
+        elif score is None:
+            logging.warning(
+                f"SCORE ZERO"
+            )
+            continue
 
         # Get partially normalized score
         total_city_score += score * length

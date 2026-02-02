@@ -7,6 +7,7 @@ def main(city_name):
 
     from city_metrics.services.metrics.compute import recompute_metrics_from_postgis, compute_city_metrics_from_postgis
     from city_metrics.utils.misc import get_project_root
+    from city_metrics.utils.config_helpers import read_config
 
     root = get_project_root()
 
@@ -21,7 +22,11 @@ def main(city_name):
     
     # Compute overall city data and store in PostGIS database
     logging.info("COMPUTE OVERALL CITY METRICS")
-    compute_city_metrics_from_postgis(city_name, metrics_config_path, weights_config_path)
+    # Get config info
+    #(remove version info from resulting dict)
+    weights_config = read_config("weights", "yaml", weights_config_path)
+    weights_config.pop("version")
+    compute_city_metrics_from_postgis(city_name, metrics_config_path, weights_config)
 
     logging.info("DONE")
 if __name__ == "__main__":
