@@ -71,3 +71,34 @@ docker compose exec app python -m city_metrics.jobs.generate_static_maps --city 
 where:
 - `--overwrite`: use to enable overwrite of old static map
 - `--out`: output directory (default is `static_maps` at root)
+
+# run_graph
+Experimental job to analyze which street segments provide the highest cyclability gains
+if improved within a given budget (in km). Primarily for exploratory analysis using NetworkX graphs.
+
+```bash
+docker compose exec app python -m city_metrics.jobs.run_graph --city oslo --budget 5.0
+```
+where:
+- `--city` is the city name
+- `--budget` is the improvement budget in km
+
+Notes:
+- Builds a NetworkX graph from street segments and computes approximate cyclability.
+- Selects segments that maximize cyclability improvement per budget (using betweenness to evaluate segment value).
+- Results may vary slightly due to internal sampling.
+
+
+# run_sensitivity
+Performs sensitivity analysis on cyclability metric group weights.
+
+```bash
+docker compose exec app python -m city_metrics.jobs.run_sensitivity --city oslo --group infrastructure --delta 0.2
+```
+where:
+- `--city` : City name
+- `--group` : Feature group to sweep (use "all" to sweep all groups)
+- `--delta` : Maximum allowed weight variation
+
+Notes:
+- Produces total city metrics for each weight variation step.

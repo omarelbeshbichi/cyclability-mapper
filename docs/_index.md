@@ -7,3 +7,4 @@ The present documentation is organized as follows:
 - `pipeline.md`: ingestion, metrics computation, and database process.
 - `metrics.md`: definition of a simplified cyclability metrics model.
 - `database.md`: brief description of PostGIS schema used.
+- `analysis.md`: experimental graph and sensitivity analyses.

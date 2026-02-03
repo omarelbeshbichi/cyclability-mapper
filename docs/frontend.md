@@ -29,3 +29,19 @@ GET /figures/metrics_scatter
 ```
 
 Returns scatter table of total city scores as a function of total city uncertainty for all the cities present in the database.
+
+
+## Sensitivity Figures (Experimental)
+The application also provides experimental sensitivity analysis figures showing how changes in group weights affect city cyclability metrics. These are available via dedicated endpoints.
+
+**Line plots per group**: total city score vs delta group weight
+```
+GET /figures/group_sensitivity/{city_name}
+```
+
+**Heatmaps**: sensitivity of city score to group weight variations for all cities available in sensitivity table in database `group_sensitivity`.
+```
+GET /figures/group_sensitivity/heatmap
+```
+
+These figures are intended for diagnostic purposes and exploration only.

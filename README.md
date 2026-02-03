@@ -21,6 +21,7 @@ The system is organized as follows:
   - Cyclability metrics per segment
   - City-level aggregated metrics with uncertainty indicators
   - FastAPI-based data access and Kepler.gl-based maps and figures for results exploration
+- **Analysis**: Two experimental analyses are also included, ie, sensitivity analysis on group weights, and graph analysis to identify which segments would provide the largest cyclability improvement given a budget in km. These analyses are experimental and have been included mainly to explore the underlying modules (networkx).
 
 ## Resources
 
@@ -101,7 +102,7 @@ pytest
 - `docker/`: Database schema initialization (init.sql).
 - `docs/`: Technical documentation.
 - `frontend/`: Frontend-related code (for now, it includes Kepler.gl visualization).
-- `src/city_metrics/`: Source code: ingestion, normalization, metrics computation, database services, API, and CLI jobs.
+- `src/city_metrics/`: Source code: ingestion, normalization, metrics computation, database services, API, analysis, and CLI jobs.
 
 ## Status
 
