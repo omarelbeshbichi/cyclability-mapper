@@ -128,7 +128,7 @@ def create_group_sensitivity_plot(city_name: str) -> plt.Figure:
         ax.set_xlabel("Delta Group Weight")
         ax.set_ylabel("Total City Score")
         ax.set_ylim(0, 1)
-        ax.set_title(f"Sensitivity Sweep - {city_name}")
+        ax.set_title(f"Sensitivity Sweep - {city_name} (diagnostics)")
         ax.grid(True, linestyle="--", alpha=0.5)
         ax.legend(fontsize=9, loc="best")
         fig.tight_layout()
@@ -147,8 +147,7 @@ def create_group_sensitivity_plot(city_name: str) -> plt.Figure:
 
 def create_group_sensitivity_heatmap(metric_name: str = "cyclability") -> plt.Figure:
     """
-    Create a city × group heatmap of local sensitivity slopes
-    using matplotlib only (no seaborn).
+    Create a city for group heatmap of local sensitivity slopes.
     """
 
     DATABASE_URL = os.getenv(
@@ -230,7 +229,7 @@ def create_group_sensitivity_heatmap(metric_name: str = "cyclability") -> plt.Fi
                         fontsize=9
                     )
 
-        ax.set_title("Weight Sensitivity")
+        ax.set_title("Weight Sensitivity (diagnostics)")
 
         # Colorbar
         cbar = fig.colorbar(im, ax=ax, shrink=0.85)

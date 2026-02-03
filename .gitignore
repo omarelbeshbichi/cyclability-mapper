@@ -26,3 +26,6 @@ notebooks/
 
 # Static maps generated
 static_maps/
+
+# Project tree dump (dev tool)
+project_dump.txt

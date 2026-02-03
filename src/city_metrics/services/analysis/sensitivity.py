@@ -1,13 +1,11 @@
 from pathlib import Path
 import logging 
 from city_metrics.services.metrics.loader import load_segments_for_metrics_recompute
-from city_metrics.metrics.compute_metrics import define_augmented_geodataframe, compute_total_city_metrics
 from city_metrics.utils.config_helpers import read_config
-import numpy as np
 from city_metrics.data.export.postgres import dataframe_to_postgres
 from city_metrics.data.export.postgres import prepare_group_sweep_city_metrics_df_for_postgis
-from city_metrics.utils.geometry import geodesic_length
 from city_metrics.data.export.postgres import delete_city_rows
+from city_metrics.analysis.sensitivity import sweep_group_weight
 
 def sensitivity_single_weight_sweep(city_name: str,
                                     target_group: str, 
@@ -17,6 +15,8 @@ def sensitivity_single_weight_sweep(city_name: str,
                                     upload: bool = True) -> None:
     """
     Perform sweep sensitivity analysis on group weights employed for given city.
+    This analysis is diagnostic only - it provides idea of whether city metric is robust to given 
+    weight assumptions.
     Optionally uploads the results to the database.
 
     Parameters
@@ -61,60 +61,15 @@ def sensitivity_single_weight_sweep(city_name: str,
     logging.info("LOAD SEGMENTS")
     gdf = load_segments_for_metrics_recompute(city_name)
 
-    # Get original group weights
-    original_weights = {k: v["weight"] for k, v in weights_config["cyclability"].items()}
-
-    # Get original group weight
-    base_group_weight = weights_config["cyclability"][target_group]["weight"]
-
-    # Number of steps to sweep
-    num_steps = int((delta_range * 2) / eps) + 1
-    deltas = np.linspace(-delta_range, delta_range, num_steps)
-
-    sweep_city_score_result = []
-    delta_group_weight = []
-
-    for d in deltas:
-        
-        # Create new weights dictionary for this iteration
-        current_weights = original_weights.copy()
-
-        if d != 0.0:
-            # Apply delta and keep within [0, 1]
-            new_val = np.clip(base_group_weight + d, 0, 1)
-            current_weights[target_group] = new_val
-
-            # Normalize: ensure the sum of all groups is exactly 1.0
-            total = sum(current_weights.values())
-            if total > 0:
-                for k in current_weights:
-                    current_weights[k] /= total
-
-        # Update the weights_config object with normalized values
-        for k, v in current_weights.items():
-            weights_config["cyclability"][k]["weight"] = v
-
-        logging.info(f"Step Delta {d:+.2f} | {target_group} weight: {weights_config['cyclability'][target_group]['weight']:.4f}")
-
-        # Compute metrics and augment dataframe
-        gdf_proc, _ = define_augmented_geodataframe(gdf, 
-                                                    weights_config, 
-                                                    metrics_config,
-                                                    metrics_config_path,
-                                                    excellent_bike_infra)
-
-        # ---- adapt GeoDataFrame to general pipeline ----
-        gdf_proc["segment_length"] = gdf_proc.geometry.apply(geodesic_length) 
-        gdf_proc = gdf_proc.rename(columns={"cyclability_metrics": "total_score"})
-
-        # Compute total city metrics    
-        logging.info(f"COMPUTE CITY METRICS FOR WEIGHT DELTA: {d}")
-        total_city_score, _, _ = compute_total_city_metrics(gdf_proc, 
-                                                            "cyclability", 
-                                                            weights_config)
-        sweep_city_score_result.append(total_city_score)
-        delta_group_weight.append(d)
-
+    # Perform sweep sensitivty analysis for given group
+    sweep_city_score_result, delta_group_weight = sweep_group_weight(gdf, 
+                                                                     target_group, 
+                                                                     eps, 
+                                                                     delta_range,
+                                                                     weights_config,
+                                                                     metrics_config,
+                                                                     metrics_config_path,
+                                                                     excellent_bike_infra)
 
     # Compute local sensitivity slope at baseline weight w₀
     baseline_index = delta_group_weight.index(0.0)
