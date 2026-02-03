@@ -21,7 +21,7 @@ The system is organized as follows:
   - Cyclability metrics per segment
   - City-level aggregated metrics with uncertainty indicators
   - FastAPI-based data access and Kepler.gl-based maps and figures for results exploration
-- **Analysis**: Two experimental analyses are also included, ie, sensitivity analysis on group weights, and graph analysis to identify which segments would provide the largest cyclability improvement given a budget in km. These analyses are experimental and have been included mainly to explore the underlying modules (networkx).
+- **Analysis**: Two experimental analyses are also included, ie, sensitivity analysis to quantify robustness of metrics with respect to group weights, and graph analysis to identify which segments would provide the largest cyclability improvement given a budget in km. These analyses are experimental and have been included mainly to explore the underlying modules (networkx, especially).
 
 ## Resources
 
@@ -70,7 +70,7 @@ The job will:
 
 Multiple cities can be stored in the database. Large cities may need increased memory limits in Colima and smaller chunk sizes.
 
-Note: OSM data quality and availability varies by city. Missing or ambiguous tags will trigger interactive prompts during the ingestion stage. These mappings are stored and reused.
+Note: OSM data quality and availability vary by city. Missing or ambiguous tags will trigger interactive prompts during the ingestion stage. These mappings are stored and reused.
 
 After the pipeline is run, results can be explored in three ways:
 - **Map**: A map rendering metrics for the city:

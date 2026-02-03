@@ -6,7 +6,7 @@ Note that for sensitivity analysis, figures have been added to frontend endpoint
 
 ## Graph Analysis
 
-This analysis evaluates the city street network as graph and identifies which segments provide the largest cyclability improvement given a budget in km. The analysis makes use of a large amount of assumptions: the "value" of a segment is determined by first calculating the "edge betwenness centrality", i.e., an indication of how often each segment appears in shortest paths given two arbitrary A-B nodes. Edge value is determined as:
+This analysis evaluates the city street network as graph and identifies which segments provide the largest cyclability improvement given a budget in km. The analysis makes use of a large number of assumptions: the "value" of a segment is determined by first calculating the "edge betweenness centrality", i.e., an indication of how often each segment appears in shortest paths given two arbitrary A-B nodes. Edge value is determined as:
 
 $$
 \text{segment\_value} = \frac{\text{segment\_betweenness}}{\text{cyclability\_score}}
@@ -32,7 +32,7 @@ Builds a `networkx` Graph from a GeoDataFrame of street segments.
 Each edge represents a street segment with attributes:
   - `length` (meters)
   - `score` (cyclability score)
-  - `weight` (cycling cost = length / score)
+  - `weight` (cycling cost = length/score)
   - `osm_id` (OSM ID)
 
 #### `graph/metrics.py`
