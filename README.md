@@ -8,7 +8,7 @@
 # Cyclability Mapper
 Cyclability Mapper is a Python-based system for computing segment-level and city-level cyclability metrics from OpenStreetMap (OSM) road data. The system ingests raw OSM data, normalizes and segments the road network, computes a simplified cyclability metric, and stores results in a spatial relational database (PostGIS) for analysis, API access, and map-based access using Kepler.gl.
 
-The project is structured as a complete pipeline: from geospatial data ingestion to quality metrics computation and visualization. While the current focus is on cyclability, the architecture may be applied to other quality indices.
+The project is structured as a complete pipeline: from geospatial data ingestion to quality metrics computation, visualization, and analysis. While the current focus is on cyclability, the architecture may be applied to other quality indices.
 
 ## System Structure
 
@@ -17,15 +17,15 @@ The system is organized as follows:
 - **Processing**: Normalization of OSM tags, segmentation and derivation of city network, computation of metrics per segment, and aggregation into city-level metrics. Missing data is tracked as qualitative uncertainty.
 - **Storage**: PostgreSQL with PostGIS is used as authoritative storage system for geometries, features, and computed metrics.
 - **Orchestration**: Application services and databases are coordinated using Docker Compose.
+- **Analysis**: Two experimental analyses are also included, ie, sensitivity analysis to quantify robustness of metrics with respect to group weights, and graph analysis to identify which segments would provide the largest cyclability improvement given a budget in km. These analyses are experimental and have been included mainly to explore the underlying modules (networkx, especially).
 - **Output**:
   - Cyclability metrics per segment
   - City-level aggregated metrics with uncertainty indicators
   - FastAPI-based data access and Kepler.gl-based maps and figures for results exploration
-- **Analysis**: Two experimental analyses are also included, ie, sensitivity analysis to quantify robustness of metrics with respect to group weights, and graph analysis to identify which segments would provide the largest cyclability improvement given a budget in km. These analyses are experimental and have been included mainly to explore the underlying modules (networkx, especially).
 
 ## Resources
 
-- [**Documentation**](docs/): Detailed description of data model, process pipeline, metrics definition, database schema, jobs, and API structure.
+- [**Documentation**](docs/): Detailed description of data model, process pipeline, metrics definition, database schema, jobs, analyisis, and API structure.
 
 ## Quick Start
 
