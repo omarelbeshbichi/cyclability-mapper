@@ -108,7 +108,12 @@ def test_compute_total_city_metrics():
 
     weights_path = "src/city_metrics/metrics/config/weights.yaml"
 
-    city_score, feature_uncertainty, city_score_uncertainty = compute_total_city_metrics(gdf, metrics_name, weights_path)
+    # Get config info
+    #(remove version info from resulting dict)
+    weights_config = read_config("weights", "yaml", weights_path)
+    weights_config.pop("version")
+
+    city_score, feature_uncertainty, city_score_uncertainty = compute_total_city_metrics(gdf, metrics_name, weights_config)
 
      # Check if all uncertainty components are within range
     assert all(0 <= x <= 1 for x in feature_uncertainty)
