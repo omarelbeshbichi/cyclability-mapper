@@ -150,12 +150,14 @@ def split_polygon_into_bboxes(polygon, step_deg: float = 0.005) -> List[tuple]:
 
     y = miny
     while y < maxy:
+        lon_step = step_deg / max(cos(radians(y)), 1e-8)  # avoid division by zero at poles
+
         x = minx
         while x < maxx:
             south = y
             west = x
             north = min(y + step_deg, maxy)
-            east = min(x + step_deg, maxx)
+            east = min(x + lon_step, maxx)
 
             tile = box(west, south, east, north)
 
