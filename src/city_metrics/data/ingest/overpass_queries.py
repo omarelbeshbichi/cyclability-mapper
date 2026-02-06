@@ -2,13 +2,13 @@ from shapely.geometry import Polygon
 from typing import Optional
 
 
-def roads_in_bbox(south: float, west: float, north: float, east: float) -> str:
+def roads_in_bbox(south: float, west: float, north: float, east: float, timeout: Optional[int] = 50) -> str:
     """
     Build Overpass QL query fetching road geometries within a defined bounding box
     """
 
     return f"""
-    [out:json][timeout:25];
+    [out:json][timeout:{timeout}];
     (
       way
         ["highway"]

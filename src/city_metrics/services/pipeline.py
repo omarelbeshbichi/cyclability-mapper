@@ -14,13 +14,19 @@ from city_metrics.data.export.postgres import dataframe_to_postgres
 from city_metrics.utils.geometry import geodesic_length
 from city_metrics.utils.config_helpers import read_config
 from city_metrics.data.export.postgres import delete_city_rows
+from sqlalchemy import create_engine
+import os
+import pandas as pd
 
 def build_network_from_api(city_name: str,
                             query: str,
                             weights_config_path: Path,
                             metrics_config_path: Path,
                             upload: bool = True,
-                            chunk_size: int = 5000) -> None:
+                            chunk_size: int = 5000,
+                            timeout: int = 200,
+                            retries: int = 50,
+                            delay: float = 2.0) -> None:
     """
     Build road network from an Overpass API query and compute cyclability metrics.
     Optionally uploads processed network segments and metrics to PostGIS.
@@ -42,6 +48,12 @@ def build_network_from_api(city_name: str,
         If True, upload processed network segments and metrics to PostGIS.
     chunk_size: int
         Number of features per gdf chunk
+    timeout: int
+        Timeout for Overpass API in seconds
+    retries: int
+        Number of connection retries for Overpass API
+    delay: float
+        Delay in seconds between Overpass API connections
     """
     
     # Get config info
@@ -58,14 +70,9 @@ def build_network_from_api(city_name: str,
     bike_infra_mapping = metrics_config["bike_infrastructure"]["mapping"]
     excellent_bike_infra = {k for k, v in bike_infra_mapping.items() if v == 1.0}
 
-    # Clear-up existing database info
-    logging.info("CLEAR DATABASE")
-    delete_city_rows("network_segments", city_name)
-    # segment_metrics is deleted automatically (postgres)
-
     logging.info("API FETCH")
     # Fetch data from API
-    data_json = run_overpass_query(query, 200, 50, 2.0)
+    data_json = run_overpass_query(query, timeout, retries, delay)
     data_geojson = overpass_elements_to_geojson(data_json["elements"])
     
     logging.info(f"CREATE GDF CHUNKS")
@@ -102,15 +109,65 @@ def build_network_from_api(city_name: str,
             
         if upload == True:
             logging.info(f"Save gdf chunk {idx} to database")
+
             # Prepare segments GDF for PostGIS upload
             gdf_proc_prepared = prepare_network_segments_gdf_for_postgis(city_name, gdf_chunk)
 
+
+            # Connect to PostGIS to retrieve currently stored segments
+            # (if using tiles - they can have segments in common, so duplicates in next line should be dropped)
+
+            DATABASE_URL = os.getenv(
+                "DATABASE_URL",
+                "postgresql+psycopg2://user:pass@localhost:5432/db"
+            )
+            engine = create_engine(DATABASE_URL)
+
+            # Fetch existing segments IDs (osm_id) for this city
+            existing_osm_ids = set(pd.read_sql(
+                "SELECT osm_id FROM network_segments WHERE city_name = %(city_name)s",
+                engine,
+                params={"city_name": city_name}
+            )["osm_id"])
+            
+            # Also fetch metrics associated with existing segments IDs for this city
+            existing_metrics = pd.read_sql(
+                """
+                SELECT segment_id
+                FROM segment_metrics
+                WHERE metric_name = %(metric_name)s
+                AND segment_id IN (
+                    SELECT id
+                    FROM network_segments
+                    WHERE city_name = %(city_name)s
+                )
+                """,
+                engine,
+                params={
+                    "city_name": city_name,
+                    "metric_name": "cyclability"
+                }
+            )
+            existing_metric_ids = set(existing_metrics["segment_id"])
+
+            # Drop segments already present in database
+            mask_drop = ~gdf_proc_prepared["osm_id"].isin(existing_osm_ids)
+            gdf_proc_prepared = gdf_proc_prepared[mask_drop]
+                       
             # Upload network segments data to PostGIS
             dataframe_to_postgres(gdf_proc_prepared, 'network_segments', 'gdf', 'append')
 
             # Prepare metrics GDF for PostGIS upload 
             df_metrics_prepared = prepare_metrics_df_for_postgis(city_name, gdf_chunk, metrics_features_scores, 'cyclability', metrics_config_path)
 
+
+            # Drop metrics associated with segments already present in database
+            df_metrics_prepared = df_metrics_prepared[
+                ~df_metrics_prepared["segment_id"].isin(existing_metric_ids)
+            ]
+
             # Upload metrics GDF to PostGIS
             dataframe_to_postgres(df_metrics_prepared, 'segment_metrics', 'df', 'append')
             
+            # Dispose engine
+            engine.dispose()

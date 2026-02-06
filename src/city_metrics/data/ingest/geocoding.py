@@ -1,6 +1,6 @@
 import requests
-from typing import Tuple, Optional
-from shapely.geometry import shape, Polygon, MultiPolygon, Point
+from typing import Tuple, Optional, List
+from shapely.geometry import shape, Polygon, MultiPolygon, Point, box
 import logging
 from math import cos, radians
 
@@ -136,3 +136,34 @@ def city_to_polygon(city_name: str,
     geom = geom.simplify(tolerance=tolerance, preserve_topology=True)
 
     return geom
+
+
+def split_polygon_into_bboxes(polygon, step_deg: float = 0.005) -> List[tuple]:
+    """
+    Split a polygon bounding box into smaller bbox tiles.
+
+    Returns list of boxes (south, west, north, east)
+    """
+    minx, miny, maxx, maxy = polygon.bounds  # lon/lat
+
+    tiles = []
+
+    y = miny
+    while y < maxy:
+        x = minx
+        while x < maxx:
+            south = y
+            west = x
+            north = min(y + step_deg, maxy)
+            east = min(x + step_deg, maxx)
+
+            tile = box(west, south, east, north)
+
+            # only keep tiles that intersect the city polygon
+            if polygon.intersects(tile):
+                tiles.append((south, west, north, east))
+
+            x += step_deg
+        y += step_deg
+
+    return tiles

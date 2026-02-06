@@ -176,6 +176,9 @@ surface:
 
     # --- Added Recently ---
 
+    sand;gravel: 0.3
+    broken: 0.3
+    dirt;grass: 0.3
   description: "Normalized surface quality score"
 
 lighting:

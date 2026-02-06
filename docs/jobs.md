@@ -12,12 +12,15 @@ where:
 - `--chunk` (optional) is the maximum number of segments per chunk to be processed in one go
 - `--tout` (optional) is the timeout time used during API fetch
 - `--tol` (optional) is the tolerance used to simplify city outline Polygon before fetch
-
+- `--tiling (--no-tiling)` (optional) is a bool flag used to enable tiling of fetch Polygon into small boxes (more fetches are less demanding on RAM capacity).
+- `--retries` (optional) is the number of Overpass API connection retries allowed.
+- `--delay` (optional is the delay in seconds between Overpass API connections).
+- 
 This will use a Polygon describing the city's municipal boundaries to fetch data from the OSM API.
 
 ## Bounding Box
 ```bash
-docker compose exec app python -m city_metrics.jobs.build_network --city oslo --south 59.898941 --west 10.667409 --north 59.954596 --east 10.815038 --chunk 5000 --tout 50 --tol 0.0005
+docker compose exec app python -m city_metrics.jobs.build_network --city oslo --south 59.898941 --west 10.667409 --north 59.954596 --east 10.815038 --chunk 5000 --tout 50 --tol 0.0005 --tiling --retries 50 --delay 5.0
 ```
 
 This will use an explicit bounding box, normally defined with four numbers representing the South Latitude, North Latitude, West Longitude, and East Longitude. The example is using a bounding box around the area of Oslo, Norway.
@@ -37,7 +40,7 @@ All metric data in the database for the given city is overwritten (`segment_metr
 Refreshes all data related to a given city from the associated Polygon saved in the database and recomputes associated metrics.
 
 ```bash
-docker compose exec app python -m city_metrics.jobs.refresh_osm_data --city oslo --chunk 5000 --tout 50
+docker compose exec app python -m city_metrics.jobs.refresh_osm_data --city oslo --chunk 5000 --tout 50 --tiling --retries 50 --delay 5.0
 ```
 
 # list_cities

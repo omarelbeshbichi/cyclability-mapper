@@ -52,7 +52,7 @@ Data ingestion and network building can then be executed by using the CLI jobs p
 
 For example, to build the road network and compute cyclability metrics for Oslo, Norway:
 ```bash
-docker compose exec app python -m city_metrics.jobs.build_network --city oslo --cc no --chunk 5000 --tout 50 --tol 0.0005
+docker compose exec app python -m city_metrics.jobs.build_network --city oslo --cc no --chunk 5000 --tout 50 --tol 0.0005 --tiling --retries 50 --delay 5.0
 ```
 where:
 - `--city` is the city name
@@ -60,6 +60,9 @@ where:
 - `--chunk` (optional) is the maximum number of segments per chunk to be processed in one go
 - `--tout` (optional) is the timeout time used during API fetch
 - `--tol` (optional) is the tolerance used to simplify city outline Polygon before fetch
+- `--tiling (--no-tiling)` (optional) is a bool flag used to enable decomposition of fetch Polygon into small boxes (more fetches are less demanding on RAM capacity - implemented to test AWS deployment of process in free-tier EC2 instance).
+- `--retries` (optional) is the number of Overpass API connection retries allowed.
+- `--delay` (optional is the delay in seconds between Overpass API connections).
 
 The job will:
 - Define the administrative city boundary
