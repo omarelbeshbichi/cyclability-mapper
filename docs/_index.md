@@ -8,3 +8,7 @@ The present documentation is organized as follows:
 - `metrics.md`: definition of a simplified cyclability metrics model.
 - `database.md`: brief description of PostGIS schema used.
 - `analysis.md`: experimental graph and sensitivity analyses.
+- `api.md`: API architecture and endpoints.
+- `frontend.md`: brief description of Kepler.gl-based maps and figures.
+- `jobs.md`: description of CLI jobs.
+- `demo_aws_deployment`: brief description of system demo deployed in AWS using free-tier resources.

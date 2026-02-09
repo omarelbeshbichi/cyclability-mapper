@@ -1,6 +1,6 @@
 ![Alt text](media/heading.png)
 
-![Version](https://img.shields.io/badge/version-0.1.0-blue)
+![Version](https://img.shields.io/badge/version-0.2.0-blue)
 ![Python](https://img.shields.io/badge/python-%3E%3D3.10-blue)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 ![Docker](https://img.shields.io/badge/docker-ready-blue)
@@ -9,6 +9,8 @@
 Cyclability Mapper is a Python-based system for computing segment-level and city-level cyclability metrics from OpenStreetMap (OSM) road data. The system ingests raw OSM data, normalizes and segments the road network, computes a simplified cyclability metric, and stores results in a spatial relational database (PostGIS) for analysis, API access, and map-based access using Kepler.gl.
 
 The project is structured as a complete pipeline: from geospatial data ingestion to quality metrics computation, visualization, and analysis. While the current focus is on cyclability, the architecture may be applied to other quality indices.
+
+A system demo deployment in AWS has been also explored.
 
 ## System Structure
 
@@ -26,6 +28,16 @@ The system is organized as follows:
 ## Resources
 
 - [**Documentation**](docs/): Detailed description of data model, process pipeline, metrics definition, database schema, jobs, analyisis, and API structure.
+
+## Demo AWS Deployment
+
+A system demo has been also deployed in AWS using free-tier resources. As an example, the following links redirect, respectively, to a scatter table of all city scores (and score uncertainties) in the database, and a Kepler.gl-based interactive map of results of Utrecht, NL:
+
+> https://cyclability-mapper.duckdns.org/figures/metrics_scatter
+
+> https://cyclability-mapper.duckdns.org/maps/utrecht
+
+ See [**related documentation**](docs/demo_aws_deployment.md) for more info.
 
 ## Quick Start
 
@@ -52,7 +64,7 @@ Data ingestion and network building can then be executed by using the CLI jobs p
 
 For example, to build the road network and compute cyclability metrics for Oslo, Norway:
 ```bash
-docker compose exec app python -m city_metrics.jobs.build_network --city oslo --cc no --chunk 5000 --tout 50 --tol 0.0005 --tiling --retries 50 --delay 5.0
+docker compose exec app python -m city_metrics.jobs.build_network --city oslo --cc no --chunk 5000 --tout 50 --tol 0.0005 --no-tiling --retries 50 --delay 5.0
 ```
 where:
 - `--city` is the city name
@@ -60,7 +72,7 @@ where:
 - `--chunk` (optional) is the maximum number of segments per chunk to be processed in one go
 - `--tout` (optional) is the timeout time used during API fetch
 - `--tol` (optional) is the tolerance used to simplify city outline Polygon before fetch
-- `--tiling (--no-tiling)` (optional) is a bool flag used to enable decomposition of fetch Polygon into small boxes (more fetches are less demanding on RAM capacity - implemented to test AWS deployment in free-tier EC2 instance).
+- `--no-tiling (--tiling)` (optional) is a bool flag used to enable decomposition of fetch Polygon into small boxes (more fetches are less demanding on RAM capacity).
 - `--retries` (optional) is the number of Overpass API connection retries allowed.
 - `--delay` (optional) is the delay in seconds between Overpass API connections.
 

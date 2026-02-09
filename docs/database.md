@@ -42,6 +42,20 @@ Stored attributes include:
 - per-feature uncertainty contributions
 - creation timestamp
 
+# Group Sensitivity
+
+The `group_sensitivity` table stores results of an experimental sensitivity analysis on city-level cyclability metrics.
+
+The analysis evaluates how the city cyclability score varies when the weight of a given feature group (e.g. infrastructure, traffic, surface) is perturbed around its baseline value. During the sweep, weights are renormalized to ensure the total sum remains equal to 1.
+
+For each city and metric version, the following information is stored:
+- `target_group`: feature group whose weight is varied
+- `delta_group_weight`: array of relative weight perturbations applied to the target group
+- `sweep_city_score_result`: resulting aggregated city scores for each perturbation
+- `sensitivity`: local sensitivity estimate at the baseline weight (dS / dw_group)
+
+This analysis is intended for diagnostic and exploratory purposes only and should not be intended as a precise optimization tool.
+
 # v_cyclability_segment_detail
 
 This virtual view is used by services and the API to retrieve the latest metrics data.
