@@ -10,7 +10,21 @@ Cyclability Mapper is a Python-based system for computing segment-level and city
 
 The project is structured as a complete pipeline: from geospatial data ingestion to quality metrics computation, visualization, and analysis. While the current focus is on cyclability, the architecture may be applied to other quality indices.
 
-A system demo deployment in AWS has been also explored.
+Static map-based access of selected European capitals are available through GitHub Pages: [Amsterdam](https://omarelbeshbichi.github.io/cyclability-mapper/maps/amsterdam.html), [Helsinki](https://omarelbeshbichi.github.io/cyclability-mapper/maps/helsinki.html), [London](https://omarelbeshbichi.github.io/cyclability-mapper/maps/london.html), [Oslo](https://omarelbeshbichi.github.io/cyclability-mapper/maps/oslo.html).
+
+
+## Demo AWS Deployment
+
+A system demo has been also deployed in AWS using free-tier resources. As an example, the following links redirect, respectively, to a scatter table of all city scores (and score uncertainties) in the deployed database, a map-based access of results of Utrecht, NL, and an API retrieval for a segment of the same city:
+
+> https://cyclability-mapper.duckdns.org/figures/metrics_scatter
+
+> https://cyclability-mapper.duckdns.org/maps/utrecht
+
+> https://cyclability-mapper.duckdns.org/api/segments/utrecht/27370348 
+
+ See [**related documentation**](docs/demo_aws_deployment.md) for more info.
+
 
 ## System Structure
 
@@ -29,15 +43,6 @@ The system is organized as follows:
 
 - [**Documentation**](docs/): Detailed description of data model, process pipeline, metrics definition, database schema, jobs, analyisis, and API structure.
 
-## Demo AWS Deployment
-
-A system demo has been also deployed in AWS using free-tier resources. As an example, the following links redirect, respectively, to a scatter table of all city scores (and score uncertainties) in the database, and a Kepler.gl-based interactive map of results of Utrecht, NL:
-
-> https://cyclability-mapper.duckdns.org/figures/metrics_scatter
-
-> https://cyclability-mapper.duckdns.org/maps/utrecht
-
- See [**related documentation**](docs/demo_aws_deployment.md) for more info.
 
 ## Quick Start
 

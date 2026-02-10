@@ -10,6 +10,14 @@ def create_map(city_name: str,
     gdf = load_segments_for_viz(city_name)
     gdf = gdf.rename_geometry("geometry")
 
+    # Add rounding to segment length
+    gdf["segment_length"] = gdf["segment_length"].astype(float).round(2)
+    
+    # Apply simplification of geometries
+    gdf = gdf.to_crs(3857) # m
+    gdf["geometry"] = gdf.geometry.simplify(tolerance=5, preserve_topology=True)
+    gdf = gdf.to_crs(4326) # deg
+    
     # Compute where map should be initialized
     city_geom = gdf.geometry.union_all()
     centroid = city_geom.centroid
@@ -28,6 +36,11 @@ def create_map(city_name: str,
     # Initialize KeplerGL map + apply configuration setup
     m = KeplerGl(config = config)
 
+    # Reduce data needed
+    gdf = gdf[
+        ["geometry", "osm_id", "total_score", "segment_length", "all_scores"]
+    ]
+    
     # Apply data
     m.add_data(gdf, "segments")
 

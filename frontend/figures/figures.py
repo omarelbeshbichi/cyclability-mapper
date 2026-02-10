@@ -5,15 +5,15 @@ import os
 import logging
 import pandas as pd
 import numpy as np
+import plotly.express as px
 
 logging.basicConfig(level = logging.INFO)
 
 app = FastAPI()
 
-def create_city_metrics_scatter_plot() -> plt:
+def create_city_metrics_scatter_plot():
     """
-    Creates a 2D scatter plot of city metrics as function of uncertainty and returns it as plt
-    (similar to ktmp/Kepler approach).
+    Creates an interactive Plotly scatter plot of city metrics vs uncertainty.
     """
 
     DATABASE_URL = os.getenv(
@@ -33,46 +33,51 @@ def create_city_metrics_scatter_plot() -> plt:
             ORDER BY total_city_score DESC;
         """)
 
-        with engine.connect() as conn:
-            result = conn.execute(query).fetchall()
+        df = pd.read_sql(query, engine)
 
-        if not result:
+        if df.empty:
             logging.info("No city metrics found in database.")
-            return "<p>No city metrics found</p>"
+            return None
 
-        cities = [row.city_name.title() for row in result]
-        scores = [float(row.total_city_score) for row in result]
-        uncertainties = [float(row.total_city_score_uncertainty) for row in result]
+        # Clean up display names
+        df["city_name"] = df["city_name"].str.title()
 
-        # Create figure
-        plt.figure(figsize = (12, 8))
-        plt.scatter(
-            uncertainties,
-            scores,
-            s = 100,
-            c = scores,
-            cmap = "viridis",
-            alpha = 0.8,
-            edgecolors = "k"
+        fig = px.scatter(
+            df,
+            x="total_city_score_uncertainty",
+            y="total_city_score",
+            color="total_city_score",
+            color_continuous_scale="Viridis",
+            hover_name="city_name",
+            hover_data={
+                "total_city_score": ":.3f",
+                "total_city_score_uncertainty": ":.3f",
+                "city_name": False
+            },
+            labels={
+                "total_city_score_uncertainty": "Total City Score Uncertainty",
+                "total_city_score": "Total City Score",
+            },
+            title="City Metrics Scatter Plot",
         )
-        for x, y, name in zip(uncertainties, scores, cities):
-            plt.text(x + 0.01, y, name, fontsize = 9, alpha = 0.8)
 
-        plt.xlabel("Total City Score Uncertainty")
-        plt.ylabel("Total City Score")
-        plt.xlim(0, 0.5)
-        plt.ylim(0, 1)
-        plt.title("City Metrics Scatter Plot")
-        plt.colorbar(label = "Total City Score")
+        fig.update_traces(
+            marker=dict(size=12, line=dict(width=1, color="black")),
+            selector=dict(mode="markers")
+        )
 
-        plt.grid(True, linestyle = "--", alpha = 0.5)
-        plt.tight_layout()
+        fig.update_layout(
+            xaxis=dict(range=[0, 0.5]),
+            yaxis=dict(range=[0, 1]),
+            coloraxis_colorbar=dict(title="Total City Score"),
+            template="plotly_white"
+        )
 
-        return plt
+        return fig
 
     except Exception as e:
         logging.error(f"Error creating city metrics plot: {e}")
-        return f"<p>Error: {e}</p>"
+        return None
 
     finally:
         engine.dispose()

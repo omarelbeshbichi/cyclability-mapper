@@ -1,5 +1,6 @@
 import click
 import logging 
+from pathlib import Path
 
 @click.command()
 @click.option("--city", "--city-name", "city_name", type = str, required = True)
@@ -14,7 +15,8 @@ import logging
 @click.option("--tiling/--no-tiling", default=False, help="Enable tiling or not", required= False)
 @click.option("--retries", default = 50, required= False)
 @click.option("--delay", default = 2.0, required= False)
-def main(city_name, country_code, south, west, north, east, chunk_size, timeout, tolerance, tiling, retries, delay):
+@click.option("--out", "output_dir", type = click.Path(path_type = Path), default = None, required = False)
+def main(city_name, country_code, south, west, north, east, chunk_size, timeout, tolerance, tiling, retries, delay, output_dir):
     from city_metrics.services.pipeline import build_network_from_api
     from city_metrics.utils.misc import get_project_root
     from city_metrics.data.ingest.overpass_queries import roads_in_bbox, roads_in_polygon
@@ -24,6 +26,7 @@ def main(city_name, country_code, south, west, north, east, chunk_size, timeout,
     from city_metrics.services.metrics.compute import compute_city_metrics_from_postgis
     from city_metrics.data.export.postgres import delete_city_rows
     from city_metrics.utils.config_helpers import read_config
+    from city_metrics.services.maps import create_static_map
 
     root = get_project_root()
     
@@ -104,6 +107,17 @@ def main(city_name, country_code, south, west, north, east, chunk_size, timeout,
     weights_config.pop("version")
     compute_city_metrics_from_postgis(city_name, metrics_config_path, weights_config)
     
+    logging.info("GENERATE STATIC MAP")
+    # Resolve output directory
+    if output_dir is None:
+        output_dir = root / "static_maps"
+    # Create output folder if it does not exist
+    output_dir.mkdir(parents = True, exist_ok = True)
+    
+    kepler_config_path = (root / "frontend" / "kepler" / "kepler_config.json")
+    
+    create_static_map(city_name, kepler_config_path, output_dir, True)
+
     logging.info("DONE")
 if __name__ == "__main__":
     main()

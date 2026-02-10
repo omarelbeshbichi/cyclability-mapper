@@ -9,32 +9,15 @@ app = FastAPI()
 @app.get("/metrics_scatter", response_class = HTMLResponse)
 def serve_map():
 
-    plt_module = create_city_metrics_scatter_plot()
+    fig = create_city_metrics_scatter_plot()
 
-    # Save figure to PNG in memory
-    buf = io.BytesIO()
-    plt_module.savefig(buf, format = "png")
-    plt_module.close()
-    buf.seek(0)
-    img_base64 = base64.b64encode(buf.read()).decode("utf-8")
-    buf.close()
+    if fig is None:
+        return "<p>No city metrics found</p>"
 
-    # Get HTML <img>
-    html_content = f"""
-    <html>
-    <head>
-    <style>
-        body {{ margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }}
-        img {{ max-width: 95vw; max-height: 95vh; }}
-    </style>
-    </head>
-    <body>
-        <img src="data:image/png;base64,{img_base64}" alt="City Metrics Plot">
-    </body>
-    </html>
-    """
-
-    return HTMLResponse(html_content)
+    return fig.to_html(
+        full_html=True,
+        include_plotlyjs="cdn"
+    )
 
 @app.get("/group_sensitivity/heatmap", response_class=HTMLResponse)
 def serve_group_sensitivity_heatmap(metric_name: str = "cyclability"):
