@@ -327,8 +327,8 @@ def prepare_network_segments_gdf_for_postgis(city_name: str,
     gdf = gdf.set_geometry("geom")
 
     # Convert booleans
-    gdf["is_oneway"] = gdf["is_oneway"].map({"yes": True, "no": False, True: True, False: False}).fillna(False)
-    gdf["is_lit"] = gdf["is_lit"].map({"yes": True, "no": False, "unknown": False, True: True, False: False}).fillna(False)
+    gdf["is_oneway"] = gdf["is_oneway"].map({"yes": True, "no": False, True: True, False: False}).astype("boolean").fillna(False)
+    gdf["is_lit"] = gdf["is_lit"].map({"yes": True, "no": False, "unknown": False, True: True, False: False}).astype("boolean").fillna(False)
     
 
     # Convert numeric columns

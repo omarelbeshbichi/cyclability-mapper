@@ -3,7 +3,7 @@ from .settings import settings
 
 def get_map_response(city_name: str):
 
-    # When working locally
+    # When working locally - return static HTML (faster than dynamic reconstruction)
     if settings.storage_backend == "local":
         path = f"{settings.local_static_dir}/{city_name}.html"
         return FileResponse(path)
