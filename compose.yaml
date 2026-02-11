@@ -9,9 +9,6 @@ services:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: pass
       POSTGRES_DB: db
-      STORAGE_BACKEND: s3
-      S3_BUCKET: cyclability-mapper-data-3
-      S3_PREFIX: static_maps
     volumes:
       - pgdata:/var/lib/postgresql/data # store data in persistent database
       - ./docker/postgres:/docker-entrypoint-initdb.d # connect to init.sql
