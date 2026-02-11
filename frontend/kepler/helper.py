@@ -1,5 +1,9 @@
 from fastapi.responses import FileResponse, RedirectResponse
+from fastapi.responses import HTMLResponse
 from .settings import settings
+import boto3
+
+s3_client = boto3.client("s3")
 
 def get_map_response(city_name: str):
 
@@ -10,8 +14,16 @@ def get_map_response(city_name: str):
 
     # For demo AWS deployment - uses S3 bucket for storing static HTML maps
     elif settings.storage_backend == "s3":
-        url = f"https://{settings.s3_bucket}.s3.amazonaws.com/{settings.s3_prefix}/{city_name}.html"
-        return RedirectResponse(url)
+        s3_key = f"{settings.s3_prefix}/{city_name}.html"
+        
+        # Get map from S3 bucket (do this to retain FastAPI URL)
+        obj = s3_client.get_object(Bucket=settings.s3_bucket, Key=s3_key)
+        
+        # Turn it into HTML
+        html_content = obj["Body"].read().decode("utf-8")
+        
+        # Serve it
+        return HTMLResponse(content=html_content, media_type="text/html")
 
     else:
         raise ValueError("Invalid storage backend")
