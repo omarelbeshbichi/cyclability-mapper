@@ -26,7 +26,7 @@ def main(city_name, country_code, south, west, north, east, chunk_size, timeout,
     from city_metrics.services.metrics.compute import compute_city_metrics_from_postgis
     from city_metrics.data.export.postgres import delete_city_rows
     from city_metrics.utils.config_helpers import read_config
-    from city_metrics.services.maps import create_static_map
+    from city_metrics.services.maps import create_static_map, create_static_metrics_scatter
 
     root = get_project_root()
     
@@ -107,7 +107,7 @@ def main(city_name, country_code, south, west, north, east, chunk_size, timeout,
     weights_config.pop("version")
     compute_city_metrics_from_postgis(city_name, metrics_config_path, weights_config)
     
-    logging.info("GENERATE STATIC MAP")
+    logging.info("GENERATE STATIC MAP & METRICS SCATTER")
     # Resolve output directory
     if output_dir is None:
         output_dir = root / "static_maps"
@@ -117,6 +117,7 @@ def main(city_name, country_code, south, west, north, east, chunk_size, timeout,
     kepler_config_path = (root / "frontend" / "kepler" / "kepler_config.json")
     
     create_static_map(city_name, kepler_config_path, output_dir, True)
+    create_static_metrics_scatter(output_dir, True)
 
     logging.info("DONE")
 if __name__ == "__main__":

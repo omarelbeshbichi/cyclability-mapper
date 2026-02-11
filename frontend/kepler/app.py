@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
-from .helper import get_map_response
+from frontend.kepler.helper_kepler import get_map_response
 
 app = FastAPI()
 

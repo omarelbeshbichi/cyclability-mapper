@@ -1,23 +1,18 @@
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
-from .figures import create_city_metrics_scatter_plot, create_group_sensitivity_plot, create_group_sensitivity_heatmap
+from .figures import create_group_sensitivity_plot, create_group_sensitivity_heatmap
 import io
 import base64
 import matplotlib.pyplot as plt
+from frontend.figures.helper import get_scatter_response
+
+
 app = FastAPI()
 
 @app.get("/metrics_scatter", response_class = HTMLResponse)
 def serve_map():
 
-    fig = create_city_metrics_scatter_plot()
-
-    if fig is None:
-        return "<p>No city metrics found</p>"
-
-    return fig.to_html(
-        full_html=True,
-        include_plotlyjs="cdn"
-    )
+    return get_scatter_response()
 
 @app.get("/group_sensitivity/heatmap", response_class=HTMLResponse)
 def serve_group_sensitivity_heatmap(metric_name: str = "cyclability"):

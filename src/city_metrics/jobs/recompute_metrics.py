@@ -10,7 +10,7 @@ def main(city_name, output_dir):
     from city_metrics.services.metrics.compute import recompute_metrics_from_postgis, compute_city_metrics_from_postgis
     from city_metrics.utils.misc import get_project_root
     from city_metrics.utils.config_helpers import read_config
-    from city_metrics.services.maps import create_static_map
+    from city_metrics.services.maps import create_static_map, create_static_metrics_scatter
 
     root = get_project_root()
 
@@ -42,6 +42,7 @@ def main(city_name, output_dir):
     kepler_config_path = (root / "frontend" / "kepler" / "kepler_config.json")
     
     create_static_map(city_name, kepler_config_path, output_dir, True)
+    create_static_metrics_scatter(output_dir, True)
 
     logging.info("DONE")
 if __name__ == "__main__":

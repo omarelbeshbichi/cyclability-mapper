@@ -116,48 +116,19 @@ To remain within free-tier CPU and memory limits, only medium-to-small European 
 
 The following is a list of the cities currently available:
 
-- Aarhus  
-- Alicante  
-- Basel  
-- Bologna  
-- Bordeaux  
-- Bruges  
-- Cambridge  
-- Charleroi  
-- Delft  
-- Dijon  
-- Ferrara  
-- Freiburg im Breisgau  
-- Galway  
-- Ghent  
-- Girona  
-- Groningen  
-- The Hague  
-- Heidelberg  
-- Innsbruck  
-- Karlsruhe  
-- Leeds  
-- Linköping  
-- Ljubljana  
-- Lucca  
-- Mons  
-- Nantes  
-- Novara  
-- Olomouc  
-- Oxford  
-- Pamplona  
-- Salamanca  
-- Sevilla  
-- Strasbourg  
-- Tarragona  
-- Trondheim  
-- Turku  
-- Ulm  
-- Umeå  
-- Unterkirnach  
-- Utrecht  
-- Valencia  
-- Vichy  
+- Bologna, IT
+- Bordeaux, FR
+- Cambridge, UK
+- Delft, NL
+- Dijon, FR
+- Groningen, NL
+- Innsbruck, AT
+- Oxford, UK
+- Pamplona, ES
+- The Hague, NL
+- Trondheim, NO
+- Utrecht, NL
+- Umeå, SE
 
 
 ## Notes
