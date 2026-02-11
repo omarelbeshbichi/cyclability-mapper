@@ -2,6 +2,9 @@ import logging
 from frontend.kepler.map import create_map
 from pathlib import Path
 import re
+from frontend.kepler.settings import settings
+import boto3
+from io import BytesIO
 
 def create_static_map(city_name: str, 
                       kepler_config_path: Path,
@@ -169,5 +172,33 @@ def create_static_map(city_name: str,
         1
     )
     
-    # Write down static HTML file
-    output_file.write_text(html, encoding="utf-8")
+    if settings.storage_backend == "local":
+        # Write down static HTML file
+        output_file.write_text(html, encoding="utf-8")
+        logging.info("Map stored locally: %s", output_file)
+
+    elif settings.storage_backend == "s3":
+        
+        s3_client = boto3.client("s3")
+        s3_key = f"{settings.s3_prefix}/{city_name}.html"
+
+        s3_client.upload_fileobj(
+            BytesIO(html.encode("utf-8")),
+            settings.s3_bucket,
+            s3_key,
+            ExtraArgs={"ContentType": "text/html"}
+        )
+
+        logging.info(
+            "Map uploaded to S3: s3://%s/%s",
+            settings.s3_bucket,
+            s3_key
+        )
+
+        # Delete local file after successful upload
+        if output_file.exists():
+            output_file.unlink()
+            logging.info("Local file deleted: %s", output_file)
+
+    else:
+        raise ValueError("Invalid storage backend")

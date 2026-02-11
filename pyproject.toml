@@ -8,37 +8,42 @@ version = "0.2.0"
 description = "Cyclability Mapper"
 readme = "README.md"
 requires-python = ">=3.10"
-authors = [
-  { name = "Omar El Beshbichi" }
-]
+authors = [{ name = "Omar El Beshbichi" }]
 license = { text = "MIT" }
 
-# For now, keep dependencies minimal – will add them in due time
+# core dependencies
 dependencies = [
   "numpy>=1.26",
-  "shapely>=2.0.0",
   "pandas>=2.0.0",
+  "shapely>=2.0.0",
   "psycopg2-binary>=2.9",
-  "pyyaml>=6.0.1",
   "geopandas>=1.0.0",
-  "matplotlib>=3.8.0",
   "SQLAlchemy>=2.0.0",
   "geoalchemy2>=0.14.0",
   "requests>=2.32.5",
-  "keplergl>=0.3.2",
-  "fastapi >= 0.112.0",
-  "uvicorn >= 0.24.0",
-  "click>=8.1.0",
   "ruamel.yaml>=0.18.0",
-  "tabulate>=0.9.0",
   "networkx>=3.2",
-  "plotly>=5.18.0",
-  "pydantic-settings>=2.0.0"
+  "pyyaml>=6.0.1",
+  "click>=8.1.0",
+  "pydantic-settings>=2.0.0",
 ]
 
 [project.optional-dependencies]
 dev = [
   "pytest",
+]
+
+viz = [
+  "matplotlib>=3.8.0",
+  "plotly>=5.18.0",
+  "keplergl>=0.3.2",
+  "fastapi>=0.112.0",
+  "uvicorn>=0.24.0",
+  "tabulate>=0.9.0",
+]
+
+aws = [
+  "boto3>=1.34.0",
 ]
 
 # Tell setuptools to look for packages under src/
