@@ -65,7 +65,7 @@ def recompute_city(city_name: str):
 
 default_args = {
     "owner": "cyclability-mapper",
-    "retries": 2, # two retries allowed
+    "retries": 10, # ten retries allowed
     "retry_delay": timedelta(minutes=5) # wait 5 minutes between retries
 }
 
