@@ -87,7 +87,7 @@ def create_static_map(city_name: str,
     """
 
     # Add header with map title and link to GitHub repository
-    if settings.storage_backend == "local":
+    if settings.storage_backend == "s3":
         header_block = f"""
         <style>
 
@@ -180,7 +180,7 @@ def create_static_map(city_name: str,
             </a>
         </div>
         """
-    elif settings.storage_backend == "s3":
+    elif settings.storage_backend == "local":
            
            last_updated = get_global_last_updated()
 
@@ -232,15 +232,15 @@ def create_static_map(city_name: str,
                 font-size: 12px;
                 color: #eaeaea;
                 opacity: 0.85;
-                background:white;
-                border-radius:4px;
-                padding:4px;
             }}
 
             .badge img {{
                 width: 20px;
                 height: 20px;
                 object-fit: contain;
+                background:white;
+                border-radius:4px;
+                padding:4px;
             }}
 
             .github-link img {{
