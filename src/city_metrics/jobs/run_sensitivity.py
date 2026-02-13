@@ -9,9 +9,11 @@ def main(city_name, target_group, delta_range):
 
     from city_metrics.services.analysis.sensitivity import sensitivity_single_weight_sweep
     from city_metrics.utils.misc import get_project_root
-    from city_metrics.data.export.postgres import delete_city_rows
     from city_metrics.utils.config_helpers import read_config
-    
+
+    # Fix case sensitivity
+    city_name = city_name.lower()
+
     root = get_project_root()
 
     weights_config_path = root / "src/city_metrics/metrics/config/weights.yaml"

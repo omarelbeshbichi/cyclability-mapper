@@ -28,6 +28,10 @@ def main(city_name, country_code, south, west, north, east, chunk_size, timeout,
     from city_metrics.utils.config_helpers import read_config
     from city_metrics.services.maps import create_static_map, create_static_metrics_scatter
 
+    # Fix case sensitivity
+    city_name = city_name.lower()
+    country_code = country_code.upper()
+
     root = get_project_root()
     
     weights_config_path = root / "src/city_metrics/metrics/config/weights.yaml"

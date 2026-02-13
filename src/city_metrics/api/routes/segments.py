@@ -7,6 +7,9 @@ router = APIRouter(prefix = "/segments", tags = ["segments"])
 
 @router.get("/{city_name}/{osm_id}", response_model = SegmentNetworkOut)
 def get_segment(city_name: str, osm_id: str):
+    """
+    Endpoint to retrieve segment information for a specific city (city_name) and specific segment (osm_id).
+    """    
     
     segment = load_segment_from_id(city_name, osm_id)
 

@@ -8,12 +8,16 @@ GET /maps/{city_name}
 ```
 Returns Kepler.gl map of segment-level cyclability metrics of the specified city `city_name`.
 
+![alt text](/media/kepler_map_example.png)
+
 ## Mouse Hovering Data
 Mouse pointer data provides for each segment:
 - `osm_id`
 - cyclability score
 - segment length
 - features scores (unweighted)
+
+![alt text](/media/kepler_map_hover_example.png)
 
 ## JSON Config
 Kepler.gl makes use of a dedicated JSON config file defining most rendering options.
@@ -30,11 +34,17 @@ GET /figures/metrics_scatter
 
 Returns scatter table of total city scores as a function of total city uncertainty for all the cities present in the database.
 
+![alt text](/media/metrics_scatter_example.png)
 
 ## Sensitivity Figures (Experimental)
-The application also provides experimental sensitivity analysis figures showing how changes in group weights affect city cyclability metrics. These are available via dedicated endpoints.
 
-**Line plots per group**: total city score vs delta group weight
+Group weights are qualitative judgement about what aspects of cyclability matter the most. They are not objective truths, but modeling choices. As such, it may be useful to see how sensitive is final result to weights themselves.
+
+Sensitivity analysis shows how much the city’s score depends on subjective modeling choices about what aspects of cycling matter most.
+
+The application provides experimental sensitivity analysis figures showing how changes in group weights affect city cyclability metrics. These are available via dedicated endpoints.
+
+**Line plots per group**: total city score vs delta group weight. If line barely moves -> city score stable to qualitative judgement.
 ```
 GET /figures/group_sensitivity/{city_name}
 ```

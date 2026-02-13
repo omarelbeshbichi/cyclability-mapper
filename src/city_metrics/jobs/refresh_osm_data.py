@@ -18,6 +18,9 @@ def main(city_name, chunk_size, timeout, tiling, retries, delay, output_dir):
     from city_metrics.utils.config_helpers import read_config
     from city_metrics.services.maps import create_static_map, create_static_metrics_scatter
 
+    # Fix case sensitivity
+    city_name = city_name.lower()
+
     root = get_project_root()
 
     weights_config_path = root / "src/city_metrics/metrics/config/weights.yaml"
@@ -56,5 +59,10 @@ def main(city_name, chunk_size, timeout, tiling, retries, delay, output_dir):
     create_static_metrics_scatter(output_dir, True)
 
     logging.info("DONE")
+    
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e: 
+        logging.exception("Pipeline failed")
+        raise

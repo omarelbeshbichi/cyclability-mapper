@@ -1,7 +1,6 @@
 import yaml
 import json
 from pathlib import Path
-from typing import Any
 from ruamel.yaml import YAML
 
 def read_config(index_name: str,

@@ -15,6 +15,9 @@ def main(city_name, budget_km):
     from city_metrics.services.metrics.loader import load_segments_for_metrics_recompute, load_data_for_city_metrics_compute
     import networkx as nx
 
+    # Fix case sensitivity
+    city_name = city_name.lower()
+
     logging.info("LOAD SEGMENTS FOR GRAPH - EXPERIMENTAL JOB")
     gdf = load_segments_for_metrics_recompute(city_name)
 

@@ -45,7 +45,7 @@ Main graph analysis algorithm. It computes the edge betweenness centrality for e
 
 ## Sensitivity Analysis
 
-This analysis evaluates the effect of changing cyclability metric weights on overall city metrics. Note that weight changes are normalized to ensure total weight sum remains 1.
+Sensitivity analysis shows how much the city’s score depends on subjective modeling choices about what aspects of cycling matter most.
 
 #### `analysis/sensitivity.py`
 **`sensitivity_single_weight_sweep`**: This function performs a sweep over a single feature group’s weight, computing the total city metric at each step.

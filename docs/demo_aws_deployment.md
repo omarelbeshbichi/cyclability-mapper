@@ -2,41 +2,57 @@
 
 The system has been deployed in AWS using free-tier resources.
 
-The deployment primarily aimed at exploring AWS infrastructure, system architecture, operational setups, and orchestration using Airflow DAGs. As such, it is not indended to provide a production-grade or scalable system.
+The deployment primarily aimed at exploring AWS infrastructure, system architecture, operational setups, and orchestration of weekly recomputations using Apache Airflow DAGs. As such, it is not intended to provide a production-grade or scalable system.
 
-The deployed instance is hosting a demo implementation with a subset of medium-small European cities to keep resource usage within AWS free-tier limits.
+The deployed instance is hosting a demo implementation with a list of small European cities to keep resource usage within AWS free-tier limits.
 
-Note: A set of static maps of selected European capitals are instead stored as HTML files in `docs/maps` and deployed using GitHub Pages. For instance, for Oslo, NO: [Oslo Static Cyclability Map](https://omarelbeshbichi.github.io/cyclability-mapper/maps/oslo.html)
+- **Metrics scatter:** [View deployed table](https://cyclability-mapper.duckdns.org/figures/metrics_scatter)  
+- **Interactive map (Delft, NL):** [Open map](https://cyclability-mapper.duckdns.org/maps/delft)
+- **API segment data (Delft, NL):** [See data](https://cyclability-mapper.duckdns.org/api/segments/delft/571668733 )
 
+Note: A set of static maps of selected European capitals is instead stored as HTML files in `docs/maps` and deployed using GitHub Pages. For instance: [Oslo, NO](https://omarelbeshbichi.github.io/cyclability-mapper/maps/oslo.html)
 
 ## Purpose
 
-The main aims of this deployment exercise are the following:
+The aims of this deployment exercise are the following:
 - Complete deployment of the full system (API, database, jobs)
+- Deployment of weekly recomputation schedule using Airflow
 - Validation of cloud execution of ingestion and computation pipelines
 - Definition of publicly accessible HTTPS endpoint for exploration and review of key data
-- Exploration of key devops issues (networking, certificates, reverse proxy)
+- Exploration of key DevOps issues (networking, certificates, reverse proxy)
 
-The current deployment is not concerned in scaling issues, high availability, and handling of large metropolitan cities (resource intensive).
+The current deployment is not concerned with scaling issues, high availability, and handling of large metropolitan cities (resource-intensive).
 
 ## Architecture
 
-The deployment consists of a single EC2 instance running all services via Docker Compose.
+The deployment consists of a single EC2 instance running all services via Docker Compose and Airflow in a dedicated virtual environment. The system makes use of an S3 bucket to store static figures and maps for fast retrieval from FastAPI.
 
-The system architecture is minimal and roughly structured follows:
+The architecture is minimal and roughly structured as follows:
 ```
 Internet
 │
 │ HTTPS (port 443)
-▼
-Nginx (reverse proxy, TLP termination)
 │
-├── FastAPI application (internal port 8000)
+Nginx (reverse proxy)
 │
-Docker Compose
-│
-├── app (Python / FastAPI / jobs)
-└── db (PostgreSQL + PostGIS)
+└── FastAPI application (port 8000)
+        ├── read figures and maps from Amazon S3
+        └── expose API endpoints
+
+EC2
+|
+├── Docker Compose
+|   ├── app (Python / FastAPI / CLI jobs)
+|   |    └── uploads static maps and figures to Amazon S3
+|   └── db (PostgreSQL + PostGIS)
+|
+└── Airflow (venv)
+      ├── Webserver (port 8080 - UI and manual trigger)
+      └── DAG (Python file)
+           │
+      Runs in Scheduler
+           │
+          Task -> docker exec -> app -> refresh_osm_data (weekly)
 ```
 
 ## AWS Resources
@@ -45,8 +61,8 @@ Docker Compose
 A free-tier `t3.micro` EC2 instance has been used.
 
 - OS: Amazon Linux
-- Storage: default EBS root volume
-- Elastic IP attached for stable public address
+- Storage: default root volume storage (8 GB)
+- 2 vCPU, 1 GB RAM
 
 ### IAM
 A dedicated IAM user is defined with permission for EC2 management.
@@ -63,10 +79,11 @@ The following inbound rules for the EC2 security group have been defined:
 -  TCP 80 (HTTP): `0.0.0.0/0` -> public
 -  TCP 443 (HTTPS): `0.0.0.0/0` -> public
 -  TCP 22 (SSH): restricted to developer ID only
+-  TCP 8080 (HTTP): `0.0.0.0/0` -> public only when access to Airflow UI needed 
 
 ### Domain and DNS
 
-The domain name is provided via `DuckDNS`: https://cyclability-mapper.duckdns.org. DuckDNS is able to provide DNS resolution pointing to a given Elastic IP.
+The domain name is provided via [DuckDNS](https://www.duckdns.org/). DuckDNS is able to provide DNS resolution pointing to a given IP.
 
 `Nginx` is configured as reverse proxy, that is, to proxy requests from the open HTTP port `80` (or HTTPS port `443` once configured) to the FastAPI output port, `8000`. HTTPS certification has been enabled using `Certbot` (combined with enabling of port `443`). Associated certificates are installed directly on the EC2 instance.
 
@@ -87,6 +104,33 @@ All services are managed via Docker Compose, including:
 
 The same Compose setup is used both locally and on AWS.
 
+
+### Workflow Orchestration (Airflow)
+
+To automate the recomputation of city metrics, [Apache Airflow](https://airflow.apache.org/) has been deployed directly on the EC2 instance.
+
+This integration aimed at validating scheduled execution of data jobs in a cloud environment for testing purposes while remaining within free-tier resource limits.
+
+As such, the setup is intentionally lightweight and should be considered development-grade orchestration.
+
+Airflow is installed in a dedicated Python virtual environment on the EC2 instance. This is done for convenience and to reduce container overhead. Three components are active:
+
+- **Airflow Webserver**: provides the UI for DAG inspection and manual triggering
+- **Airflow Scheduler**: reads DAG schedules and launches tasks
+- **Metadata Database**: default Airflow database
+
+The deployment currently uses the `SequentialExecutor`. This is to enforce one task executing at a time, since t3.micro instance provides limited RAM.
+
+A weekly DAG is defined to recompute city metrics for every city stored in the database (see `airflow/dags` in repo).
+
+The DAG has the following characteristics:
+
+- Dynamic task mapping is used to generate one recomputation task per city.
+- List of cities is fetched directly from PostGIS.
+- Each task executes the existing CLI job inside the `app` container.
+
+The Airflow web interface is exposed on port 8080 for operational access. To date, the port is opened when needed, but in production-grade deployment it would be protected.
+
 ## Public Access
 
 ### API
@@ -102,7 +146,7 @@ Kepler.gl-based interactive maps are available here:
 
 > <https://cyclability-mapper.duckdns.org/maps/{city_name}>
 
-Example: https://cyclability-mapper.duckdns.org/maps/oxford
+Example: https://cyclability-mapper.duckdns.org/maps/delft
 
 ### Figures (metrics scatter)
 
@@ -112,24 +156,15 @@ Key metrics scatter figure of all data present in database - total city metrics 
 
 ## Data Available (demo limitations)
 
-To remain within free-tier CPU and memory limits, only medium-to-small European cities are included in the deployed database.
+To remain within free-tier CPU and memory limits, only a small set of European cities is included in the deployed database.
 
 The following is a list of the cities currently available:
 
-- Bologna, IT
-- Bordeaux, FR
-- Cambridge, UK
-- Delft, NL
-- Dijon, FR
-- Groningen, NL
-- Innsbruck, AT
-- Oxford, UK
-- Pamplona, ES
-- The Hague, NL
-- Trondheim, NO
-- Utrecht, NL
-- Umeå, SE
-
+- Cambridge, UK      
+- Delft, NL              
+- Oxford, UK         
+- Pamplona, ES       
+- Umeå, SE           
 
 ## Notes
 Please note the following:
@@ -137,7 +172,7 @@ Please note the following:
 - This is a single-node deployment
 - No automatic scaling or failover is configured
 - Database persistence relies on Docker volumes
-- Ingestion and recomputation jobs are run manually or via orchestration (future Airflow integration)
+- Ingestion and recomputation jobs are orchestrated weekly via Airflow 
 - Static maps are stored in S3 for AWS deployments, but are proxied through FastAPI so the URL remains clean
 
-The setup is intentionally left minimal and aimed at a simple exploration of AWS deploy.
+The setup is intentionally left minimal and aimed at a simple exploration of AWS and Airflow.

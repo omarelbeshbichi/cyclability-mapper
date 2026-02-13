@@ -6,7 +6,7 @@ from city_metrics.data.export.postgres import delete_segment_metrics_in_polygon
 from city_metrics.data.export.postgres import delete_segments_in_polygon
 from city_metrics.data.export.postgres import load_reference_area
 from typing import Optional
-from city_metrics.data.ingest.geocoding import city_to_polygon, split_polygon_into_bboxes
+from city_metrics.data.ingest.geocoding import split_polygon_into_bboxes
 
 def refresh_osm_data(city_name: str,
                         weights_config_path: Path,

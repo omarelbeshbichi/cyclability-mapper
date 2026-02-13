@@ -1,4 +1,4 @@
-from fastapi.responses import FileResponse, RedirectResponse
+from fastapi.responses import FileResponse
 from fastapi.responses import HTMLResponse
 from frontend.figures.settings import settings
 import boto3

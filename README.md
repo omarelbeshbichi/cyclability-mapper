@@ -15,13 +15,11 @@ Static map-based access of selected European capitals are available through GitH
 
 ## Demo AWS Deployment
 
-A system demo has been also deployed in AWS using free-tier resources. As an example, the following links redirect, respectively, to a scatter table of all city scores (and score uncertainties) in the deployed database, a map-based access of results of Utrecht, NL, and an API retrieval for a segment of the same city:
+A system demo has been also deployed in AWS using free-tier resources. 
 
-> https://cyclability-mapper.duckdns.org/figures/metrics_scatter
-
-> https://cyclability-mapper.duckdns.org/maps/utrecht
-
-> https://cyclability-mapper.duckdns.org/api/segments/utrecht/27370348 
+- **Metrics scatter:** [View deployed table](https://cyclability-mapper.duckdns.org/figures/metrics_scatter)  
+- **Interactive map (Delft, NL):** [Open map](https://cyclability-mapper.duckdns.org/maps/delft)
+- **API segment data (Delft, NL):** [See data](https://cyclability-mapper.duckdns.org/api/segments/delft/571668733 )
 
  See [**related documentation**](docs/demo_aws_deployment.md) for more info.
 

@@ -13,6 +13,9 @@ def main(city_name: str, output_dir: Path | None, overwrite: bool):
     from city_metrics.services.maps import create_static_map
     from city_metrics.utils.misc import get_project_root
 
+    # Fix case sensitivity
+    city_name = city_name.lower()
+
     logging.basicConfig(level = logging.INFO)
 
     root = get_project_root()

@@ -2,10 +2,42 @@ import logging
 from frontend.kepler.map import create_map
 from pathlib import Path
 import re
+import os
 from frontend.figures.settings import settings
 import boto3
+from sqlalchemy import create_engine, text
+from datetime import timezone
 from io import BytesIO
 from frontend.figures.figures import create_city_metrics_scatter_plot
+
+def get_global_last_updated() -> str:
+    """
+    Fetch latest created_at timestamp across all cities.
+    Returns formatted UTC string.
+    """
+
+    DATABASE_URL = os.getenv(
+        "DATABASE_URL",
+        "postgresql+psycopg2://user:pass@localhost:5432/db"
+    )
+
+    engine = create_engine(DATABASE_URL)
+
+    with engine.connect() as conn:
+        result = conn.execute(
+            text("""
+                SELECT MAX(created_at)
+                FROM city_metrics
+            """)
+        ).scalar()
+
+    engine.dispose()
+
+    if result is None:
+        return "Unknown"
+
+    result = result.astimezone(timezone.utc)
+    return result.strftime("%Y-%m-%d %H:%M UTC")
 
 def create_static_map(city_name: str, 
                       kepler_config_path: Path,
@@ -55,95 +87,210 @@ def create_static_map(city_name: str,
     """
 
     # Add header with map title and link to GitHub repository
-    header_block = f"""
-    <style>
+    if settings.storage_backend == "local":
+        header_block = f"""
+        <style>
 
-    html, body {{
-        margin: 0;
-        padding: 0;
-        height: 100%;
-        overflow: hidden; 
-        background: #111;
-        font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-    }}
+        html, body {{
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden; 
+            background: #111;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+        }}
 
-    .app-header {{
-        height: 56px;
-        background: #0e0e0e;
-        color: #fff;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0 24px;
-        box-sizing: border-box;
-    }}
-
-    .map-container {{
-        height: calc(100vh - 56px);
-        width: 100%;
-    }}
-
-    .map-container > div {{
-        height: 100% !important;
-    }}
-
-    .app-title {{
-        font-size: 16px;
-        font-weight: 500;
-        letter-spacing: 0.3px;
-    }}
-
-    .app-header a:hover {{
-        opacity: 1;
-    }}
-
-    .github-link {{
-            top: 10px;
-            right: 14px;
-            z-index: 100000;
+        .app-header {{
+            height: 56px;
+            background: #0e0e0e;
+            color: #fff;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 6px;
-            opacity: 0.85;
-            text-decoration: none;
-            color: #fff;
-            text-decoration: none;
-            font-size: 14px;
-            opacity: 0.85;
+            padding: 0 24px;
+            box-sizing: border-box;
         }}
 
-    .github-link:hover {{
-        opacity: 1.0;
-    }}
+        .map-container {{
+            height: calc(100vh - 56px);
+            width: 100%;
+        }}
 
-    .github-link img {{
-        width: 22px;
-        height: 22px;
-    }}
+        .map-container > div {{
+            height: 100% !important;
+        }}
 
-    .github-label {{
-        font-size: 12px;
-        color: #eaeaea;
-        background: rgba(0, 0, 0, 0.65);
-        padding: 2px 6px;
-        border-radius: 4px;
-        white-space: nowrap;
-    }}
-    </style>
+        .app-title {{
+            font-size: 16px;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+        }}
 
-    <div class="app-header">
-        <div class="app-title">
-            Cyclability Mapper - {city_name.capitalize()}
+        .app-header a:hover {{
+            opacity: 1;
+        }}
+
+        .github-link {{
+                top: 10px;
+                right: 14px;
+                z-index: 100000;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 6px;
+                opacity: 0.85;
+                text-decoration: none;
+                color: #fff;
+                text-decoration: none;
+                font-size: 14px;
+                opacity: 0.85;
+            }}
+
+        .github-link:hover {{
+            opacity: 1.0;
+        }}
+
+        .github-link img {{
+            width: 22px;
+            height: 22px;
+        }}
+
+        .github-label {{
+            font-size: 12px;
+            color: #eaeaea;
+            background: rgba(0, 0, 0, 0.65);
+            padding: 2px 6px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }}
+        </style>
+
+        <div class="app-header">
+            <div class="app-title">
+                Cyclability Mapper - {city_name.capitalize()}
+            </div>
+            <a class="github-link"
+            href="https://github.com/omarelbeshbichi/cyclability-mapper"
+            target="_blank">
+            <span class="github-label">View source</span>
+            <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png">
+            </a>
         </div>
-        <a class="github-link"
-        href="https://github.com/omarelbeshbichi/cyclability-mapper"
-        target="_blank">
-        <span class="github-label">View source</span>
-        <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png">
-        </a>
-    </div>
-    """
+        """
+    elif settings.storage_backend == "s3":
+           
+           last_updated = get_global_last_updated()
+
+           header_block = f"""
+            <style>
+
+            html, body {{
+                margin: 0;
+                padding: 0;
+                height: 100%;
+                overflow: hidden; 
+                background: #111;
+                font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            }}
+
+            .app-header {{
+                height: 64px;
+                background: linear-gradient(90deg, #0e0e0e, #1a1a1a);
+                color: #fff;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0 28px;
+                box-sizing: border-box;
+            }}
+
+            .app-title {{
+                font-size: 16px;
+                font-weight: 500;
+                letter-spacing: 0.3px;
+            }}
+
+            .app-subtitle {{
+                font-size: 12px;
+                color: #aaa;
+                margin-top: 4px;
+            }}
+
+            .badge-group {{
+                display: flex;
+                align-items: center;
+                gap: 18px;
+            }}
+
+            .badge {{
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                font-size: 12px;
+                color: #eaeaea;
+                opacity: 0.85;
+            }}
+
+            .badge img {{
+                width: 20px;
+                height: 20px;
+                object-fit: contain;
+            }}
+
+            .github-link img {{
+                width: 20px;
+                height: 20px;
+                object-fit: contain;
+            }}
+
+            .github-link {{
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                text-decoration: none;
+                color: #fff;
+                opacity: 0.85;
+                font-size: 13px;
+            }}
+
+            .github-link:hover {{
+                opacity: 1.0;
+            }}
+
+            </style>
+
+            <div class="app-header">
+                <div>
+                    <div class="app-title">
+                        Cyclability Mapper - {city_name.capitalize()}
+                    </div>
+                    <div class="app-subtitle">
+                        Last updated: {last_updated}
+                    </div>
+                </div>
+
+                <div class="badge-group">
+
+                    <div class="badge">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/9/93/Amazon_Web_Services_Logo.svg">
+                        Deployed on AWS
+                    </div>
+
+                    <div class="badge">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/d/de/AirflowLogo.png">
+                        Updated weekly via Airflow
+                    </div>
+
+                    <a class="github-link"
+                    href="https://github.com/omarelbeshbichi/cyclability-mapper"
+                    target="_blank">
+                        <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png">
+                        View Source
+                    </a>
+
+                </div>
+            </div>
+            """
 
     # Retrieve Kepler HTML content
     html = output_file.read_text(encoding="utf-8")
@@ -242,95 +389,211 @@ def create_static_metrics_scatter(
     """
 
     # Add header with map title and link to GitHub repository
-    header_block = f"""
-    <style>
+    if settings.storage_backend == "local":
+        header_block = f"""
+        <style>
 
-    html, body {{
-        margin: 0;
-        padding: 0;
-        height: 100%;
-        overflow: hidden; 
-        background: #111;
-        font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-    }}
+        html, body {{
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden; 
+            background: #111;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+        }}
 
-    .app-header {{
-        height: 56px;
-        background: #0e0e0e;
-        color: #fff;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0 24px;
-        box-sizing: border-box;
-    }}
-
-    .map-container {{
-        height: calc(100vh - 56px);
-        width: 100%;
-    }}
-
-    .map-container > div {{
-        height: 100% !important;
-    }}
-
-    .app-title {{
-        font-size: 16px;
-        font-weight: 500;
-        letter-spacing: 0.3px;
-    }}
-
-    .app-header a:hover {{
-        opacity: 1;
-    }}
-
-    .github-link {{
-            top: 10px;
-            right: 14px;
-            z-index: 100000;
+        .app-header {{
+            height: 56px;
+            background: #0e0e0e;
+            color: #fff;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 6px;
-            opacity: 0.85;
-            text-decoration: none;
-            color: #fff;
-            text-decoration: none;
-            font-size: 14px;
-            opacity: 0.85;
+            padding: 0 24px;
+            box-sizing: border-box;
         }}
 
-    .github-link:hover {{
-        opacity: 1.0;
-    }}
+        .map-container {{
+            height: calc(100vh - 56px);
+            width: 100%;
+        }}
 
-    .github-link img {{
-        width: 22px;
-        height: 22px;
-    }}
+        .map-container > div {{
+            height: 100% !important;
+        }}
 
-    .github-label {{
-        font-size: 12px;
-        color: #eaeaea;
-        background: rgba(0, 0, 0, 0.65);
-        padding: 2px 6px;
-        border-radius: 4px;
-        white-space: nowrap;
-    }}
-    </style>
+        .app-title {{
+            font-size: 16px;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+        }}
 
-    <div class="app-header">
-        <div class="app-title">
-            Cyclability Mapper - Metrics Scatter
+        .app-header a:hover {{
+            opacity: 1;
+        }}
+
+        .github-link {{
+                top: 10px;
+                right: 14px;
+                z-index: 100000;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 6px;
+                opacity: 0.85;
+                text-decoration: none;
+                color: #fff;
+                text-decoration: none;
+                font-size: 14px;
+                opacity: 0.85;
+            }}
+
+        .github-link:hover {{
+            opacity: 1.0;
+        }}
+
+        .github-link img {{
+            width: 22px;
+            height: 22px;
+        }}
+
+        .github-label {{
+            font-size: 12px;
+            color: #eaeaea;
+            background: rgba(0, 0, 0, 0.65);
+            padding: 2px 6px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }}
+        </style>
+
+        <div class="app-header">
+            <div class="app-title">
+                Cyclability Mapper - Metrics Scatter
+            </div>
+            <a class="github-link"
+            href="https://github.com/omarelbeshbichi/cyclability-mapper"
+            target="_blank">
+            <span class="github-label">View source</span>
+            <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png">
+            </a>
         </div>
-        <a class="github-link"
-        href="https://github.com/omarelbeshbichi/cyclability-mapper"
-        target="_blank">
-        <span class="github-label">View source</span>
-        <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png">
-        </a>
-    </div>
-    """
+        """
+    elif settings.storage_backend == "s3":
+
+        last_updated = get_global_last_updated()
+
+        header_block = f"""
+            <style>
+
+            html, body {{
+                margin: 0;
+                padding: 0;
+                height: 100%;
+                overflow: hidden; 
+                background: #111;
+                font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            }}
+
+            .app-header {{
+                height: 64px;
+                background: linear-gradient(90deg, #0e0e0e, #1a1a1a);
+                color: #fff;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0 28px;
+                box-sizing: border-box;
+            }}
+
+            .app-title {{
+                font-size: 16px;
+                font-weight: 500;
+                letter-spacing: 0.3px;
+            }}
+
+            .app-subtitle {{
+                font-size: 12px;
+                color: #aaa;
+                margin-top: 4px;
+            }}
+
+            .badge-group {{
+                display: flex;
+                align-items: center;
+                gap: 18px;
+            }}
+
+            .badge {{
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                font-size: 12px;
+                color: #eaeaea;
+                opacity: 0.85;
+            }}
+
+            .badge img {{
+                width: 20px;
+                height: 20px;
+                object-fit: contain;
+            }}
+
+            .github-link img {{
+                width: 20px;
+                height: 20px;
+                object-fit: contain;
+            }}
+
+            .github-link {{
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                text-decoration: none;
+                color: #fff;
+                opacity: 0.85;
+                font-size: 13px;
+            }}
+
+            .github-link:hover {{
+                opacity: 1.0;
+            }}
+
+            </style>
+
+            <div class="app-header">
+                <div>
+                    <div class="app-title">
+                        Cyclability Mapper - Metrics Scatter
+                    </div>
+                    <div class="app-subtitle">
+                        Last updated: {last_updated}
+                    </div>
+                </div>
+
+                <div class="badge-group">
+
+                    <div class="badge">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/9/93/Amazon_Web_Services_Logo.svg">
+                        Deployed on AWS
+                    </div>
+
+                    <div class="badge">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/d/de/AirflowLogo.png">
+                        Updated weekly via Airflow
+                    </div>
+
+                    <a class="github-link"
+                    href="https://github.com/omarelbeshbichi/cyclability-mapper"
+                    target="_blank">
+                        <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png">
+                        View Source
+                    </a>
+
+                </div>
+            </div>
+            """
+    
 
     metrics_scatter_figure.write_html(
         str(output_file),

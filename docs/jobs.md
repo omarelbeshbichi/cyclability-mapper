@@ -4,7 +4,7 @@ Main package job. It can be called in two ways.
 
 ## Municipal Boundary using City Name
 ```bash
-docker compose exec app python -m city_metrics.jobs.build_network --city oslo --cc no --chunk 5000 --tout 50 --tol 0.0005 --tiling --retries 50 --delay 5.0 --out 'path/to/out'
+docker compose exec app python -m city_metrics.jobs.build_network --city oslo --cc no --chunk 5000 --tout 50 --tol 0.0005 --no-tiling --retries 50 --delay 5.0 --out 'path/to/out'
 ```
 where:
 - `--city` is the city name
@@ -21,7 +21,7 @@ This will use a Polygon describing the city's municipal boundaries to fetch data
 
 ## Bounding Box
 ```bash
-docker compose exec app python -m city_metrics.jobs.build_network --city oslo --south 59.898941 --west 10.667409 --north 59.954596 --east 10.815038 --chunk 5000 --tout 50 --tol 0.0005 --tiling --retries 50 --delay 5.0 --out 'path/to/out'
+docker compose exec app python -m city_metrics.jobs.build_network --city oslo --south 59.898941 --west 10.667409 --north 59.954596 --east 10.815038 --chunk 5000 --tout 50 --tol 0.0005 --no-tiling --retries 50 --delay 5.0 --out 'path/to/out'
 ```
 
 This will use an explicit bounding box, normally defined with four numbers representing the South Latitude, North Latitude, West Longitude, and East Longitude. The example is using a bounding box around the area of Oslo, Norway.
@@ -41,7 +41,7 @@ All metric data in the database for the given city is overwritten (`segment_metr
 Refreshes all data related to a given city from the associated Polygon saved in the database and recomputes associated metrics.
 
 ```bash
-docker compose exec app python -m city_metrics.jobs.refresh_osm_data --city oslo --chunk 5000 --tout 50 --tiling --retries 50 --delay 5.0 --out 'path/to/out'
+docker compose exec app python -m city_metrics.jobs.refresh_osm_data --city oslo --chunk 5000 --tout 50 --no-tiling --retries 50 --delay 5.0 --out 'path/to/out'
 ```
 
 # list_cities
@@ -96,7 +96,7 @@ Notes:
 Performs sensitivity analysis on cyclability metric group weights.
 
 ```bash
-docker compose exec app python -m city_metrics.jobs.run_sensitivity --city oslo --group infrastructure --delta 0.2
+docker compose exec app python -m city_metrics.jobs.run_sensitivity --city oslo --group all --delta 0.2
 ```
 where:
 - `--city` : City name

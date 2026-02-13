@@ -41,7 +41,7 @@ The segment-level cyclability metrics is computed starting from `CyclabilitySegm
 
 An aggregated cyclability metric for the entirety of the city network is computed by performing a length-weighted average of the segment-level metrics.
 
-Aggregated uncertainty information of the city for each feature is also computed by using a length-weighted average of `missing_info` multiplied for the relative feature weight. A global city uncertainty parameter is defined as the sum of all feature uncertainties. More info in `metrics` documentation.
+Aggregated uncertainty information of the city for each feature is also computed by using a length-weighted average of `missing_info` multiplied by the relative feature weight. A global city uncertainty parameter is defined as the sum of all feature uncertainties. More info in `metrics` documentation.
 
 # Data Storage
 

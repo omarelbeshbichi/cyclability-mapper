@@ -2,6 +2,7 @@
 .venv/
 venv/
 env/
+airflow_venv
 
 # Python
 __pycache__/

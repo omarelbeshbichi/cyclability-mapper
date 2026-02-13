@@ -60,4 +60,4 @@ This analysis is intended for diagnostic and exploratory purposes only and shoul
 
 This virtual view is used by services and the API to retrieve the latest metrics data.
 
-It is defined by first selecting the most recent metric version using a helper table (`latest_metric`) and then joining the corresponding segment and metric data. For now selecting based on version is redundant - only one version is effectively present per city - but may be useful for later.
+It is defined by first selecting the most recent metric version using a helper table (`latest_metric`) and then joining the corresponding segment and metric data. For now, selecting based on version is redundant - only one version is effectively present per city - but may be useful for later.

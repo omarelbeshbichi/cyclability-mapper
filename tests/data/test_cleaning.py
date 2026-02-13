@@ -2,7 +2,6 @@ import geopandas as gpd
 import pandas as pd
 from shapely.geometry import LineString
 from city_metrics.data.normalize.cleaning import restrict_gdf, parse_maxspeed_to_kmh, normalize_maxspeed_info, prepare_cyclability_segment
-from pathlib import Path
 import math
 from city_metrics.domain.segment import CyclabilitySegment
 

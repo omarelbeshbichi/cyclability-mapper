@@ -6,6 +6,9 @@ import logging
 def main(city_name):
     from city_metrics.data.export.postgres import delete_city_rows
 
+    # Fix case sensitivity
+    city_name = city_name.lower()
+
     # Clear-up database
     logging.info("CLEAR DATABASE")
     delete_city_rows("network_segments", city_name)

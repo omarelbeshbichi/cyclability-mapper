@@ -1,12 +1,11 @@
 import pandas as pd
 import geopandas as gpd
 from city_metrics.data.normalize.cleaning import prepare_cyclability_segment
-from city_metrics.utils.config_helpers import read_config, add_config_data
-from city_metrics.utils.helpers import row_get, row_has, row_items
+from city_metrics.utils.config_helpers import add_config_data
+from city_metrics.utils.helpers import row_get
 import logging
 from city_metrics.domain.segment import Segment
 from typing import Any
-from pathlib import Path
 
 # Logger setup
 logging.basicConfig(level=logging.INFO)
