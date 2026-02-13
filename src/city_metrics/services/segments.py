@@ -3,6 +3,8 @@ from sqlalchemy import create_engine, text
 import logging 
 import json
 import os
+from city_metrics.domain.db_engine import engine
+from functools import lru_cache
 
 def load_segments_for_viz(city_name: str) -> gpd.GeoDataFrame:
     """
@@ -75,24 +77,19 @@ def load_segments_for_viz(city_name: str) -> gpd.GeoDataFrame:
     finally:
         engine.dispose()
 
+@lru_cache(maxsize=1000)
 def load_segment_from_id(city_name: str,
                          osm_id: str) -> gpd.GeoDataFrame:
     """
     Load network segment from PostGIS associated to specific OSM ID.
+
+    Note: this function is used in DEMO AWS deploy since API endpoint to get segment data is available.
+    I am using then a single shared engine -- so to avoid creating one for each API request. 
     """
 
     # Normalize ID in compliace with PostGIS
     osm_id = f"way/{osm_id}"
     
-    # Use DATABASE_URL if running inside Docker, else fallback to localhost
-    DATABASE_URL = os.getenv(
-        "DATABASE_URL",
-        "postgresql+psycopg2://user:pass@localhost:5432/db"
-    )
-
-    # Create SQLAlchemy engine
-    engine = create_engine(DATABASE_URL)
-
     try:
 
         # Select data from PostGIS virtual (view) table v_cyclability_segment_detail
@@ -126,6 +123,3 @@ def load_segment_from_id(city_name: str,
     except Exception as e:
         logging.error(f"Error loading data from PostGIS for API use: {e}")
         raise 
-
-    finally:
-        engine.dispose()

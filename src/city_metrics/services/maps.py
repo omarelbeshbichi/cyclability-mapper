@@ -94,10 +94,14 @@ def create_static_map(city_name: str,
         html, body {{
             margin: 0;
             padding: 0;
-            height: 100%;
-            overflow: hidden; 
             background: #111;
             font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+        }}
+
+        body {{
+            height: 100dvh;    
+            width: 100%;
+            overflow: hidden;
         }}
 
         .app-header {{
@@ -111,14 +115,10 @@ def create_static_map(city_name: str,
             box-sizing: border-box;
         }}
 
-        .map-container {{
-            height: calc(100vh - 56px);
-            width: 100%;
-        }}
 
-        .map-container > div {{
-            height: 100% !important;
-        }}
+        
+
+
 
         .app-title {{
             font-size: 16px;
@@ -180,6 +180,7 @@ def create_static_map(city_name: str,
             </a>
         </div>
         """
+    
     elif settings.storage_backend == "s3":
            
            last_updated = get_global_last_updated()
@@ -190,12 +191,16 @@ def create_static_map(city_name: str,
             html, body {{
                 margin: 0;
                 padding: 0;
-                height: 100%;
-                overflow: hidden; 
                 background: #111;
                 font-family: -apple-system, BlinkMacSystemFont, sans-serif;
             }}
 
+            body {{
+                height: 100dvh;    
+                width: 100%;
+                overflow: hidden;
+            }}
+            
             .app-header {{
                 height: 64px;
                 background: linear-gradient(90deg, #0e0e0e, #1a1a1a);
@@ -206,6 +211,10 @@ def create_static_map(city_name: str,
                 padding: 0 28px;
                 box-sizing: border-box;
             }}
+
+            
+
+
 
             .app-title {{
                 font-size: 16px;
@@ -405,11 +414,16 @@ def create_static_metrics_scatter(
         html, body {{
             margin: 0;
             padding: 0;
-            height: 100%;
-            overflow: hidden; 
             background: #111;
             font-family: -apple-system, BlinkMacSystemFont, sans-serif;
         }}
+
+        body {{
+            height: 100dvh;    
+            width: 100%;
+            overflow: hidden;
+        }}    
+
 
         .app-header {{
             height: 56px;
@@ -420,15 +434,6 @@ def create_static_metrics_scatter(
             justify-content: space-between;
             padding: 0 24px;
             box-sizing: border-box;
-        }}
-
-        .map-container {{
-            height: calc(100vh - 56px);
-            width: 100%;
-        }}
-
-        .map-container > div {{
-            height: 100% !important;
         }}
 
         .app-title {{
@@ -501,10 +506,14 @@ def create_static_metrics_scatter(
             html, body {{
                 margin: 0;
                 padding: 0;
-                height: 100%;
-                overflow: hidden; 
                 background: #111;
                 font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            }}
+
+            body {{
+                height: 100dvh;    
+                width: 100%;
+                overflow: hidden;
             }}
 
             .app-header {{
