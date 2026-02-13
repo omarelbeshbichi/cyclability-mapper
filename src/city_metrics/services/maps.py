@@ -87,7 +87,7 @@ def create_static_map(city_name: str,
     """
 
     # Add header with map title and link to GitHub repository
-    if settings.storage_backend == "s3":
+    if settings.storage_backend == "local":
         header_block = f"""
         <style>
 
@@ -180,7 +180,7 @@ def create_static_map(city_name: str,
             </a>
         </div>
         """
-    elif settings.storage_backend == "local":
+    elif settings.storage_backend == "s3":
            
            last_updated = get_global_last_updated()
 
