@@ -45,6 +45,7 @@ where:
 - $\mu_f$ is a penalty value (default: $0.5$) used to account conservatively for missing data. It is defined in the same YAML transformation table. To be noted that the contribution of this assumed value to the score is quantified by the feature uncertainty $C_f$ and, in aggregate, to the total city uncertainty $U$ (see below).
 
 For feature `maxspeed`, if `bike_infrastructure` is available and of high quality (structurally protected), the associated score is automatically considered maximum, 1.0, as it is assumed that traffic is not interfering with the cycleway:
+
 $$
 \overline{x_{i,maxspeed}} = \begin{cases} 
 1.0 & \text{if protected} \\ 
