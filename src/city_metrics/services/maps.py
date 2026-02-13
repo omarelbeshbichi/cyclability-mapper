@@ -153,6 +153,9 @@ def create_static_map(city_name: str,
         .github-link img {{
             width: 22px;
             height: 22px;
+            background:white;
+            border-radius:4px;
+            padding:4px;
         }}
 
         .github-label {{
@@ -173,7 +176,7 @@ def create_static_map(city_name: str,
             href="https://github.com/omarelbeshbichi/cyclability-mapper"
             target="_blank">
             <span class="github-label">View source</span>
-            <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg">
             </a>
         </div>
         """
@@ -229,6 +232,9 @@ def create_static_map(city_name: str,
                 font-size: 12px;
                 color: #eaeaea;
                 opacity: 0.85;
+                background:white;
+                border-radius:4px;
+                padding:4px;
             }}
 
             .badge img {{
@@ -241,6 +247,9 @@ def create_static_map(city_name: str,
                 width: 20px;
                 height: 20px;
                 object-fit: contain;
+                background:white;
+                border-radius:4px;
+                padding:4px;
             }}
 
             .github-link {{
@@ -272,19 +281,19 @@ def create_static_map(city_name: str,
                 <div class="badge-group">
 
                     <div class="badge">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/9/93/Amazon_Web_Services_Logo.svg">
+                        <img src="https://logo.svgcdn.com/logos/aws.png">
                         Deployed on AWS
                     </div>
 
                     <div class="badge">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/d/de/AirflowLogo.png">
+                        <img src="https://icon.icepanel.io/Technology/svg/Apache-Airflow.svg">
                         Updated weekly via Airflow
                     </div>
 
                     <a class="github-link"
                     href="https://github.com/omarelbeshbichi/cyclability-mapper"
                     target="_blank">
-                        <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg">
                         View Source
                     </a>
 
@@ -455,6 +464,9 @@ def create_static_metrics_scatter(
         .github-link img {{
             width: 22px;
             height: 22px;
+            background:white;
+            border-radius:4px;
+            padding:4px;
         }}
 
         .github-label {{
@@ -475,7 +487,7 @@ def create_static_metrics_scatter(
             href="https://github.com/omarelbeshbichi/cyclability-mapper"
             target="_blank">
             <span class="github-label">View source</span>
-            <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg">
             </a>
         </div>
         """
@@ -537,12 +549,18 @@ def create_static_metrics_scatter(
                 width: 20px;
                 height: 20px;
                 object-fit: contain;
+                background:white;
+                border-radius:4px;
+                padding:4px;
             }}
 
             .github-link img {{
                 width: 20px;
                 height: 20px;
                 object-fit: contain;
+                background:white;
+                border-radius:4px;
+                padding:4px;
             }}
 
             .github-link {{
@@ -574,19 +592,19 @@ def create_static_metrics_scatter(
                 <div class="badge-group">
 
                     <div class="badge">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/9/93/Amazon_Web_Services_Logo.svg">
+                        <img src="https://logo.svgcdn.com/logos/aws.png">
                         Deployed on AWS
                     </div>
 
                     <div class="badge">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/d/de/AirflowLogo.png">
+                        <img src="https://icon.icepanel.io/Technology/svg/Apache-Airflow.svg">
                         Updated weekly via Airflow
                     </div>
 
                     <a class="github-link"
                     href="https://github.com/omarelbeshbichi/cyclability-mapper"
                     target="_blank">
-                        <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg">
                         View Source
                     </a>
 
