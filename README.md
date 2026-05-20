@@ -15,6 +15,8 @@ Static map-based access of selected European capitals are available through GitH
 
 ## Demo AWS Deployment
 
+NOTE: Demo AWS Deployment currently offline.
+
 A system demo has been also deployed in AWS using free-tier resources. 
 
 - **Metrics scatter:** [View deployed table](https://cyclability-mapper.duckdns.org/figures/metrics_scatter)  
